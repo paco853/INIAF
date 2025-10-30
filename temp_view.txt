@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado Oficial de Análisis de Semillas</title>
+  @php
+      $isPreview   = request()->boolean('preview');
+      $cssFile     = public_path('assets/css/reporte_pdf.css');
+      $cssContents = null;
+      if (!$isPreview && is_file($cssFile) && is_readable($cssFile)) {
+          $cssContents = @file_get_contents($cssFile);
+      }
+  @endphp
+  @if($isPreview)
+    <link rel="stylesheet" href="{{ asset('assets/css/reporte_pdf.css') }}">
+  @elseif(!empty($cssContents))
+    <style type="text/css">{!! $cssContents !!}</style>
+  @else
+    <link rel="stylesheet" href="{{ asset('assets/css/reporte_pdf.css') }}">
+  @endif
+</head>
+<body class="{{ request()->boolean('preview') ? 'is-preview' : '' }}">
+@php
+    $r = $doc->recepcion ?? [];
+    $h = $doc->humedad ?? [];
+    $fmt = function($v, $def='-'){ return isset($v) && $v !== '' ? $v : $def; };
+    $fechaEv = optional($doc->fecha_evaluacion)->format('d/m/Y');
+
+    $img = function(string $path){
+        if (request()->boolean('preview')) return asset($path);
+        $abs = public_path($path);
+        if (is_file($abs) && is_readable($abs)) {
+            $ext  = strtolower(pathinfo($abs, PATHINFO_EXTENSION));
+            $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg'
+                   : ($ext === 'png' ? 'image/png' : 'image/*');
+            $data = @file_get_contents($abs);
+            if ($data !== false) return 'data:'.$mime.';base64,'.base64_encode($data);
+        }
+        $abs = str_replace('\\','/',$abs);
+        if (preg_match('/^[A-Za-z]:\//',$abs)) { $abs = '/'.$abs; }
+        return 'file://'.$abs;
+    };
+@endphp
+
+<div class="wrap">
+  <div class="header">
+    <img class="logo-left"  src="{{ $img('images/logo2.png') }}"  alt="Logo Estado Plurinacional de Bolivia">
+    <img class="logo-right" src="{{ $img('images/titulo.png') }}"     alt="INIAF">
+  </div>
+
+  <div class="hr"></div>
+
+  <h1>OFICINA DEPARTAMENTAL POTOSÍ</h1>
+  <h2>RESULTADO OFICIAL DE ANÁLISIS DE SEMILLAS</h2>
+
+  <div class="meta-line">
+    <div class="meta-col">
+      <div><strong>SEMILLERA:</strong> {{ $fmt($r['semillera'] ?? null) }}</div>
+      <div><strong>COOPERADOR:</strong> {{ $fmt($r['cooperador'] ?? null) }}</div>
+      <div><strong>CULTIVO:</strong> {{ $fmt($doc->especie) }}</div>
+    </div>
+    <div class="meta-col meta-right">
+      <div><strong>N&ordm; DE ANÁLISIS:</strong> {{ $fmt($doc->nlab, '#'.$doc->id) }}</div>
+      <div><strong>AÑO:</strong> {{ optional($doc->fecha_evaluacion)->format('Y') }}</div>
+      <div>POTOSÍ, {{ $fechaEv ?? optional($doc->fecha_evaluacion)->format('d/m/Y') ?? '-' }}</div>
+    </div>
+  </div>
+
+  <div style="margin-top:6px"></div>
+</div> <!-- /.table-responsive -->
+
+<div style="position:fixed; left:10mm; right:10mm; bottom:10mm; z-index:2000;
+            border:1px dashed #f00; padding:4px; text-align:center; font-size:10px;">
+  TEST BLOQUE FIJO (debe verse aquí)
+</div>
+
+  <div class="table-responsive">
+    
+
+    
+
+    <table>
+      <colgroup>
+        <col style="width:4%"><col style="width:7%"><col style="width:6%"><col style="width:8%">
+        <col style="width:4%"><col style="width:4%"><col style="width:7%"><col style="width:4%">
+        <col style="width:3%"><col style="width:4%"><col style="width:3%"><col style="width:3%">
+        <col style="width:3%"><col style="width:3%"><col style="width:3%"><col style="width:3%">
+        <col style="width:3%"><col style="width:3%"><col style="width:3%"><col style="width:3%">
+        <col style="width:3%"><col style="width:5%"><col style="width:6%"><col style="width:5%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="vertical" rowspan="2"><div>ANÁLISIS DE LAB.</div></th>
+          <th rowspan="2">ESPECIE</th>
+          <th rowspan="2">VARIEDAD</th>
+          <th rowspan="2">ORIGEN</th>
+          <th colspan="2">CATEGORÍA</th>
+          <th class="vertical" rowspan="2"><div>N&ordm; AUT. IMPORT.</div></th>
+          <th rowspan="2">LOTE</th>
+          <th rowspan="2">KG/BOL</th>
+          <th rowspan="2">N&ordm; BOLSAS</th>
+          <th rowspan="2">HUMEDAD</th>
+          <th colspan="2">OTRAS ESPECIES</th>
+          <th colspan="2">OTROS CULTIVOS</th>
+          <th colspan="2">MALEZAS COMUNES</th>
+          <th colspan="2">MALEZAS PROHIBIDAS</th>
+          <th class="vertical" rowspan="2"><div>GERMINACIÓN</div></th>
+          <th class="vertical" rowspan="2"><div>VIABILIDAD</div></th>
+          <th class="vertical" rowspan="2"><div>APROB./RECH.</div></th>
+          <th class="vertical" rowspan="2"><div>FECHA EVALUACIÓN</div></th>
+          <th class="vertical" rowspan="2"><div>VALIDEZ DEL ANÁLISIS</div></th>
+        </tr>
+        <tr>
+          <th>INICIAL</th>
+          <th>FINAL</th>
+          <th>%</th>
+          <th>N&ordm;/KG</th>
+          <th>%</th>
+          <th>N&ordm;/KG</th>
+          <th>%</th>
+          <th>N&ordm;/KG</th>
+          <th>%</th>
+          <th>N&ordm;/KG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ $fmt($doc->nlab, '#'.$doc->id) }}</td>
+          <td>{{ $fmt($doc->especie) }}</td>
+          <td>{{ $fmt($r['variedad'] ?? null) }}</td>
+          <td>{{ $fmt($r['origen'] ?? null) }}</td>
+          <td>{{ $fmt($r['categoria_inicial'] ?? null) }}</td>
+          <td>{{ $fmt($r['categoria_final'] ?? null) }}</td>
+          <td>{{ $fmt($r['aut_import'] ?? null) }}</td>
+          <td>{{ $fmt($r['lote'] ?? null) }}</td>
+          <td>{{ $fmt($r['kgbol'] ?? null) }}</td>
+          <td>{{ $fmt($r['bolsas'] ?? null) }}</td>
+          <td>{{ $fmt($h['resultado'] ?? null) }}</td>
+          <td>{{ $fmt($h['otros_sp_pct'] ?? null) }}</td>
+          <td>{{ $fmt($h['otros_sp_kg'] ?? null) }}</td>
+          <td>{{ $fmt($h['otros_cultivos_pct'] ?? null) }}</td>
+          <td>{{ $fmt($h['otros_cultivos_kg'] ?? null) }}</td>
+          <td>{{ $fmt($h['malezas_comunes_pct'] ?? null) }}</td>
+          <td>{{ $fmt($h['malezas_comunes_kg'] ?? null) }}</td>
+          <td>{{ $fmt($h['malezas_prohibidas_pct'] ?? null) }}</td>
+          <td>{{ $fmt($h['malezas_prohibidas_kg'] ?? null) }}</td>
+          <td>{{ $fmt($h['germinacion_pct'] ?? null) }}</td>
+          <td>{{ $fmt($h['viabilidad_pct'] ?? null) }}</td>
+          <td>{{ $fmt($doc->estado ?? null) }}</td>
+          <td>{{ $fechaEv ?? optional($doc->fecha_evaluacion)->format('d/m/Y') }}</td>
+          <td>{{ $fmt($doc->validez ?? null) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note"><strong>OBSERVACIONES:</strong> {{ $fmt($doc->observaciones ?? null) }}</div>
+
+  <div class="row-2">
+    <div class="box">
+      <strong>SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS:</strong><br>
+      {{ $fmt($doc->malezas_nocivas ?? null) }}
+    </div>
+    <div class="box">
+      <strong>SEMILLAS DE MALEZAS COMUNES:</strong><br>
+      {{ $fmt($doc->malezas_comunes ?? null) }}
+    </div>
+  </div>
+</div> <!-- /.wrap -->
+
+<!-- Firmas y pie fuera de .wrap -->
+ <div class="signatures-wrap">
+  <table class="signatures-table"><tr>
+    <td><div class="line"></div>FIRMA TÉCNICO LABORATORIO</td>
+    <td><div class="line"></div>FIRMA ENCARGADO SEMILLAS</td>
+    <td><div class="line"></div>VB RESP. DEPARTAMENTAL INIAF</td>
+  </tr></table>
+</div>
+<div class="footer-wrap">
+  DIRECCIÓN DEPARTAMENTAL <br> www.iniaf.gob.bo
+</div>
+
+
+</body>
+</html>
+

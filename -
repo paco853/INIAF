@@ -1,0 +1,21 @@
+            <table class="table table--transparent">
+                <thead>
+                    <tr>
+                        <th style="width:70%">Especie</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse(($cultivos ?? []) as $cultivo)
+                        <tr>
+                            <td>{{ $cultivo->especie }}</td>
+                            <td class="actions-cell">
+                                <a class="btn-secondary" href="{{ route('cultivos.edit', $cultivo) }}">Editar</a>
+                                <form method="POST" action="{{ route('cultivos.destroy', $cultivo) }}" onsubmit="return confirm('¿Eliminar esta especie?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn-danger" type="submit">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty

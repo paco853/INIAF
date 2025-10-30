@@ -1,0 +1,157 @@
+/* ===============================
+   Reporte PDF - Carta horizontal
+   Compatible con mPDF
+   =============================== */
+
+/* Documento / página */
+@page {
+  size: letter landscape;
+  /* Shift content right: increase left margin, decrease right margin */
+  margin: 15mm 10mm 15mm 20mm;
+}
+
+html, body {
+  font-family: Arial, Helvetica, 'DejaVu Sans', sans-serif;
+  font-size: 9px;
+  color: #111827;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+}
+
+.wrap {
+  width: 100%;
+  padding: 0;
+}
+
+/* Encabezado con logos - compatible con mPDF */
+.header{
+  display: table;
+  width: 100%;
+  margin-top: 8mm;
+  margin-bottom: 5mm;
+  table-layout: fixed;
+}
+
+/* Logo izquierdo (Bolivia) */
+.logo-left{
+  display: table-cell;
+  width: 40%;
+  height: 18mm;
+  max-height: 18mm;
+  vertical-align: middle;
+}
+
+/* Logo derecho (INIAF) */
+.logo-right{
+  display: table-cell;
+  width: 60%;
+  height: 18mm;
+  max-height: 18mm;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.hr-top{
+  height:1px;
+  background:#000;
+  /* Extiende la línea hasta las esquinas con márgenes asimétricos (izq 20mm, der 10mm) */
+  width: calc(100% + 30mm);
+  margin-left: -20mm;
+  margin-right: -10mm;
+  margin-top: 2mm;
+  margin-bottom: 3mm;
+}
+.hr{ height:1px; background:#cbd5e1; margin:5mm 0 }
+h1{ margin:2mm 0 1mm 0; font-size:13px; text-align:center; font-weight:700; line-height:1.2 }
+h2{ margin:2mm 0 0 0; font-size:12px; text-align:center; font-weight:600; line-height:1.2 }
+
+/* Metadatos (2 columnas) */
+.meta-line{ width:120mm; margin:3mm auto 3mm auto; display:table }
+.meta-col{ display:table-cell; width:50%; font-size:11px; line-height:1.5; vertical-align:top }
+.meta-col strong{ font-weight:700; font-size:11px }
+.meta-right{ text-align:right }
+
+/* Tabla principal */
+table{
+  width: 100%;
+  /* Usar 'separate' es más robusto para evitar que el borde derecho se corte */
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  margin-top: 5mm;
+  page-break-inside: avoid; /* Evitar que la tabla se corte entre páginas si es posible */
+  font-size: 7px;
+  word-wrap: break-word;
+}
+
+thead{ display: table-header-group }
+tfoot{ display: table-footer-group }
+tr{ page-break-inside: avoid }
+
+th, td{
+  border:1px solid #d1d5db;
+  padding:3px;
+  vertical-align:middle;
+  page-break-inside: avoid;
+}
+
+body:not(.is-preview) thead th{ padding:3px 2px }
+tbody td{
+  text-align: center;
+  font-size: 7px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 2px;
+  max-width: 100%;
+}
+/* Alineación de columnas de texto para legibilidad */
+tbody td:nth-child(2),
+tbody td:nth-child(3),
+tbody td:nth-child(4){ text-align:left }
+
+/* Títulos verticales */
+th.vertical{
+  padding: 2px 1px;
+  height: 80px;
+  max-height: 80px;
+  vertical-align: middle;
+  text-align: center;
+}
+th.vertical > div{
+  display: inline-block;
+  transform: rotate(90deg);
+  line-height: 1;
+  white-space: nowrap;
+  font-size: 7px;
+  max-width: 75px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Observaciones y cajas */
+.note{ margin-top:6px; font-size:9px }
+
+/* Fallback compatible con mPDF y navegadores para 2 columnas */
+.row-2{ display: table; width: 100%; table-layout: fixed; border-spacing: 10px 0; margin-top:6px }
+.row-2 .box{ display: table-cell; }
+.box{ border:1px solid #d1d5db; border-radius:4px; padding:6px; min-height:36px; font-size:9px; }
+
+/* Footer y firmas (posición) */
+.footer-wrap{
+  position: fixed;
+  left:10mm; right:10mm;
+  bottom: 52mm !important;
+  text-align:center;
+  font-size:9px;
+}
+.signatures{
+  position: fixed;
+  left:10mm; right:10mm;
+  bottom: 62mm !important;
+  text-align:center;
+  font-size:9px;
+}
+

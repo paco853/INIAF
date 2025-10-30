@@ -1,0 +1,62 @@
+*** Begin Patch
+*** Update File: resources/views/pdf/reporte.blade.php
+@@
+-    // Resolver imogenes como URL absolutas (requiere isRemoteEnabled=true)
+-    // Evita lecturas locales y funciona igual en preview/PDF
++    // Resolver imágenes (en preview usa asset, en PDF usa ruta local)
+@@
+-<!-- Footer y firmas con Dompdf (robusto) -->
++<!-- Footer y firmas con Dompdf (robusto) -->
+ <script type="text/php">
+ if (isset($pdf) && isset($fontMetrics)) {
+     $w = $pdf->get_width();
+     $h = $pdf->get_height();
+     $font = $fontMetrics->get_font('DejaVu Sans','normal');
+     $size = 9;
+ 
+-    // Conversi??n mm -> puntos (Dompdf trabaja en puntos)
++    // Conversión mm -> puntos (Dompdf trabaja en puntos)
+     $pt = 72/25.4;
+     $pageMarginBottom = 15 * $pt; // coincide con @page margin-bottom (15mm)
+ 
+-    // Footer, 4mm arriba del margen inferior
+-    $footerText = 'DIRECCI?"N DEPARTAMENTAL   www.iniaf.gob.bo';
++    // Footer, 4mm arriba del margen inferior
++    $footerText = 'DIRECCIÓN DEPARTAMENTAL   www.iniaf.gob.bo';
+     $footerY = $h - $pageMarginBottom - (4 * $pt);
+-    // Correcci??n de acentos en footer (forzada para evitar problemas de codificaci??n)
+-    $footerText = 'DIRECCI?"N DEPARTAMENTAL   www.iniaf.gob.bo';
+     $tw = $fontMetrics->get_text_width($footerText, $size, $font);
+     $pdf->page_text(($w - $tw)/2, $footerY, $footerText, $font, $size, array(0.42,0.45,0.50));
+ 
+-    // Firmas: todas en la MISMA altura, con mayor separaci??n entre columnas
+-    $leftRight = 15 * $pt; // morgenes laterales (coinciden con @page)
+-    $gutter = 40 * $pt;     // separaci??n entre columnas (6 mm)
++    // Firmas: todas en la MISMA altura, con mayor separación entre columnas
++    $leftRight = 15 * $pt; // márgenes laterales (coinciden con @page)
++    $gutter = 40 * $pt;     // separación entre columnas
+     $colw = ($w - 2*$leftRight - 2*$gutter) / 3.0;
+     $lineW = $colw * 0.40;
+-    // Correcci??n de acentos en etiquetas de firmas
+-    $labels = array('FIRMA T?%CNICO LABORATORIO','FIRMA ENCARGADO SEMILLAS','VB RESP. DEPARTAMENTAL INIAF');
+-    $yLine = $h - $pageMarginBottom - (40 * $pt); // 40mm por encima del margen inferior (mos arriba)
+-    $labels = array('FIRMA T?%CNICO LABORATORIO','FIRMA ENCARGADO SEMILLAS','VB RESP. DEPARTAMENTAL INIAF');
++    // Etiquetas de firmas con acentos correctos
++    $labels = array('FIRMA TÉCNICO LABORATORIO','FIRMA ENCARGADO SEMILLAS','VB RESP. DEPARTAMENTAL INIAF');
++    $yLine = $h - $pageMarginBottom - (40 * $pt); // 40mm por encima del margen inferior
+ 
+     for ($i = 0; $i < 3; $i++) {
+         $xCol = $leftRight + $i * ($colw + $gutter);
+         $xLine = $xCol + ($colw - $lineW) / 2;
+-        // L??nea y etiqueta: misma altura para las tres firmas
++        // Línea y etiqueta: misma altura para las tres firmas
+         $pdf->line($xLine, $yLine, $xLine + $lineW, $yLine, array(0.62,0.64,0.68));
+-        // Etiqueta 6pt por debajo de la l??nea
++        // Etiqueta 6pt por debajo de la línea
+         $label = $labels[$i];
+         $lw = $fontMetrics->get_text_width($label, $size, $font);
+         $pdf->page_text($xCol + ($colw - $lw)/2, $yLine + 6, $label, $font, $size, array(0,0,0));
+     }
+ }
+ </script>
+*** End Patch
