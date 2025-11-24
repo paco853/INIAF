@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cultivo;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CultivosController extends Controller
 {
@@ -39,7 +40,8 @@ class CultivosController extends Controller
 
         $cultivo = Cultivo::create($data);
 
-        return redirect()->route('cultivos.index')->with('status', 'Especie guardada: '.$cultivo->especie);
+        $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
+        return redirect($to)->with('status', 'Especie guardada: '.$cultivo->especie);
     }
 
     public function edit(Cultivo $cultivo)
@@ -58,13 +60,14 @@ class CultivosController extends Controller
         $data['especie'] = trim($data['especie']);
 
         $cultivo->update($data);
-        return redirect()->route('cultivos.index')->with('status', 'Especie actualizada');
+        $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
+        return redirect($to)->with('status', 'Especie actualizada');
     }
 
     public function destroy(Cultivo $cultivo)
     {
         $cultivo->delete();
-        return redirect()->route('cultivos.index')->with('status', 'Especie eliminada');
+        $to = request()->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
+        return redirect($to)->with('status', 'Especie eliminada');
     }
 }
-use Illuminate\Validation\Rule;

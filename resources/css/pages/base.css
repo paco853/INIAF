@@ -1,0 +1,203 @@
+:root {
+    --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, Arial, sans-serif;
+    --title: 22px;
+    --subtitle: 14px;
+    --body: 15px;
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: var(--body);
+    line-height: 1.55;
+    color: #0f172a;
+}
+
+.page {
+    width: 100%;
+}
+
+.brand-image {
+    height: 56px;
+    max-width: 100%;
+    margin-bottom: var(--space-3);
+}
+
+.panel-title {
+    font-size: var(--title);
+    font-weight: 700;
+    letter-spacing: 0.1px;
+    color: #0f172a;
+}
+
+.label,
+label {
+    font-size: var(--subtitle);
+    font-weight: 600;
+    color: #475569;
+}
+
+.iframe-full {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.layout-root {
+    display: flex;
+    min-height: 100dvh;
+    position: relative;
+    background-color: #f5f5f5;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)), url('/images/iniaf.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    isolation: isolate;
+}
+
+.layout-root::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: inherit;
+    background-size: inherit;
+    background-position: inherit;
+    background-attachment: inherit;
+    filter: blur(8px) brightness(0.6); /* Desenfoca y oscurece */
+    z-index: 0;
+}
+
+.layout-root > * {
+    position: relative;
+    z-index: 1;
+}
+
+.layout-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.18);
+    z-index: 1200;
+}
+
+.search-input {
+    flex: none;
+    min-width: 220px;
+    max-width: 320px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.45);
+    border: 1px solid transparent;
+}
+
+.search-input .JoyInput-startDecorator {
+    color: var(--joy-palette-primary-500, #2563eb);
+}
+
+.paginator {
+    display: flex;
+    margin-left: auto;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #0f172a;
+}
+
+.paginator__btn {
+    min-width: 92px;
+    border-radius: 12px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.paginator__btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.paginator__btn:disabled {
+    opacity: 0.65;
+    box-shadow: none;
+    transform: none;
+}
+
+.paginator__status {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.sidebar-separator {
+    width: 100%;
+    height: 2px;
+    border-radius: 999px;
+    background: #5f6a30;
+    margin: 14px 0 20px;
+}
+
+.JoyButton-root {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 10px 18px;
+    min-height: 40px;
+    font-size: var(--body);
+    letter-spacing: 0.01em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.JoyButton-root:not(.Joy-disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.15);
+}
+
+.JoyButton-root[data-variant="solid"][data-color="primary"],
+.JoyButton-root[data-variant="soft"][data-color="primary"] {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    box-shadow: 0 12px 20px rgba(37, 99, 235, 0.35);
+}
+
+.JoyButton-root[data-variant="solid"][data-color="danger"],
+.JoyButton-root[data-variant="soft"][data-color="danger"] {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    color: #fff;
+    box-shadow: 0 12px 18px rgba(239, 68, 68, 0.35);
+}
+
+.JoyButton-root[data-variant="solid"][data-color="neutral"],
+.JoyButton-root[data-variant="soft"][data-color="neutral"] {
+    background: linear-gradient(135deg, #cbd5f5, #9ca3af);
+    color: #0f172a;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
+}
+
+.JoyButton-root[data-variant="outlined"] {
+    border: 1px solid rgba(148, 163, 184, 0.8);
+    color: #1f2937;
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.JoyButton-root[data-color="danger"][data-variant="outlined"] {
+    border-color: rgba(248, 113, 113, 0.8);
+    color: #b91c1c;
+}
+
+.JoyButton-root[data-color="primary"][data-variant="outlined"] {
+    border-color: rgba(59, 130, 246, 0.8);
+    color: #1d4ed8;
+}
+
+.JoyButton-root[data-color="neutral"][data-variant="outlined"] {
+    border-color: rgba(148, 163, 184, 0.9);
+    color: #475569;
+}
+
+.JoyButton-root.Joy-disabled {
+    opacity: 0.6;
+    box-shadow: none;
+    transform: none;
+}

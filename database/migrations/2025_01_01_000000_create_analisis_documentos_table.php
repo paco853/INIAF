@@ -9,10 +9,10 @@ return new class extends Migration {
     {
         Schema::create('analisis_documentos', function (Blueprint $table) {
             $table->id();
-            $table->string('nlab', 50)->nullable();
+            $table->string('nlab', 50)->nullable()->index();
             $table->string('especie', 150)->nullable();
-            $table->date('fecha_evaluacion')->nullable();
-            $table->string('estado', 20)->nullable();
+            $table->date('fecha_evaluacion')->nullable()->index();
+            $table->string('estado', 20)->nullable()->index();
             $table->string('validez', 100)->nullable();
             $table->text('observaciones')->nullable();
             $table->string('malezas_nocivas', 255)->nullable();
@@ -29,4 +29,3 @@ return new class extends Migration {
         Schema::dropIfExists('analisis_documentos');
     }
 };
-

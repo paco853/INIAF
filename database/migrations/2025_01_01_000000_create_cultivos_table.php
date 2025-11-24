@@ -9,7 +9,9 @@ return new class extends Migration {
     {
         Schema::create('cultivos', function (Blueprint $table) {
             $table->id();
-            $table->string('especie');
+            $table->string('especie')->unique();
+            $table->string('categoria_inicial')->nullable();
+            $table->string('categoria_final')->nullable();
             $table->timestamps();
         });
     }
@@ -19,4 +21,3 @@ return new class extends Migration {
         Schema::dropIfExists('cultivos');
     }
 };
-

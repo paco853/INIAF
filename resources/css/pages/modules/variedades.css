@@ -1,0 +1,10 @@
+.page--variedades-index table th {
+    text-transform: uppercase;
+}
+
+.page--variedades-create form,
+.page--variedades-edit form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

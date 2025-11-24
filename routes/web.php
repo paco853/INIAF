@@ -1,14 +1,13 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SemillasController;
 use App\Http\Controllers\AnalisisSemillasController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VariedadesController;
 use App\Http\Controllers\ValidezController;
 use App\Http\Controllers\CultivosController;
 use App\Http\Controllers\DocumentosController;
+use App\Http\Controllers\ComunidadesController;
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -21,29 +20,34 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // App (protegido)
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', fn () => redirect()->route('ui.dashboard'))->name('dashboard');
 
-    // Registro de semillas
-    Route::get('/registro', [SemillasController::class, 'index'])->name('semillas.index');
-    Route::post('/semillas', [SemillasController::class, 'store'])->name('semillas.store');
+    // UI principal vía Inertia + React (Joy UI)
 
-    // Análisis: vistas y utilidades
+    // An?lisis: vistas y utilidades
     Route::get('/analisis/semillas', [AnalisisSemillasController::class, 'show'])->name('analisis.semillas');
     Route::post('/analisis/semillas/compute', [AnalisisSemillasController::class, 'compute'])->name('analisis.semillas.compute');
     Route::post('/analisis/semillas/recepcion', [AnalisisSemillasController::class, 'submitRecepcion'])->name('analisis.recepcion.submit');
     Route::get('/analisis/especies/suggest', [AnalisisSemillasController::class, 'suggestEspecies'])->name('analisis.especies.suggest');
     Route::get('/analisis/variedades/suggest', [AnalisisSemillasController::class, 'suggestVariedades'])->name('analisis.variedades.suggest');
+    Route::get('/comunidades/suggest', [ComunidadesController::class, 'suggest'])->name('comunidades.suggest');
     Route::get('/analisis/humedad', [AnalisisSemillasController::class, 'humidity'])->name('analisis.humedad');
     Route::post('/analisis/humedad', [AnalisisSemillasController::class, 'submitHumidity'])->name('analisis.humedad.submit');
     Route::post('/analisis/pureza/finalizar', [AnalisisSemillasController::class, 'finalize'])->name('analisis.finalizar');
 
     // Documentos
     Route::get('/documentos', [DocumentosController::class, 'index'])->name('documentos.index');
+    Route::post('/documentos', [DocumentosController::class, 'store'])->name('documentos.store');
     Route::get('/documentos/{doc}/imprimir', [DocumentosController::class, 'imprimir'])->whereNumber('doc')->name('documentos.print');
     Route::get('/documentos/{doc}', [DocumentosController::class, 'show'])->whereNumber('doc')->name('documentos.show');
     Route::get('/documentos/{doc}/edit', [DocumentosController::class, 'edit'])->whereNumber('doc')->name('documentos.edit');
     Route::put('/documentos/{doc}', [DocumentosController::class, 'update'])->whereNumber('doc')->name('documentos.update');
     Route::delete('/documentos/{doc}', [DocumentosController::class, 'destroy'])->whereNumber('doc')->name('documentos.destroy');
+
+    // Comunidades (edición rápida desde UI moderna)
+    Route::post('/comunidades', [ComunidadesController::class, 'store'])->name('comunidades.store');
+    Route::put('/comunidades/{comunidad}', [ComunidadesController::class, 'update'])->name('comunidades.update');
+    Route::delete('/comunidades/{comunidad}', [ComunidadesController::class, 'destroy'])->name('comunidades.destroy');
 
     // Descarga general (merge de PDFs por rango)
     Route::get('/documentos/descarga-general', [DocumentosController::class, 'bulkForm'])->name('documentos.bulk');
@@ -59,7 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/variedades/{variedad}', [VariedadesController::class, 'update'])->name('variedades.update');
     Route::delete('/variedades/{variedad}', [VariedadesController::class, 'destroy'])->name('variedades.destroy');
 
-    // Validez de análisis
+    // Validez de an?lisis
     Route::get('/validez', [ValidezController::class, 'index'])->name('validez.index');
     Route::get('/validez/create', [ValidezController::class, 'create'])->name('validez.create');
     Route::post('/validez', [ValidezController::class, 'store'])->name('validez.store');
@@ -70,3 +74,27 @@ Route::middleware('auth')->group(function () {
     // Cultivos CRUD
     Route::resource('cultivos', CultivosController::class)->except(['show']);
 });
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/ui', [\App\Http\Controllers\Ui\DashboardUiController::class, 'index'])->name('ui.dashboard');
+    Route::get('/ui/documentos', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'index'])->name('ui.documentos');
+    Route::get('/ui/documentos/create', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'create'])->name('ui.documentos.create');
+    Route::get('/ui/documentos/descarga-general', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'bulk'])->name('ui.documentos.bulk');
+    Route::get('/ui/documentos/{doc}/edit', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'edit'])->whereNumber('doc')->name('ui.documentos.edit');
+    Route::get('/ui/analisis/semillas', function () { return \Inertia\Inertia::render('Analisis/Semillas'); })->name('ui.analisis.semillas');
+    Route::get('/ui/documentos/{doc}/imprimir', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'autoprint'])->whereNumber('doc')->name('ui.documentos.print');
+    Route::get('/ui/cultivos', [\App\Http\Controllers\Ui\CultivosUiController::class, 'index'])->name('ui.cultivos');
+    Route::get('/ui/cultivos/create', [\App\Http\Controllers\Ui\CultivosUiController::class, 'create'])->name('ui.cultivos.create');
+    Route::get('/ui/cultivos/{cultivo}/edit', [\App\Http\Controllers\Ui\CultivosUiController::class, 'edit'])->whereNumber('cultivo')->name('ui.cultivos.edit');
+    Route::get('/ui/variedades', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'index'])->name('ui.variedades');
+    Route::get('/ui/variedades/create', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'create'])->name('ui.variedades.create');
+    Route::get('/ui/variedades/{variedad}/edit', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'edit'])->whereNumber('variedad')->name('ui.variedades.edit');
+    Route::get('/ui/variedades/cultivo/{cultivo}', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'manage'])->whereNumber('cultivo')->name('ui.variedades.manage');
+    Route::get('/ui/validez', [\App\Http\Controllers\Ui\ValidezUiController::class, 'index'])->name('ui.validez');
+    Route::get('/ui/validez/create', [\App\Http\Controllers\Ui\ValidezUiController::class, 'create'])->name('ui.validez.create');
+    Route::get('/ui/validez/{validez}/edit', [\App\Http\Controllers\Ui\ValidezUiController::class, 'edit'])->whereNumber('validez')->name('ui.validez.edit');
+});
+
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cultivo;
 use App\Models\Variedad;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class VariedadesController extends Controller
 {
@@ -23,25 +24,23 @@ class VariedadesController extends Controller
 
     public function create()
     {
-        $cultivos = Cultivo::orderBy('especie')->get();
-        $selectedCultivoId = request()->query('cultivo_id');
-        return view('variedades_create', compact('cultivos', 'selectedCultivoId'));
+        $target = route('ui.variedades.create', request()->query());
+        return redirect()->to($target);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'cultivo_id' => ['required','exists:cultivos,id'],
+            'cultivo_id' => [
+                'required',
+                'exists:cultivos,id',
+                Rule::unique('variedades', 'cultivo_id'),
+            ],
             'variedad' => ['array'],
             'variedad.*' => ['nullable','string','max:255'],
+        ], [
+            'cultivo_id.unique' => 'Esta especie ya se encuentra registrada. Usa la opción editar para modificar sus variedades.',
         ]);
-
-        // Evitar guardar si el cultivo ya fue usado anteriormente
-        if (Variedad::where('cultivo_id', $data['cultivo_id'])->exists()) {
-            return back()
-                ->withErrors(['cultivo_id' => 'Este cultivo ya tiene variedades registradas.'])
-                ->withInput();
-        }
 
         $nombres = collect($data['variedad'] ?? [])
             ->map(fn($v) => trim((string)$v))
@@ -49,19 +48,15 @@ class VariedadesController extends Controller
             ->values();
 
         if ($nombres->isEmpty()) {
-            return back()
-                ->withErrors(['variedad' => 'Ingresa al menos una variedad.'])
-                ->withInput();
+            return back()->withErrors(['variedad' => 'Ingresa al menos una variedad.'])->withInput();
         }
 
-        $count = 0;
-        foreach ($nombres as $nombre) {
-            Variedad::create([
-                'cultivo_id' => $data['cultivo_id'],
-                'nombre' => $nombre,
-            ]);
-            $count++;
-        }
+        $payload = [
+            'cultivo_id' => $data['cultivo_id'],
+            'nombre' => $nombres->implode("\n"),
+        ];
+
+        $variedad = Variedad::create($payload);
 
         $redirectTo = $request->input('redirect_to');
         if ($redirectTo) {
@@ -69,10 +64,10 @@ class VariedadesController extends Controller
             if ($firstName) {
                 $redirectTo .= (str_contains($redirectTo, '?') ? '&' : '?') . 'variedad=' . urlencode($firstName);
             }
-            return redirect()->to($redirectTo)->with('status', $count.' variedad(es) guardada(s)');
+            return redirect()->to($redirectTo)->with('status', $nombres->count().' variedad(es) guardada(s)');
         }
-        // Redirección por defecto: volver a Variedades
-        return redirect()->route('variedades.index')->with('status', $count.' variedad(es) guardada(s)');
+        $to = $request->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
+        return redirect($to)->with('status', $nombres->count().' variedad(es) guardada(s)');
     }
 
     public function edit(Variedad $variedad)
@@ -84,24 +79,41 @@ class VariedadesController extends Controller
     public function update(Request $request, Variedad $variedad)
     {
         $data = $request->validate([
-            'cultivo_id' => ['required','exists:cultivos,id'],
-            'nombre' => ['required','string','max:255'],
+            'variedades' => ['required','array'],
+            'variedades.*' => ['nullable','string','max:255'],
         ]);
-        $variedad->update($data);
-        return redirect()->route('variedades.index')->with('status', 'Variedad actualizada');
+
+        $cultivoId = $variedad->cultivo_id;
+
+        $nombres = collect($data['variedades'] ?? [])
+            ->map(fn ($nombre) => trim((string) $nombre))
+            ->filter(fn ($nombre) => $nombre !== '')
+            ->unique(fn ($nombre) => mb_strtolower($nombre))
+            ->values();
+
+        if ($nombres->isEmpty()) {
+            return back()->withErrors(['variedades' => 'Ingresa al menos una variedad.'])->withInput();
+        }
+
+        $variedad->update([
+            'nombre' => $nombres->implode("\n"),
+        ]);
+
+        $to = $request->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
+        return redirect($to)->with('status', 'Variedades actualizadas');
     }
 
     public function destroy(Variedad $variedad)
     {
         $variedad->delete();
-        return redirect()->route('variedades.index')->with('status', 'Variedad eliminada');
+        $to = request()->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
+        return redirect($to)->with('status', 'Variedad eliminada');
     }
 
     // Mostrar todas las variedades de un cultivo (especie)
     public function manage(Cultivo $cultivo)
     {
-        $cultivo->load('variedades');
-        return view('variedades_manage', compact('cultivo'));
+        return redirect()->route('ui.variedades.manage', $cultivo);
     }
 
     // Actualizar en bloque las variedades de un cultivo
@@ -132,6 +144,10 @@ class VariedadesController extends Controller
             }
         });
 
-        return redirect()->route('variedades.index')->with('status', 'Variedades actualizadas');
+        $redirect = $request->header('X-Inertia')
+            ? route('ui.variedades')
+            : route('variedades.index');
+
+        return redirect($redirect)->with('status', 'Variedades actualizadas');
     }
 }

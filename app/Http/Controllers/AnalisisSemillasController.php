@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use App\Models\Cultivo;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class AnalisisSemillasController extends Controller
 {
@@ -52,7 +54,7 @@ class AnalisisSemillasController extends Controller
         ]);
     }
 
-    public function humidity(): View
+    public function humidity(): InertiaResponse
     {
         $validezDefault = null;
         try {
@@ -70,9 +72,12 @@ class AnalisisSemillasController extends Controller
             }
         } catch (\Throwable $e) { /* silent */ }
 
-        return view('registro_semillas', [
+        $humedad = session()->get('analisis.humedad', []);
+
+        return Inertia::render('Analisis/Humedad', [
             'today' => now()->format('Y-m-d'),
             'validezDefault' => $validezDefault,
+            'humedad' => $humedad,
         ]);
     }
 
@@ -90,8 +95,8 @@ class AnalisisSemillasController extends Controller
             'especie' => ['required','string','max:150'],
             // 'latin' removido del formulario
             'variedad' => ['nullable','string','max:150'],
-            'semillera' => ['required','string','max:150'],
-            'cooperador' => ['required','string','max:150'],
+            'semillera' => ['nullable','string','max:150'],
+            'cooperador' => ['nullable','string','max:150'],
             'categoria_inicial' => ['nullable','string','max:100'],
             'categoria_final' => ['nullable','string','max:100'],
             // 'campo' removido del formulario
@@ -100,8 +105,8 @@ class AnalisisSemillasController extends Controller
             'kgbol' => ['nullable','numeric','min:0'],
             // 'total' se calcula automáticamente
             'fecha' => ['nullable','date'],
-            'municipio' => ['required','string','max:150'],
-            'comunidad' => ['required','string','max:150'],
+            'municipio' => ['nullable','string','max:150'],
+            'comunidad' => ['nullable','string','max:150'],
             'aut_import' => ['nullable','string','max:150'],
         ], [
             'nlab.unique' => 'Este número de laboratorio ya existe.',
@@ -115,6 +120,7 @@ class AnalisisSemillasController extends Controller
         $bolsas = (float)($data['bolsas'] ?? 0);
         $kgbol = (float)($data['kgbol'] ?? 0);
         $data['total'] = $bolsas * $kgbol;
+        $data['origen'] = $this->formatOrigen($data['comunidad'] ?? '', $data['municipio'] ?? '');
 
         // Limpiar sesión del flujo y volver al formulario limpio
         $request->session()->forget(['analisis.recepcion', 'analisis.humedad']);
@@ -140,8 +146,14 @@ class AnalisisSemillasController extends Controller
             'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
             'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
             'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
+            'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
             'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
         ]);
+
+        $data['viabilidad_pct'] = $request->has('viabilidad_pct')
+            ? ($data['viabilidad_pct'] ?? null)
+            : ($data['variavilidad_pct'] ?? null);
+        unset($data['variavilidad_pct']);
 
         $request->session()->put('analisis.humedad', $data);
 
@@ -152,28 +164,38 @@ class AnalisisSemillasController extends Controller
     {
         $datos = $request->validate([
             'fecha' => ['nullable','date'],
-            'estado' => ['nullable','in:APROBADO,RECHAZADO'],
+            'estado' => ['required','in:APROBADO,RECHAZADO'],
             'validez' => ['nullable','string','max:100'],
             'observaciones' => ['nullable','string'],
             'malezas_nocivas' => ['nullable','string','max:255'],
             'malezas_comunes' => ['nullable','string','max:255'],
-            // Campos de humedad obligatorios en registro de semillas
-            'resultado' => ['required','numeric','min:0'],
-            'otros_sp_pct' => ['required','numeric','min:0','max:100'],
-            'otros_sp_kg' => ['required','numeric','min:0'],
+            // Campos de humedad opcionales
+            'resultado' => ['nullable','numeric','min:0'],
+            'otros_sp_pct' => ['nullable','numeric','min:0','max:100'],
+            'otros_sp_kg' => ['nullable','numeric','min:0'],
             'otros_cultivos_pct' => ['nullable','numeric','min:0','max:100'],
             'otros_cultivos_kg' => ['nullable','numeric','min:0'],
             'malezas_comunes_pct' => ['nullable','numeric','min:0','max:100'],
             'malezas_comunes_kg' => ['nullable','numeric','min:0'],
             'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
             'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
-            'germinacion_pct' => ['required','numeric','min:0','max:100'],
+            'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
+            'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
             'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
         ]);
+
+        $datos['viabilidad_pct'] = $request->has('viabilidad_pct')
+            ? ($datos['viabilidad_pct'] ?? null)
+            : ($datos['variavilidad_pct'] ?? null);
+        unset($datos['variavilidad_pct']);
 
         $recepcion = $request->session()->get('analisis.recepcion', []);
         // Si no hay humedad en sesión, construirla desde este request
         $humedad = $request->session()->get('analisis.humedad', []);
+        if (array_key_exists('variavilidad_pct', $humedad) && !array_key_exists('viabilidad_pct', $humedad)) {
+            $humedad['viabilidad_pct'] = $humedad['variavilidad_pct'];
+        }
+        unset($humedad['variavilidad_pct']);
         if (empty($humedad)) {
             $humedad = [
                 'resultado' => $datos['resultado'] ?? null,
@@ -186,12 +208,13 @@ class AnalisisSemillasController extends Controller
                 'malezas_prohibidas_pct' => $datos['malezas_prohibidas_pct'] ?? null,
                 'malezas_prohibidas_kg' => $datos['malezas_prohibidas_kg'] ?? null,
                 'germinacion_pct' => $datos['germinacion_pct'] ?? null,
-                'variavilidad_pct' => $datos['variavilidad_pct'] ?? null,
+                'viabilidad_pct' => $datos['viabilidad_pct'] ?? null,
             ];
         }
 
         $nlab = $recepcion['nlab'] ?? null;
         $especie = $recepcion['especie'] ?? null;
+        $recepcion['origen'] = $this->formatOrigen($recepcion['comunidad'] ?? '', $recepcion['municipio'] ?? '');
 
         // Persistir
         $doc = \App\Models\AnalisisDocumento::create([
@@ -253,10 +276,24 @@ class AnalisisSemillasController extends Controller
             ->implode('');
         $lab = trim((string) $nlab);
         $eIni = Str::upper(Str::substr(trim((string) $especie), 0, 1));
-        $yy = now()->format('y');
-        return collect([$ini, $lab, $eIni, $yy])
+        $yyyy = now()->format('Y');
+        return collect([$ini, $lab, $eIni, $yyyy])
             ->filter(fn($v) => $v !== '')
             ->implode('-');
+    }
+
+    private function formatOrigen(?string $comunidad, ?string $municipio): string
+    {
+        $parts = [];
+        $com = trim((string) $comunidad);
+        $mun = trim((string) $municipio);
+        if ($com !== '') {
+            $parts[] = Str::upper($com);
+        }
+        if ($mun !== '') {
+            $parts[] = Str::upper($mun);
+        }
+        return implode(', ', $parts);
     }
 
     /**

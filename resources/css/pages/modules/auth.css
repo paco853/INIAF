@@ -1,0 +1,194 @@
+:root {
+    --auth-border: #22324f;
+    --auth-card: #0f172a;
+    --auth-bg: #0b1220;
+    --auth-text: #e6eefc;
+    --auth-blue: #1559a6;
+}
+
+.login-page {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    position: relative;
+    color: var(--auth-text);
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, 'Helvetica Neue', Arial;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    overflow: hidden;
+    background: #020617;
+}
+.login-page::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: url('/images/font_login.jpg') center/cover no-repeat fixed;
+    filter: blur(0.5px);
+    opacity: 0.98;
+    transform: scale(1.005);
+    z-index: 0;
+}
+.login-page::after{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.18);
+    z-index: 1;
+}
+.login-page > *{
+    position: relative;
+    z-index: 2;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(226, 226, 226, 0.9);
+    border: 1px solid rgba(209, 213, 219, 0.85);
+    border-radius: 24px;
+    padding: 42px 46px;
+    box-shadow: 0 25px 80px rgba(3, 7, 18, 0.35);
+    color: #0f172a;
+}
+
+.login-logo {
+    display: block;
+    width: 220px;
+    max-width: 80%;
+    margin: 0 auto 14px;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+    opacity: 0.92;
+}
+
+.login-card h2 {
+    margin: 0 0 18px;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+    color: #1e293b;
+}
+
+.login-card .alert {
+    background: #3a1f22;
+    border: 1px solid #5d2a32;
+    color: #ffd4d4;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+}
+
+.login-card .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-card .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-card .field span {
+    font-size: 12px;
+    color: #1f2937;
+}
+
+.login-card .input-shell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    border-radius: 16px;
+    padding: 10px 16px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card .input-shell:focus-within {
+    border-color: rgba(59, 130, 246, 0.65);
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+}
+
+.login-card .input-shell input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 6px 0;
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.login-card .input-shell input::placeholder {
+    color: rgba(71, 85, 105, 0.8);
+    letter-spacing: 0.01em;
+}
+
+.login-card .input-shell input:focus {
+    outline: none;
+}
+
+.login-card .input-icon {
+    width: 20px;
+    height: 20px;
+    color: rgba(15, 23, 42, 0.6);
+}
+
+.login-card .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1f2937;
+    font-size: 13px;
+}
+
+.login-card .btn-primary {
+    margin-top: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: center;
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.login-card .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 15px 32px rgba(37, 99, 235, 0.45);
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+.login-card .btn-primary:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
+}
+
+.login-card .btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.35);
+}
+
+.login-card .hint {
+    margin-top: 12px;
+    color: #1f2937;
+    font-size: 13px;
+    text-align: center;
+}
+
+.login-card .hint a {
+    color: #1d4ed8;
+    font-weight: 600;
+    text-decoration: underline;
+}

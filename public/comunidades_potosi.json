@@ -1,0 +1,502 @@
+[
+    {
+        "id": 1,
+        "comunidad": "Agua Chica",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 2,
+        "comunidad": "Agua de Castilla",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 3,
+        "comunidad": "Aguaquiza",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 4,
+        "comunidad": "Atulcha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 5,
+        "comunidad": "Bella Vista",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 6,
+        "comunidad": "CALCHA K",
+        "municipio": "COLCHA K"
+    },
+    {
+        "id": 7,
+        "comunidad": "Chuvica",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 8,
+        "comunidad": "Cieneguillas",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 9,
+        "comunidad": "Cocani",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 10,
+        "comunidad": "Colcha K",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 11,
+        "comunidad": "Copacabana",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 12,
+        "comunidad": "Cruzani",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 13,
+        "comunidad": "Estancia Aguadillas",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 14,
+        "comunidad": "Estancia Amor",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 15,
+        "comunidad": "Estancia Chic",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 16,
+        "comunidad": "Estancia Chilcluye",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 17,
+        "comunidad": "Estancia Churvinto",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 18,
+        "comunidad": "Estancia Cjilla Vinto",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 19,
+        "comunidad": "Estancia Corregidores",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 20,
+        "comunidad": "Estancia Khana Vinto",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 21,
+        "comunidad": "Estancia Khapa",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 22,
+        "comunidad": "Estancia Khausa",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 23,
+        "comunidad": "Estancia Khocha Pata",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 24,
+        "comunidad": "Estancia Khuchu Huasi",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 25,
+        "comunidad": "Estancia Kollpa",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 26,
+        "comunidad": "Estancia Paco",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 27,
+        "comunidad": "Estancia Pampa Grande",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 28,
+        "comunidad": "Estancia Peña Blanca",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 29,
+        "comunidad": "Estancia Pichincha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 30,
+        "comunidad": "Estancia Poquera Khuchu",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 31,
+        "comunidad": "Estancia Potrero",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 32,
+        "comunidad": "Estancia Santa Ana",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 33,
+        "comunidad": "Estancia Sombras",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 34,
+        "comunidad": "Estancia Suitulacha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 35,
+        "comunidad": "Estancia Tangani",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 36,
+        "comunidad": "Estancia Tomaquesa",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 37,
+        "comunidad": "Estancia Uchu Vito",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 38,
+        "comunidad": "Estancia Uylayanqui",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 39,
+        "comunidad": "Estancia Villa Solito",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 40,
+        "comunidad": "Estancia Vinto",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 41,
+        "comunidad": "Estancia Vito",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 42,
+        "comunidad": "Estancia Volcan",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 43,
+        "comunidad": "Estancia Wila Khara",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 44,
+        "comunidad": "Joron",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 45,
+        "comunidad": "Julaca",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 46,
+        "comunidad": "Llavica",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 47,
+        "comunidad": "Malil",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 48,
+        "comunidad": "Mañica",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 49,
+        "comunidad": "Pachincha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 50,
+        "comunidad": "Pampa Redondo",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 51,
+        "comunidad": "Pichincha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 52,
+        "comunidad": "Porco",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 53,
+        "comunidad": "Río Grande",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 54,
+        "comunidad": "San Juan",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 55,
+        "comunidad": "Santiago de Agencha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 56,
+        "comunidad": "Santiago de Chuvica",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 57,
+        "comunidad": "Santiago K",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 58,
+        "comunidad": "Tambillo Ledezma",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 59,
+        "comunidad": "Tanil Vinto",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 60,
+        "comunidad": "Viacha",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 61,
+        "comunidad": "VILA VILA",
+        "municipio": "COLCHA K"
+    },
+    {
+        "id": 62,
+        "comunidad": "Vila-Vila",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 63,
+        "comunidad": "Villa Candelaria",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 64,
+        "comunidad": "Villa Loma",
+        "municipio": "Colcha K"
+    },
+    {
+        "id": 65,
+        "comunidad": "Acasio",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 66,
+        "comunidad": "Achacana",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 67,
+        "comunidad": "Achachi",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 68,
+        "comunidad": "Achina Alta",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 69,
+        "comunidad": "Achiwata",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 70,
+        "comunidad": "Achumani",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 71,
+        "comunidad": "Acnapa",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 72,
+        "comunidad": "Acopata",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 73,
+        "comunidad": "Acoyo",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 74,
+        "comunidad": "Actara",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 75,
+        "comunidad": "Agencia Cahuana",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 76,
+        "comunidad": "Agua de Castilla",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 77,
+        "comunidad": "Agua Dulce",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 78,
+        "comunidad": "Agua Dulce Alta",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 79,
+        "comunidad": "Aguada",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 80,
+        "comunidad": "Aguas Calientes",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 81,
+        "comunidad": "Ajatuyo",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 82,
+        "comunidad": "Ako Paraya",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 83,
+        "comunidad": "Akorachi",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 84,
+        "comunidad": "Alacruz",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 85,
+        "comunidad": "Alajila",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 86,
+        "comunidad": "Alcamari",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 87,
+        "comunidad": "Alcani",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 88,
+        "comunidad": "Alcani Alta",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 89,
+        "comunidad": "Alcatuyo",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 90,
+        "comunidad": "Alianza",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 91,
+        "comunidad": "Allunuma",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 92,
+        "comunidad": "Almona",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 93,
+        "comunidad": "Alota",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 94,
+        "comunidad": "Alpacani",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 95,
+        "comunidad": "Alta Calazaya",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 96,
+        "comunidad": "Alto Loma",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 97,
+        "comunidad": "Alto Ticanoma II",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 98,
+        "comunidad": "Amay Chapi",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 99,
+        "comunidad": "Amaya Pampa",
+        "municipio": "DESCONOCIDO"
+    },
+    {
+        "id": 100,
+        "comunidad": "Ampa Ampa",
+        "municipio": "DESCONOCIDO"
+    }
+]

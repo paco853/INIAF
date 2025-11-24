@@ -1,0 +1,10 @@
+.page--cultivos-index table th {
+    text-transform: uppercase;
+}
+
+.page--cultivos-create form,
+.page--cultivos-edit form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

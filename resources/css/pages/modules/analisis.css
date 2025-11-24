@@ -1,0 +1,6 @@
+.page--analisis-semillas form,
+.page--analisis-humedad form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

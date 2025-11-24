@@ -1,4 +1,14 @@
 @import 'tailwindcss';
+@import './pages/base.css';
+@import './pages/layout.css';
+@import './pages/tables.css';
+@import './pages/modules/analisis.css';
+@import './pages/modules/cultivos.css';
+@import './pages/modules/documentos.css';
+@import './pages/modules/validez.css';
+@import './pages/modules/variedades.css';
+@import './pages/modules/auth.css';
+@import './responsive/layout.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
