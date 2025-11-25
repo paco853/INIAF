@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cultivo;
 use App\Models\Variedad;
+use App\Models\Validez;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -38,6 +39,7 @@ class VariedadesController extends Controller
             ],
             'variedad' => ['array'],
             'variedad.*' => ['nullable','string','max:255'],
+            'dias' => ['required','integer','min:0','max:65535'],
         ], [
             'cultivo_id.unique' => 'Esta especie ya se encuentra registrada. Usa la opción editar para modificar sus variedades.',
         ]);
@@ -57,6 +59,10 @@ class VariedadesController extends Controller
         ];
 
         $variedad = Variedad::create($payload);
+        Validez::updateOrCreate(
+            ['cultivo_id' => $data['cultivo_id']],
+            ['dias' => (int) $data['dias']]
+        );
 
         $redirectTo = $request->input('redirect_to');
         if ($redirectTo) {
@@ -81,6 +87,7 @@ class VariedadesController extends Controller
         $data = $request->validate([
             'variedades' => ['required','array'],
             'variedades.*' => ['nullable','string','max:255'],
+            'dias' => ['required','integer','min:0','max:65535'],
         ]);
 
         $cultivoId = $variedad->cultivo_id;
@@ -98,6 +105,11 @@ class VariedadesController extends Controller
         $variedad->update([
             'nombre' => $nombres->implode("\n"),
         ]);
+
+        Validez::updateOrCreate(
+            ['cultivo_id' => $cultivoId],
+            ['dias' => (int) $data['dias']]
+        );
 
         $to = $request->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
         return redirect($to)->with('status', 'Variedades actualizadas');

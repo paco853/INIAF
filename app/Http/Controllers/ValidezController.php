@@ -41,7 +41,7 @@ class ValidezController extends Controller
         ]);
 
         Validez::create($data);
-        $to = $request->header('X-Inertia') ? route('ui.validez') : route('validez.index');
+        $to = $request->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
         return redirect($to)->with('status', 'Validez registrada');
     }
 
@@ -66,14 +66,14 @@ class ValidezController extends Controller
             'cultivo_id.exists' => 'El cultivo seleccionado no existe.',
         ]);
         $validez->update($data);
-        $to = $request->header('X-Inertia') ? route('ui.validez') : route('validez.index');
+        $to = $request->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
         return redirect($to)->with('status', 'Validez actualizada');
     }
 
     public function destroy(Validez $validez)
     {
         $validez->delete();
-        $to = request()->header('X-Inertia') ? route('ui.validez') : route('validez.index');
+        $to = request()->header('X-Inertia') ? route('ui.variedades') : route('variedades.index');
         return redirect($to)->with('status', 'Validez eliminada');
     }
 }

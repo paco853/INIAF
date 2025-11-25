@@ -15,7 +15,6 @@ import {
   Settings,
   Sprout,
   Leaf,
-  CheckCircle,
 } from 'lucide-react';
 import '../../css/pages/modules/menu.css';
 
@@ -71,7 +70,7 @@ const SubLink = ({ href, label, active, icon, onNavigate }) => (
 export default function MainMenu({ collapsed = false, onNavigate }) {
   const isActive = useActiveMatcher();
   const [configOpen, setConfigOpen] = React.useState(false);
-  const configActive = ['/ui/cultivos', '/ui/variedades', '/ui/validez'].some(isActive);
+  const configActive = ['/ui/cultivos', '/ui/variedades'].some(isActive);
   const showConfig = configOpen || configActive;
 
   React.useEffect(() => {
@@ -157,13 +156,6 @@ export default function MainMenu({ collapsed = false, onNavigate }) {
               active={isActive('/ui/variedades')}
               onNavigate={onNavigate}
               icon={<Leaf size={18} />}
-            />
-            <SubLink
-              href="/ui/validez"
-              label="Validez de Análisis"
-              active={isActive('/ui/validez')}
-              onNavigate={onNavigate}
-              icon={<CheckCircle size={18} />}
             />
           </List>
         </List>

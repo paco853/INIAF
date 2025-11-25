@@ -64,12 +64,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/variedades/{variedad}', [VariedadesController::class, 'destroy'])->name('variedades.destroy');
 
     // Validez de an?lisis
-    Route::get('/validez', [ValidezController::class, 'index'])->name('validez.index');
-    Route::get('/validez/create', [ValidezController::class, 'create'])->name('validez.create');
-    Route::post('/validez', [ValidezController::class, 'store'])->name('validez.store');
-    Route::get('/validez/{validez}/edit', [ValidezController::class, 'edit'])->name('validez.edit');
-    Route::put('/validez/{validez}', [ValidezController::class, 'update'])->name('validez.update');
-    Route::delete('/validez/{validez}', [ValidezController::class, 'destroy'])->name('validez.destroy');
 
     // Cultivos CRUD
     Route::resource('cultivos', CultivosController::class)->except(['show']);
@@ -92,9 +86,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/variedades/create', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'create'])->name('ui.variedades.create');
     Route::get('/ui/variedades/{variedad}/edit', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'edit'])->whereNumber('variedad')->name('ui.variedades.edit');
     Route::get('/ui/variedades/cultivo/{cultivo}', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'manage'])->whereNumber('cultivo')->name('ui.variedades.manage');
-    Route::get('/ui/validez', [\App\Http\Controllers\Ui\ValidezUiController::class, 'index'])->name('ui.validez');
-    Route::get('/ui/validez/create', [\App\Http\Controllers\Ui\ValidezUiController::class, 'create'])->name('ui.validez.create');
-    Route::get('/ui/validez/{validez}/edit', [\App\Http\Controllers\Ui\ValidezUiController::class, 'edit'])->whereNumber('validez')->name('ui.validez.edit');
 });
 
 

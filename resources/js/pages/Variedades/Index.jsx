@@ -78,6 +78,7 @@ export default function Variedades() {
               <th className="table-col--xs">#</th>
               <th>Variedad</th>
               <th>Especie</th>
+              <th className="table-col--sm">Validez de análisis</th>
               <th className="table-col--sm">Acciones</th>
             </tr>
           </thead>
@@ -97,6 +98,7 @@ export default function Variedades() {
                     <td>{rowNumber}</td>
                     <td>{nombres.join(', ') || '-'}</td>
                     <td>{v.cultivo?.especie ?? '-'}</td>
+                    <td>{v.validez != null ? `${v.validez} días` : '—'}</td>
                     <td>
                       <Stack direction="row" spacing={1}>
                         <Button size="sm" variant="outlined" component={Link} href={`/ui/variedades/${v.id}/edit`}>Editar</Button>
@@ -107,7 +109,7 @@ export default function Variedades() {
               })
             ) : (
               <tr>
-                <td colSpan={4} className="text-center">
+                <td colSpan={5} className="text-center">
                   No se encontraron variedades.
                 </td>
               </tr>
@@ -146,6 +148,10 @@ export default function Variedades() {
                 </Stack>
                 <Typography level="body-sm" sx={{ color: 'text.tertiary' }}>Especie</Typography>
                 <Typography level="title-sm">{v.cultivo?.especie ?? '-'}</Typography>
+                <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Validez de análisis</Typography>
+                <Chip size="sm" variant="soft" color={v.validez != null ? 'primary' : 'neutral'}>
+                  {v.validez != null ? `${v.validez} días` : 'Sin registrar'}
+                </Chip>
                 <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Variedades</Typography>
                 <JoyStack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
                   {nombres.length ? nombres.map((nombre, index) => (

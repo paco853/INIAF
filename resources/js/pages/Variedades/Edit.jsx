@@ -24,7 +24,7 @@ const createInitialVariedades = (items) => {
 
 export default function VariedadEdit() {
   const { props } = usePage();
-  const { flash, cultivo, variedades = [], variedadId } = props;
+  const { flash, cultivo, variedades = [], variedadId, validezDias } = props;
 
   const initialVariedades = React.useMemo(
     () => createInitialVariedades(variedades),
@@ -33,14 +33,16 @@ export default function VariedadEdit() {
 
   const { data, setData, put, processing, errors } = useForm({
     variedades: initialVariedades,
+    dias: validezDias != null ? String(validezDias) : '',
   });
 
   React.useEffect(() => {
     setData((prev) => ({
       ...prev,
       variedades: createInitialVariedades(variedades),
+      dias: validezDias != null ? String(validezDias) : '',
     }));
-  }, [setData, variedades]);
+  }, [setData, variedades, validezDias]);
 
   const handleNombreChange = React.useCallback((idx, value) => {
     const upper = (value ?? '').toUpperCase();
@@ -80,6 +82,19 @@ export default function VariedadEdit() {
         <FormControl>
           <FormLabel>Cultivo (especie)</FormLabel>
           <Input value={cultivo?.especie ?? ''} readOnly sx={{ pointerEvents: 'none' }} />
+        </FormControl>
+
+        <FormControl>
+          <FormLabel>Validez de análisis (días)</FormLabel>
+          <Input
+            type="number"
+            value={data.dias}
+            onChange={(e) => setData('dias', e.target.value)}
+            placeholder="Ej. 30"
+          />
+          {errors.dias && (
+            <Typography level="body-sm" color="danger">{errors.dias}</Typography>
+          )}
         </FormControl>
 
         <Typography level="title-md">Variedades</Typography>
