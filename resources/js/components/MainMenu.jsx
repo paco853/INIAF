@@ -15,6 +15,7 @@ import {
   Settings,
   Sprout,
   Leaf,
+  Database,
 } from 'lucide-react';
 import '../../css/pages/modules/menu.css';
 
@@ -48,14 +49,14 @@ const MainLink = ({ href, icon, label, active, showLabel, onNavigate }) => (
   </ListItem>
 );
 
-const SubLink = ({ href, label, active, icon, onNavigate }) => (
+const SubLink = ({ href, label, active, icon, onNavigate, className }) => (
   <ListItem className="main-menu__item">
     <ListItemButton
       component={Link}
       href={href}
       preserveScroll
       onClick={onNavigate}
-      className={cx('menu-sublink', active && 'menu-sublink--active')}
+      className={cx('menu-sublink', className, active && 'menu-sublink--active')}
     >
       {icon && (
         <Box className={cx('menu-sublink__icon', active && 'menu-sublink__icon--active')}>
@@ -70,7 +71,7 @@ const SubLink = ({ href, label, active, icon, onNavigate }) => (
 export default function MainMenu({ collapsed = false, onNavigate }) {
   const isActive = useActiveMatcher();
   const [configOpen, setConfigOpen] = React.useState(false);
-  const configActive = ['/ui/cultivos', '/ui/variedades'].some(isActive);
+  const configActive = ['/ui/cultivos', '/ui/variedades', '/ui/backups'].some(isActive);
   const showConfig = configOpen || configActive;
 
   React.useEffect(() => {
@@ -156,6 +157,17 @@ export default function MainMenu({ collapsed = false, onNavigate }) {
               active={isActive('/ui/variedades')}
               onNavigate={onNavigate}
               icon={<Leaf size={18} />}
+            />
+            <Typography level="body-xs" className="main-menu__subtitle">
+              SISTEMA
+            </Typography>
+            <SubLink
+              href="/ui/backups"
+              label="Copias de Seguridad"
+              active={isActive('/ui/backups')}
+              onNavigate={onNavigate}
+              icon={<Database size={18} />}
+              className="menu-sublink--system"
             />
           </List>
         </List>

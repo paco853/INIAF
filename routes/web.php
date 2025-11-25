@@ -62,6 +62,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/variedades/{variedad}/edit', [VariedadesController::class, 'edit'])->name('variedades.edit');
     Route::put('/variedades/{variedad}', [VariedadesController::class, 'update'])->name('variedades.update');
     Route::delete('/variedades/{variedad}', [VariedadesController::class, 'destroy'])->name('variedades.destroy');
+    Route::get('/backups/export', [\App\Http\Controllers\BackupsController::class, 'export'])->name('backups.export');
+    Route::post('/backups/generate', [\App\Http\Controllers\BackupsController::class, 'generate'])->name('backups.generate');
+    Route::get('/backups/download', [\App\Http\Controllers\BackupsController::class, 'download'])->name('backups.download');
+    Route::delete('/backups/delete', [\App\Http\Controllers\BackupsController::class, 'destroy'])->name('backups.delete');
+    Route::post('/backups/import', [\App\Http\Controllers\BackupsController::class, 'import'])->name('backups.import');
 
     // Validez de an?lisis
 
@@ -86,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/variedades/create', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'create'])->name('ui.variedades.create');
     Route::get('/ui/variedades/{variedad}/edit', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'edit'])->whereNumber('variedad')->name('ui.variedades.edit');
     Route::get('/ui/variedades/cultivo/{cultivo}', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'manage'])->whereNumber('cultivo')->name('ui.variedades.manage');
+    Route::get('/ui/backups', [\App\Http\Controllers\Ui\BackupsUiController::class, 'index'])->name('ui.backups');
 });
 
 

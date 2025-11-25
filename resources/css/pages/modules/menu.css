@@ -38,6 +38,13 @@
     color: #5f6a30;
     letter-spacing: 0.08em;
 }
+.main-menu__subtitle + .main-menu__subtitle {
+    margin-top: 4px;
+}
+.main-menu__subtitle:has(+ .menu-sublink--system) {
+    color: #6b7280;
+    letter-spacing: 0.05em;
+}
 
 .main-menu .MuiListItem-root {
     --ListItem-paddingY: 0;
@@ -130,6 +137,28 @@
 
 .menu-sublink__icon--active {
     color: #6f7c32;
+}
+
+.menu-sublink--system {
+    color: #1f57ff;
+    border-color: rgba(31, 87, 255, 0.22);
+    background: rgba(31, 87, 255, 0.08);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 rgba(31, 87, 255, 0.35);
+}
+
+.menu-sublink--system .menu-sublink__icon {
+    color: inherit;
+}
+
+.menu-sublink--system.menu-sublink--active {
+    border-color: rgba(31, 87, 255, 0.48);
+    background: rgba(31, 87, 255, 0.12);
+    box-shadow: inset 4px 0 0 rgba(31, 87, 255, 0.55);
+}
+
+.menu-sublink--system.menu-sublink--active::before {
+    background-color: #1f57ff;
 }
 
 .menu-config-toggle {
