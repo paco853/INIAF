@@ -17,6 +17,7 @@ export default function CultivoEdit() {
     especie: cultivo.especie ?? '',
     categoria_inicial: cultivo.categoria_inicial ?? '',
     categoria_final: cultivo.categoria_final ?? '',
+    dias: cultivo.dias ?? '',
   });
 
   const handleTextChange = React.useCallback(
@@ -34,12 +35,12 @@ export default function CultivoEdit() {
 
   return (
     <form onSubmit={submit}>
-      <Stack spacing={2}>
+      <Stack spacing={2} className="cultivos-form-card">
         <Typography level="h4">Editar especie #{cultivo.id}</Typography>
         {flash?.status && <Alert color="success" variant="soft">{flash.status}</Alert>}
         {flash?.error && <Alert color="danger" variant="soft">{flash.error}</Alert>}
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+        <Stack spacing={2} className="cultivos-grid">
           <FormControl>
             <FormLabel>Especie</FormLabel>
             <Input
@@ -68,6 +69,18 @@ export default function CultivoEdit() {
             />
             {errors.categoria_final && (
               <Typography level="body-sm" color="danger">{errors.categoria_final}</Typography>
+            )}
+          </FormControl>
+          <FormControl>
+            <FormLabel>Validez de análisis (días)</FormLabel>
+            <Input
+              type="number"
+              value={data.dias ?? ''}
+              onChange={(e) => setData('dias', e.target.value)}
+              min={0}
+            />
+            {errors.dias && (
+              <Typography level="body-sm" color="danger">{errors.dias}</Typography>
             )}
           </FormControl>
         </Stack>

@@ -8,3 +8,26 @@
     flex-direction: column;
     gap: 1rem;
 }
+
+.cultivos-form-card {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+    background: #ffffffd9;
+    border-radius: 14px;
+    padding: 18px 18px 20px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 18px 46px rgba(0,0,0,0.12);
+}
+
+.cultivos-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+@media (max-width: 600px) {
+    .cultivos-form-card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+}

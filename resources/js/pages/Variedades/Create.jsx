@@ -5,23 +5,11 @@ import { Trash2 } from 'lucide-react';
 
 export default function VariedadCreate() {
   const { props } = usePage();
-  const { flash, cultivos, defaultCultivoId, usedCultivoIds, redirectTo, validezMap } = props;
+  const { flash, cultivos, defaultCultivoId, usedCultivoIds, redirectTo } = props;
   const initialCultivoId = React.useMemo(
     () => (defaultCultivoId != null ? String(defaultCultivoId) : ''),
     [defaultCultivoId],
   );
-  const validezByCultivo = React.useMemo(() => {
-    const map = {};
-    Object.entries(validezMap || {}).forEach(([key, value]) => {
-      map[String(key)] = value != null ? String(value) : '';
-    });
-    return map;
-  }, [validezMap]);
-  const initialDias = React.useMemo(() => (
-    initialCultivoId && validezByCultivo[initialCultivoId]
-      ? validezByCultivo[initialCultivoId]
-      : ''
-  ), [initialCultivoId, validezByCultivo]);
   const usedSet = React.useMemo(() => {
     const list = Array.isArray(usedCultivoIds) ? usedCultivoIds : [];
     return new Set(list.map((id) => String(id)));
@@ -29,7 +17,6 @@ export default function VariedadCreate() {
   const { data, setData, post, processing, errors } = useForm({
     cultivo_id: initialCultivoId,
     variedad: [''],
-    dias: initialDias,
     redirect_to: redirectTo ?? '',
   });
   const [speciesWarning, setSpeciesWarning] = React.useState('');
@@ -48,14 +35,13 @@ export default function VariedadCreate() {
 
   const handleCultivoChange = React.useCallback((_, value) => {
     const next = value ? String(value) : '';
-    const nextDias = next ? (validezByCultivo[next] || '') : '';
-    setData((prev) => ({ ...prev, cultivo_id: next, dias: nextDias }));
+    setData((prev) => ({ ...prev, cultivo_id: next }));
     if (next && usedSet.has(next)) {
       setSpeciesWarning('Esta especie ya se encuentra registrada. Usa la pantalla de edición para modificar sus variedades.');
     } else {
       setSpeciesWarning('');
     }
-  }, [setData, usedSet, validezByCultivo]);
+  }, [setData, usedSet]);
 
   const specieAlreadyUsed = data.cultivo_id && usedSet.has(String(data.cultivo_id));
 
@@ -108,19 +94,6 @@ export default function VariedadCreate() {
             <Typography level="body-sm" color="danger">{speciesWarning}</Typography>
           )}
           {errors.cultivo_id && <Typography level="body-sm" color="danger">{errors.cultivo_id}</Typography>}
-        </FormControl>
-
-        <FormControl error={Boolean(errors.dias)}>
-          <FormLabel>Validez de análisis (días)</FormLabel>
-          <Input
-            type="number"
-            value={data.dias}
-            onChange={(e) => setData('dias', e.target.value)}
-            placeholder="Ej. 30"
-            {...commonInputProps}
-            sx={{ ...commonInputProps.sx, maxWidth: 240 }}
-          />
-          {errors.dias && <Typography level="body-sm" color="danger">{errors.dias}</Typography>}
         </FormControl>
 
         <Typography level="title-md">Variedades</Typography>

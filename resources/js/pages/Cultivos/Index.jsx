@@ -89,6 +89,7 @@ export default function Cultivos() {
               <th>Especie</th>
               <th>Cat. Inicial</th>
               <th>Cat. Final</th>
+              <th className="table-col--sm">Validez (días)</th>
               <th className="table-col--lg">Acciones</th>
             </tr>
           </thead>
@@ -102,6 +103,7 @@ export default function Cultivos() {
                 <td>{c.especie}</td>
                 <td>{c.categoria_inicial ?? '-'}</td>
                 <td>{c.categoria_final ?? '-'}</td>
+                <td>{c.dias != null ? c.dias : '—'}</td>
                 <td>
                   <Stack direction="row" spacing={1}>
                     <Button size="sm" variant="outlined" component={Link} href={`/ui/cultivos/${c.id}/edit`}>Editar</Button>
@@ -161,6 +163,7 @@ export default function Cultivos() {
                 <JoyStack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                   <Chip size="sm" variant="soft" color="primary">Cat. Inicial: {c.categoria_inicial ?? '-'}</Chip>
                   <Chip size="sm" variant="soft" color="primary">Cat. Final: {c.categoria_final ?? '-'}</Chip>
+                  <Chip size="sm" variant="soft" color="success">Validez: {c.dias != null ? `${c.dias} días` : '—'}</Chip>
                 </JoyStack>
               </Sheet>
             );
