@@ -13,6 +13,15 @@ import {
   Alert,
 } from '@mui/joy';
 import { router, useForm, usePage } from '@inertiajs/react';
+import {
+  Droplets,
+  Sprout,
+  AlertTriangle,
+  ClipboardCheck,
+  CalendarClock,
+  Gauge,
+  Shield,
+} from 'lucide-react';
 
 const toNumericInputValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -237,230 +246,73 @@ export default function AnalisisHumedad() {
   };
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography level="h4" sx={{ mb: 1 }}>
-        REGISTRO_SEMILLAS
-      </Typography>
-
-      {props?.flash?.error && (
-        <Alert color="danger" variant="soft" sx={{ mb: 1 }}>
-          {props.flash.error}
-        </Alert>
-      )}
-      {props?.flash?.status && (
-        <Alert color="success" variant="soft" sx={{ mb: 1 }}>
-          {props.flash.status}
-        </Alert>
-      )}
-      {errorList.length > 0 && (
-        <Alert color="danger" variant="soft" sx={{ mb: 2 }}>
-          <Typography level="title-sm" sx={{ mb: 0.5 }}>
-            Corrige los siguientes campos:
+    <Box className="humedad-page">
+      <Box className="humedad-header">
+        <Box className="humedad-header__left">
+          <span className="header-icon">
+            <Shield size={18} />
+          </span>
+          <Typography level="h4" className="humedad-heading">
+            REGISTRO_SEMILLAS
           </Typography>
-          <ul className="list-compact-lg">
-            {errorList.map((msg, idx) => (
-              <li key={idx}>{msg}</li>
-            ))}
-          </ul>
-        </Alert>
-      )}
+        </Box>
+      </Box>
 
-      <form onSubmit={onSubmit}>
-        <Stack spacing={3}>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
-            }}
-          >
-            <FormControl>
-              <FormLabel>Humedad (%)</FormLabel>
-              <Input
-                type="number"
-                placeholder="Opcional"
-                step="0.01"
-                value={toNumericInputValue(data.resultado)}
-                onChange={handleNumberChange('resultado')}
-                {...numberInputProps}
-              />
-            </FormControl>
+      <Box className="humedad-card">
 
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Semilla pura (otros)
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                }}
-              >
-                <FormControl>
-                  <FormLabel>Porcentaje %</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="Opcional"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={toNumericInputValue(data.otros_sp_pct)}
-                    onChange={handleNumberChange('otros_sp_pct')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Nº/KG</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="Opcional"
-                    step="1"
-                    min="0"
-                    value={toNumericInputValue(data.otros_sp_kg)}
-                    onChange={handleNumberChange('otros_sp_kg')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-              </Box>
+        {props?.flash?.error && (
+          <Alert color="danger" variant="soft" className="humedad-alert">
+            {props.flash.error}
+          </Alert>
+        )}
+        {props?.flash?.status && (
+          <Alert color="success" variant="soft" className="humedad-alert">
+            {props.flash.status}
+          </Alert>
+        )}
+        {errorList.length > 0 && (
+          <Alert color="danger" variant="soft" className="humedad-alert">
+            <Typography level="title-sm" sx={{ mb: 0.5 }}>
+              Corrige los siguientes campos:
+            </Typography>
+            <ul className="list-compact-lg">
+              {errorList.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+
+        <form onSubmit={onSubmit} className="humedad-form">
+          <Box className="humedad-section">
+            <Box className="humedad-section__title">
+              <span className="pill pill--green">
+                <Gauge size={16} />
+                1
+              </span>
+              <Typography level="title-md">Análisis de vitalidad</Typography>
+              <Box className="section-spacer" />
             </Box>
-
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Otros cultivos
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                }}
-              >
-                <FormControl>
-                  <FormLabel>Porcentaje %</FormLabel>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={toNumericInputValue(data.otros_cultivos_pct)}
-                    onChange={handleNumberChange('otros_cultivos_pct')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Nº/KG</FormLabel>
-                  <Input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={toNumericInputValue(data.otros_cultivos_kg)}
-                    onChange={handleNumberChange('otros_cultivos_kg')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
+            <Box className="humedad-cards humedad-cards--trio">
+              <Box className="humedad-card-mini card--blue">
+                <div className="mini-card__top">
+                  <Droplets size={18} />
+                  <Typography level="title-sm">Humedad (%)</Typography>
+                </div>
+                <Input
+                  type="number"
+                  placeholder="Opcional"
+                  step="0.01"
+                  value={toNumericInputValue(data.resultado)}
+                  onChange={handleNumberChange('resultado')}
+                  {...numberInputProps}
+                />
               </Box>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-            }}
-          >
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Semillas de malezas comunes
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                }}
-              >
-                <FormControl>
-                  <FormLabel>Porcentaje %</FormLabel>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={toNumericInputValue(data.malezas_comunes_pct)}
-                    onChange={handleNumberChange('malezas_comunes_pct')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Nº/KG</FormLabel>
-                  <Input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={toNumericInputValue(data.malezas_comunes_kg)}
-                    onChange={handleNumberChange('malezas_comunes_kg')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Semillas de malezas prohibidas
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                }}
-              >
-                <FormControl>
-                  <FormLabel>Porcentaje %</FormLabel>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={toNumericInputValue(data.malezas_prohibidas_pct)}
-                    onChange={handleNumberChange('malezas_prohibidas_pct')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Nº/KG</FormLabel>
-                  <Input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={toNumericInputValue(data.malezas_prohibidas_kg)}
-                    onChange={handleNumberChange('malezas_prohibidas_kg')}
-                    {...numberInputProps}
-                  />
-                </FormControl>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: {
-                xs: 'repeat(1, minmax(0, 1fr))',
-                md: 'repeat(5, minmax(0, 1fr))',
-              },
-            }}
-          >
-            <Box>
-              
-              
-              
-              <FormControl>
-                <FormLabel>Germinación %</FormLabel>
+              <Box className="humedad-card-mini card--green">
+                <div className="mini-card__top">
+                  <Sprout size={18} />
+                  <Typography level="title-sm">Germinación %</Typography>
+                </div>
                 <Input
                   type="number"
                   placeholder="Opcional"
@@ -471,15 +323,12 @@ export default function AnalisisHumedad() {
                   onChange={handleNumberChange('germinacion_pct')}
                   {...numberInputProps}
                 />
-              </FormControl>
-            </Box>
-
-            <Box>
-              
-              
-              
-              <FormControl>
-                <FormLabel>Viabilidad %</FormLabel>
+              </Box>
+              <Box className="humedad-card-mini card--amber">
+                <div className="mini-card__top">
+                  <ClipboardCheck size={18} />
+                  <Typography level="title-sm">Viabilidad %</Typography>
+                </div>
                 <Input
                   type="number"
                   step="0.01"
@@ -489,90 +338,117 @@ export default function AnalisisHumedad() {
                   onChange={handleNumberChange('viabilidad_pct')}
                   {...numberInputProps}
                 />
-              </FormControl>
-            </Box>
-
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Estado
-              </Typography>
-              <FormControl>
-                <RadioGroup
-                  name="estado"
-                  value={data.estado || null}
-                  onChange={(event) => setData('estado', event.target.value)}
-                  sx={{ gap: 1 }}
-                >
-                  <Radio value="APROBADO" label="Aprobado" required />
-                  <Radio value="RECHAZADO" label="Rechazado" />
-                </RadioGroup>
-              </FormControl>
-            </Box>
-
-            <Box>
-              
-              
-              
-              <FormControl>
-                <FormLabel>Validez del análisis</FormLabel>
-                <Input
-                  placeholder={validezDefault || 'Ej. 6 meses'}
-                  value={data.validez}
-                  onChange={handleValidezChange}
-                />
-              </FormControl>
-            </Box>
-
-            <Box>
-             
-             
-             
-              <FormControl>
-                <FormLabel>Fecha de evaluación</FormLabel>
-                <Input
-                  type="date"
-                  value={data.fecha}
-                  onChange={(e) => setData('fecha', e.target.value)}
-                />
-              </FormControl>
+              </Box>
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { xs: '1fr', md: '2fr 3fr' },
-            }}
-          >
-            <FormControl>
-              <FormLabel>Observaciones</FormLabel>
-              <Textarea
-                minRows={6}
-                value={data.observaciones}
-                onChange={handleTextChange('observaciones')}
-              />
-            </FormControl>
+          <Box className="humedad-section">
+            <Box className="humedad-section__title">
+              <span className="pill pill--orange">
+                <Gauge size={16} />
+                2
+              </span>
+              <Typography level="title-md">Análisis de pureza</Typography>
+            </Box>
+            <Box className="humedad-cards humedad-cards--double">
+              <Box className="humedad-card-mini card--soft">
+                <Typography level="title-sm">Semilla pura (otros)</Typography>
+                <Box className="humedad-grid humed-grid--pair">
+                  <FormControl>
+                    <FormLabel>Porcentaje %</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="Opcional"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={toNumericInputValue(data.otros_sp_pct)}
+                      onChange={handleNumberChange('otros_sp_pct')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Nº/KG</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="Opcional"
+                      step="1"
+                      min="0"
+                      value={toNumericInputValue(data.otros_sp_kg)}
+                      onChange={handleNumberChange('otros_sp_kg')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                </Box>
+              </Box>
+              <Box className="humedad-card-mini card--soft">
+                <Typography level="title-sm">Otros cultivos</Typography>
+                <Box className="humedad-grid humed-grid--pair">
+                  <FormControl>
+                    <FormLabel>Porcentaje %</FormLabel>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={toNumericInputValue(data.otros_cultivos_pct)}
+                      onChange={handleNumberChange('otros_cultivos_pct')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Nº/KG</FormLabel>
+                    <Input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={toNumericInputValue(data.otros_cultivos_kg)}
+                      onChange={handleNumberChange('otros_cultivos_kg')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
 
-            <Box>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Malezas
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 1.5,
-                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-                }}
-              >
-                <FormControl>
-                  <FormLabel>Semillas de malezas nocivas o prohibidas</FormLabel>
-                  <Input
-                    value={data.malezas_nocivas}
-                    onChange={handleTextChange('malezas_nocivas')}
-                  />
-                </FormControl>
-                <FormControl>
+          <Box className="humedad-section">
+            <Box className="humedad-section__title">
+              <span className="pill pill--red">
+                <AlertTriangle size={16} />
+                3
+              </span>
+              <Typography level="title-md">Control de malezas</Typography>
+            </Box>
+            <Box className="humedad-cards humedad-cards--double">
+              <Box className="humedad-card-mini card--green-light">
+                <Typography level="title-sm">Semillas de malezas comunes</Typography>
+                <Box className="humedad-grid humed-grid--pair">
+                  <FormControl>
+                    <FormLabel>Porcentaje %</FormLabel>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={toNumericInputValue(data.malezas_comunes_pct)}
+                      onChange={handleNumberChange('malezas_comunes_pct')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Nº/KG</FormLabel>
+                    <Input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={toNumericInputValue(data.malezas_comunes_kg)}
+                      onChange={handleNumberChange('malezas_comunes_kg')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                </Box>
+                <FormControl sx={{ mt: 1 }}>
                   <FormLabel>Semillas de malezas comunes</FormLabel>
                   <Input
                     value={data.malezas_comunes}
@@ -580,10 +456,112 @@ export default function AnalisisHumedad() {
                   />
                 </FormControl>
               </Box>
+
+              <Box className="humedad-card-mini card--red-light">
+                <Typography level="title-sm">Semillas de malezas prohibidas</Typography>
+                <Box className="humedad-grid humed-grid--pair">
+                  <FormControl>
+                    <FormLabel>Porcentaje %</FormLabel>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={toNumericInputValue(data.malezas_prohibidas_pct)}
+                      onChange={handleNumberChange('malezas_prohibidas_pct')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Nº/KG</FormLabel>
+                    <Input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={toNumericInputValue(data.malezas_prohibidas_kg)}
+                      onChange={handleNumberChange('malezas_prohibidas_kg')}
+                      {...numberInputProps}
+                    />
+                  </FormControl>
+                </Box>
+                <FormControl sx={{ mt: 1 }}>
+                  <FormLabel>Semillas de malezas nocivas o prohibidas</FormLabel>
+                  <Input
+                    value={data.malezas_nocivas}
+                    onChange={handleTextChange('malezas_nocivas')}
+                  />
+                </FormControl>
+              </Box>
             </Box>
           </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ justifyContent: 'flex-end' }}>
+          <Box className="humedad-section">
+            <Box className="humedad-section__title">
+              <span className="pill pill--blue">
+                <ClipboardCheck size={16} />
+                4
+              </span>
+              <Typography level="title-md">Dictamen técnico</Typography>
+            </Box>
+            <Box className="humedad-cards humedad-cards--notes">
+              <FormControl className="card--soft">
+                <FormLabel>Observaciones</FormLabel>
+                <Textarea
+                  minRows={6}
+                  value={data.observaciones}
+                  onChange={handleTextChange('observaciones')}
+                />
+              </FormControl>
+              <Box className="humedad-card-mini card--soft state-card">
+                <Typography level="title-sm" className="state-title">Estado</Typography>
+                <Box className="state-options">
+                  <label className={`state-chip ${data.estado === 'APROBADO' ? 'state-chip--active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="estado"
+                      value="APROBADO"
+                      checked={data.estado === 'APROBADO'}
+                      onChange={(e) => setData('estado', e.target.value)}
+                      required
+                    />
+                    <span className="state-icon success">✓</span>
+                    <span className="state-label">Aprobado</span>
+                  </label>
+                  <label className={`state-chip ${data.estado === 'RECHAZADO' ? 'state-chip--active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="estado"
+                      value="RECHAZADO"
+                      checked={data.estado === 'RECHAZADO'}
+                      onChange={(e) => setData('estado', e.target.value)}
+                    />
+                    <span className="state-icon danger">✕</span>
+                    <span className="state-label">Rechazado</span>
+                  </label>
+                </Box>
+                <Box className="state-footer">
+                  <FormControl>
+                    <FormLabel className="muted-label">Validez del análisis</FormLabel>
+                    <Input
+                      placeholder={validezDefault || 'Ej. 6 meses'}
+                      value={data.validez}
+                      onChange={handleValidezChange}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel className="muted-label">Fecha de evaluación</FormLabel>
+                    <Input
+                      type="date"
+                      value={data.fecha}
+                      onChange={(e) => setData('fecha', e.target.value)}
+                    />
+                  </FormControl>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} className="humedad-actions">
             <Button
               type="button"
               variant="outlined"
@@ -596,8 +574,8 @@ export default function AnalisisHumedad() {
               Finalizar
             </Button>
           </Stack>
-        </Stack>
-      </form>
+        </form>
+      </Box>
     </Box>
   );
 }

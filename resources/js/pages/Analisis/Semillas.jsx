@@ -10,6 +10,19 @@ import Option from '@mui/joy/Option';
 import Alert from '@mui/joy/Alert';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
+import {
+  FlaskConical,
+  Sprout,
+  BookOpen,
+  Home,
+  Users,
+  MapPin,
+  Hash,
+  RefreshCcw,
+  Tag,
+  Box as BoxIcon,
+  Scale,
+} from 'lucide-react';
 
 export default function AnalisisSemillas() {
   const page = usePage();
@@ -407,172 +420,238 @@ export default function AnalisisSemillas() {
   }, [compute]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography level="h4" sx={{ mb: 1 }}>Registro de Recepción</Typography>
-      {props?.flash?.error && <Alert color="danger" variant="soft">{props.flash.error}</Alert>}
-      {props?.flash?.status && <Alert color="success" variant="soft">{props.flash.status}</Alert>}
-      {(errorMessages.length > 0) && (
-        <Alert color="danger" variant="soft" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ fontSize: 20 }}>⚠️</Box>
-          <Box>
-            <Typography level="title-sm" sx={{ mb: 0.5, fontWeight: 700 }}>
-              Corrige los siguientes campos:
+    <Box className="recepcion-page">
+      <Box className="recepcion-card">
+        <Typography level="h4" className="recepcion-title">
+          <span className="title-icon">📑</span>
+          Registro de Recepción
+        </Typography>
+        {props?.flash?.error && <Alert color="danger" variant="soft">{props.flash.error}</Alert>}
+        {props?.flash?.status && <Alert color="success" variant="soft">{props.flash.status}</Alert>}
+        {(errorMessages.length > 0) && (
+          <Alert color="danger" variant="soft" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ fontSize: 20 }}>⚠️</Box>
+            <Box>
+              <Typography level="title-sm" sx={{ mb: 0.5, fontWeight: 700 }}>
+                Corrige los siguientes campos:
+              </Typography>
+              <ul className="list-compact">
+                {errorMessages.map((msg, idx) => (
+                  <li key={idx}>{msg}</li>
+                ))}
+              </ul>
+            </Box>
+          </Alert>
+        )}
+
+        <form onSubmit={onSubmit} className="recepcion-form">
+          <Box className="recepcion-section">
+            <Typography level="title-md" className="section-title">
+              Datos Generales y Origen
             </Typography>
-            <ul className="list-compact">
-              {errorMessages.map((msg, idx) => (
-                <li key={idx}>{msg}</li>
-              ))}
-            </ul>
-          </Box>
-        </Alert>
-      )}
-
-      <form onSubmit={onSubmit}>
-        <Stack spacing={2}>
-          <Typography level="title-md">Datos generales</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Nº Lab</FormLabel>
-              <Input placeholder="Nº Lab" value={data.nlab} onChange={handleTextChange('nlab')} required />
-            </FormControl>
-            <FormControl sx={{ minWidth: 240 }}>
-              <FormLabel>Especie</FormLabel>
-              <Select
-                value={data.especie || null}
-                onChange={(_, v) => {
-                  const nextEspecie = v || '';
-                  setCategoriaManual({ inicial: false, final: false });
-                  setData((prev) => ({
-                    ...prev,
-                    especie: nextEspecie,
-                    variedad: '',
-                  }));
-                }}
-                required
-              >
-                {cultivos.map((c) => (
-                  <Option key={c.id} value={c.especie}>{c.especie}</Option>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl sx={{ minWidth: 240 }}>
-              <FormLabel>Variedad</FormLabel>
-              <Select
-                value={data.variedad || null}
-                onChange={(_, v) => setData('variedad', v || '')}
-                placeholder={variedades.length ? 'Variedad' : 'Sin variedades'}
-                disabled={cultivos.length === 0}
-                required
-              >
-                {variedades.map((v) => (
-                  <Option key={v.id ?? v.nombre} value={v.nombre}>{v.nombre}</Option>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
-          {variedades.length === 0 && (
-            <Alert color="warning" variant="outlined">
-              No hay variedades registradas para esta especie{' '}
-              <Link href={createVariedadHref} className="link-underline">
-                Añadir variedad
-              </Link>
-            </Alert>
-          )}
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Semillera (opcional)</FormLabel>
-              <Input placeholder="Semillera" value={data.semillera} onChange={handleTextChange('semillera')} />
-            </FormControl>
-            <FormControl sx={{ flex: 1 }}>
-
-              <FormLabel>Cooperador (opcional)</FormLabel>
-              <Input placeholder="Opcional" value={data.cooperador} onChange={handleTextChange('cooperador')} />
-            </FormControl>
-          </Stack>
-
-          <Typography level="title-md">Categoría</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Categoría inicial</FormLabel>
-              <Input placeholder="Categoría inicial" value={data.categoria_inicial} onChange={handleCategoriaChange('inicial')} />
-            </FormControl>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Categoría final</FormLabel>
-              <Input placeholder="Categoría final" value={data.categoria_final} onChange={handleCategoriaChange('final')} />
-            </FormControl>
-          </Stack>
-
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Lote</FormLabel>
-              <Stack direction="row" spacing={1}>
+            <Box className="recepcion-grid recepcion-grid--lab">
+              <Box className="lab-card">
+                <FormLabel>Nº Lab</FormLabel>
                 <Input
-                  placeholder="Lote"
-                  value={data.lote}
-                  onChange={(e) => {
-                    const val = toUpper(e.target.value);
-                    setData('lote', val);
-                    setLoteDirty(val !== '');
-                    if (val === '') regenerateLote();
+                  placeholder="Nº Lab"
+                  value={data.nlab}
+                  onChange={handleTextChange('nlab')}
+                  required
+                  startDecorator={<FlaskConical size={16} />}
+                />
+              </Box>
+              <FormControl>
+                <FormLabel>Especie</FormLabel>
+                <Select
+                  value={data.especie || null}
+                  onChange={(_, v) => {
+                    const nextEspecie = v || '';
+                    setCategoriaManual({ inicial: false, final: false });
+                    setData((prev) => ({
+                      ...prev,
+                      especie: nextEspecie,
+                      variedad: '',
+                    }));
                   }}
                   required
-                />
-                <Button
-                  variant="outlined"
-                  color="neutral"
-                  size="sm"
-                  onClick={regenerateLote}
-                  sx={{ whiteSpace: 'nowrap' }}
+                  startDecorator={<Sprout size={16} />}
                 >
-                  Regenerar
-                </Button>
-              </Stack>
-            </FormControl>
-            <FormControl sx={{ width: { xs: '100%', md: 160 } }}>
-              <FormLabel>Bolsas</FormLabel>
-              <Input placeholder="Bolsas" type="number" value={data.bolsas} onChange={(e) => setData('bolsas', e.target.value)} />
-            </FormControl>
-            <FormControl sx={{ width: { xs: '100%', md: 160 } }}>
-              <FormLabel>Kg/bolsa</FormLabel>
-              <Input placeholder="Kg/bolsa" type="number" value={data.kgbol} onChange={(e) => setData('kgbol', e.target.value)} />
-            </FormControl>
-          </Stack>
+                  <Option value="" disabled icon={<Sprout size={14} />}>Selecciona especie</Option>
+                  {cultivos.map((c) => (
+                    <Option key={c.id} value={c.especie} icon={<Sprout size={14} />}>{c.especie}</Option>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Variedad</FormLabel>
+                <Select
+                  value={data.variedad || null}
+                  onChange={(_, v) => setData('variedad', v || '')}
+                  placeholder={variedades.length ? 'Variedad' : 'Sin variedades'}
+                  disabled={cultivos.length === 0}
+                  required
+                  startDecorator={<BookOpen size={16} />}
+                >
+                  <Option value="" disabled icon={<BookOpen size={14} />}>Selecciona variedad</Option>
+                  {variedades.map((v) => (
+                    <Option key={v.id ?? v.nombre} value={v.nombre} icon={<BookOpen size={14} />}>{v.nombre}</Option>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Semillera (opcional)</FormLabel>
+                <Input
+                  placeholder="Nombre de la semillera"
+                  value={data.semillera}
+                  onChange={handleTextChange('semillera')}
+                  startDecorator={<Home size={16} />}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Cooperador (opcional)</FormLabel>
+                <Input
+                  placeholder="Nombre del cooperador"
+                  value={data.cooperador}
+                  onChange={handleTextChange('cooperador')}
+                  startDecorator={<Users size={16} />}
+                />
+              </FormControl>
+            </Box>
+            {variedades.length === 0 && (
+              <Alert color="warning" variant="outlined" sx={{ mt: 1 }}>
+                No hay variedades registradas para esta especie{' '}
+                <Link href={createVariedadHref} className="link-underline">
+                  Añadir variedad
+                </Link>
+              </Alert>
+            )}
+          </Box>
 
-          <Typography level="title-md">Ubicación</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Comunidad (opcional)</FormLabel>
-              <Input placeholder="Comunidad" value={data.comunidad} onChange={handleComunidadChange} />
-            </FormControl>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Municipio (opcional)</FormLabel>
-              <Input
-                placeholder="Municipio"
-                value={data.municipio}
-                onChange={handleTextChange('municipio')}
-                slotProps={{ input: { list: 'municipio-suggest' } }}
-              />
-            </FormControl>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>N° Aut. Import</FormLabel>
-              <Input placeholder="N° Aut. Import" value={data.aut_import} onChange={handleTextChange('aut_import')} />
-            </FormControl>
-          </Stack>
-          <datalist id="municipio-suggest">
-            {municipiosSugeridos.map((m) => (
-              <option key={m} value={m} />
-            ))}
-          </datalist>
+          <Box className="recepcion-section">
+            <Typography level="title-md" className="section-title">
+              Categoría y Lote
+            </Typography>
+            <Box className="clasificacion-row clasificacion-row--center">
+              <span className="clasificacion-dot" />
+              <Typography level="body-sm" className="clasificacion-text">Clasificación</Typography>
+            </Box>
+            <Box className="fieldset-row">
+              <FormControl>
+                <FormLabel>Cat. inicial</FormLabel>
+                <Input
+                  placeholder="Categoría inicial"
+                  value={data.categoria_inicial}
+                  onChange={handleCategoriaChange('inicial')}
+                  startDecorator={<Tag size={16} />}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Cat. final</FormLabel>
+                <Input
+                  placeholder="Categoría final"
+                  value={data.categoria_final}
+                  onChange={handleCategoriaChange('final')}
+                  startDecorator={<Tag size={16} />}
+                />
+              </FormControl>
+            </Box>
+            <Box className="fieldset-row">
+              <FormControl>
+                <FormLabel>Código de lote</FormLabel>
+                <Stack direction="row" spacing={1} className="lote-row">
+                  <Input
+                    placeholder="Lote"
+                    value={data.lote}
+                    onChange={(e) => {
+                      const val = toUpper(e.target.value);
+                      setData('lote', val);
+                      setLoteDirty(val !== '');
+                      if (val === '') regenerateLote();
+                    }}
+                    required
+                    startDecorator={<Hash size={16} />}
+                    className="lote-input"
+                  />
+                  <Button
+                    variant="outlined"
+                    color="neutral"
+                    size="sm"
+                    onClick={regenerateLote}
+                    className="lote-btn"
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    <RefreshCcw size={16} />
+                  </Button>
+                </Stack>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Cantidad (bolsas)</FormLabel>
+                <Input
+                  placeholder="Bolsas"
+                  type="number"
+                  value={data.bolsas}
+                  onChange={(e) => setData('bolsas', e.target.value)}
+                  startDecorator={<BoxIcon size={16} />}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Peso (kg/bolsa)</FormLabel>
+                <Input
+                  placeholder="Kg/bolsa"
+                  type="number"
+                  value={data.kgbol}
+                  onChange={(e) => setData('kgbol', e.target.value)}
+                  className="peso-input"
+                  startDecorator={<Scale size={16} />}
+                />
+              </FormControl>
+            </Box>
+          </Box>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+          <Box className="recepcion-section">
+            <Typography level="title-md" className="section-title">
+              Ubicación Geográfica
+            </Typography>
+            <Box className="recepcion-grid recepcion-grid--even">
+              <FormControl>
+                <FormLabel>Comunidad (opcional)</FormLabel>
+                <Input
+                  placeholder="Comunidad"
+                  value={data.comunidad}
+                  onChange={handleComunidadChange}
+                  startDecorator={<MapPin size={16} />}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Municipio (opcional)</FormLabel>
+                <Input
+                  placeholder="Municipio"
+                  value={data.municipio}
+                  onChange={handleTextChange('municipio')}
+                  slotProps={{ input: { list: 'municipio-suggest' } }}
+                  startDecorator={<MapPin size={16} />}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>N° Aut. Import</FormLabel>
+                <Input placeholder="N° Aut. Import" value={data.aut_import} onChange={handleTextChange('aut_import')} startDecorator={<Hash size={16} />} />
+              </FormControl>
+            </Box>
+            <datalist id="municipio-suggest">
+              {municipiosSugeridos.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
+          </Box>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} className="recepcion-actions">
             <Button type="submit" variant="solid" disabled={processing}>
               Siguiente
             </Button>
             <Button variant="outlined" color="neutral" onClick={handleCancel}>Cancelar</Button>
           </Stack>
-        </Stack>
-      </form>
+        </form>
+      </Box>
     </Box>
   );
 }
