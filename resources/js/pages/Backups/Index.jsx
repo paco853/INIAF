@@ -44,20 +44,28 @@ const statusColor = (estado) => {
 export default function BackupsIndex() {
   const { props } = usePage();
   const backups = props?.backups || [];
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const exportForm = useForm({
+    target: 'cultivos',
+  });
+  const {
+    data: importData,
+    setData: setImportData,
+    post: postImport,
+    processing: importProcessing,
+    errors: importErrors,
+    reset: resetImport,
+  } = useForm({
     file: null,
   });
   const fileInputRef = React.useRef(null);
   const [chooserOpen, setChooserOpen] = React.useState(false);
-  const [backupTarget, setBackupTarget] = React.useState('cultivos');
+  const backupTarget = exportForm.data.target;
 
   const handleExport = React.useCallback(() => {
-    if (backupTarget === 'cultivos') {
-      post('/backups/generate', {
-        onSuccess: () => setChooserOpen(false),
-      });
-    }
-  }, [backupTarget, post]);
+    exportForm.post('/backups/generate', {
+      onSuccess: () => setChooserOpen(false),
+    });
+  }, [exportForm]);
 
   return (
     <Stack spacing={2} className="backups-page">
@@ -78,10 +86,10 @@ export default function BackupsIndex() {
           <Stack spacing={0.5} sx={{ mt: 2 }}>
             <Typography level="h4">Exportar Base de Datos</Typography>
             <Typography level="body-sm" color="neutral">
-              Genera un archivo .json con toda la información actual de cultivos y variedades.
+              Genera un archivo .json con la información seleccionada del sistema.
             </Typography>
             <Typography level="body-sm" color="neutral" fontWeight={600}>
-              Contenido: Cultivos, Variedades y Validez
+              Opciones: Cultivos y Variedades, Documentos registrados
             </Typography>
           </Stack>
 
@@ -134,7 +142,7 @@ export default function BackupsIndex() {
           >
             <UploadCloud size={28} />
             <Typography level="body-sm" sx={{ mt: 0.5 }}>
-              {data.file ? data.file.name : 'Click o arrastra archivo aquí'}
+              {importData.file ? importData.file.name : 'Click o arrastra archivo aquí'}
             </Typography>
             <input
               ref={fileInputRef}
@@ -143,25 +151,25 @@ export default function BackupsIndex() {
               style={{ display: 'none' }}
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                setData('file', file || null);
+                setImportData('file', file || null);
               }}
             />
           </Box>
-          {errors.file && (
+          {importErrors.file && (
             <Typography level="body-sm" color="danger">
-              {errors.file}
+              {importErrors.file}
             </Typography>
           )}
           <Button
             variant="solid"
             color="danger"
             startDecorator={<UploadCloud size={18} />}
-            disabled={!data.file || processing}
+            disabled={!importData.file || importProcessing}
             onClick={() => {
-              post('/backups/import', {
+              postImport('/backups/import', {
                 forceFormData: true,
                 onSuccess: () => {
-                  reset('file');
+                  resetImport('file');
                   if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                   }
@@ -259,15 +267,14 @@ export default function BackupsIndex() {
               <FormLabel sx={{ fontWeight: 600 }}>Opciones</FormLabel>
               <RadioGroup
                 value={backupTarget}
-                onChange={(e) => setBackupTarget(e.target.value)}
+                onChange={(e) => exportForm.setData('target', e.target.value)}
                 sx={{ gap: 1 }}
               >
                 <Radio value="cultivos" label="Cultivos y Variedades" variant="soft" />
                 <Radio
                   value="documentos"
-                  label="Documentos registrados (próximamente)"
+                  label="Documentos registrados"
                   variant="soft"
-                  disabled
                 />
               </RadioGroup>
             </FormControl>
@@ -275,7 +282,7 @@ export default function BackupsIndex() {
               <Button variant="outlined" color="neutral" onClick={() => setChooserOpen(false)}>
                 Cancelar
               </Button>
-              <Button variant="solid" color="primary" onClick={handleExport}>
+              <Button variant="solid" color="primary" onClick={handleExport} disabled={exportForm.processing}>
                 Continuar
               </Button>
             </Stack>

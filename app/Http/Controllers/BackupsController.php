@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnalisisDocumento;
 use App\Models\Cultivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,19 @@ class BackupsController extends Controller
 
     public function generate(Request $request)
     {
+        $target = strtolower((string) $request->input('target', 'cultivos'));
+        if (!in_array($target, ['cultivos', 'documentos'], true)) {
+            $target = 'cultivos';
+        }
+        if ($target === 'documentos') {
+            return $this->generateDocumentosBackup();
+        }
+
+        return $this->generateCultivosBackup();
+    }
+
+    protected function generateCultivosBackup()
+    {
         $cultivos = Cultivo::with(['variedades', 'validez'])->orderBy('id')->get();
 
         $data = $cultivos->map(function ($c) {
@@ -57,6 +71,7 @@ class BackupsController extends Controller
         $payload = [
             'app' => 'registro_semillas',
             'version' => 1,
+            'target' => 'cultivos',
             'generated_at' => now()->toIso8601String(),
             'data' => [
                 'cultivos' => $data,
@@ -65,6 +80,47 @@ class BackupsController extends Controller
 
         $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         $filename = 'backup_cultivos_variedades_' . now()->format('Ymd_His') . '.json';
+
+        Storage::put('backups/'.$filename, $json);
+
+        return redirect()->route('ui.backups')->with('status', 'Backup generado: '.$filename);
+    }
+
+    protected function generateDocumentosBackup()
+    {
+        $docs = AnalisisDocumento::orderBy('id')->get();
+
+        $documentos = $docs->map(function (AnalisisDocumento $doc) {
+            return [
+                'id' => $doc->id,
+                'nlab' => $doc->nlab,
+                'especie' => $doc->especie,
+                'fecha_evaluacion' => optional($doc->fecha_evaluacion)->toDateString(),
+                'estado' => $doc->estado,
+                'validez' => $doc->validez,
+                'observaciones' => $doc->observaciones,
+                'malezas_nocivas' => $doc->malezas_nocivas,
+                'malezas_comunes' => $doc->malezas_comunes,
+                'recepcion' => $doc->recepcion,
+                'humedad' => $doc->humedad,
+                'datos' => $doc->datos,
+                'created_at' => optional($doc->created_at)->toIso8601String(),
+                'updated_at' => optional($doc->updated_at)->toIso8601String(),
+            ];
+        })->values();
+
+        $payload = [
+            'app' => 'registro_semillas',
+            'version' => 1,
+            'target' => 'documentos',
+            'generated_at' => now()->toIso8601String(),
+            'data' => [
+                'documentos' => $documentos,
+            ],
+        ];
+
+        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $filename = 'backup_documentos_registrados_' . now()->format('Ymd_His') . '.json';
 
         Storage::put('backups/'.$filename, $json);
 
@@ -86,6 +142,16 @@ class BackupsController extends Controller
 
         if (!is_array($payload)) {
             return back()->withErrors(['file' => 'El archivo no tiene un JSON válido.'])->withInput();
+        }
+
+        $rawTarget = $payload['target'] ?? 'cultivos';
+        $target = is_string($rawTarget) ? strtolower($rawTarget) : 'cultivos';
+        if ($target === '') {
+            $target = 'cultivos';
+        }
+
+        if ($target !== 'cultivos') {
+            return back()->withErrors(['file' => 'Este backup es de "'.$target.'" y solo se pueden importar cultivos y variedades.'])->withInput();
         }
 
         $cultivos = data_get($payload, 'data.cultivos');
