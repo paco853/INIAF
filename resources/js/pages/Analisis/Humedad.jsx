@@ -82,6 +82,10 @@ export default function AnalisisHumedad() {
       malezas_nocivas: (humidity.malezas_nocivas && humidity.malezas_nocivas !== '-') ? humidity.malezas_nocivas : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS',
       malezas_comunes: (humidity.malezas_comunes && humidity.malezas_comunes !== '-') ? humidity.malezas_comunes : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES',
     };
+    // Prefill semilla pura (%) en 100 si no viene dato
+    if (base.otros_sp_pct === '') {
+      base.otros_sp_pct = '100';
+    }
     numericKeys.forEach((key) => {
       base[key] = toNumericInputValue(base[key]);
     });

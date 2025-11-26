@@ -135,20 +135,26 @@ class AnalisisSemillasController extends Controller
 
     public function submitHumidity(Request $request)
     {
-        $data = $request->validate([
-            'resultado' => ['nullable','numeric','min:0'],
-            'otros_sp_pct' => ['nullable','numeric','min:0','max:100'],
-            'otros_sp_kg' => ['nullable','numeric','min:0'],
-            'otros_cultivos_pct' => ['nullable','numeric','min:0','max:100'],
-            'otros_cultivos_kg' => ['nullable','numeric','min:0'],
-            'malezas_comunes_pct' => ['nullable','numeric','min:0','max:100'],
-            'malezas_comunes_kg' => ['nullable','numeric','min:0'],
-            'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
-            'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
-            'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
-            'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
-            'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
-        ]);
+        $data = $request->validate(
+            [
+                'resultado' => ['nullable','numeric','min:0'],
+                'otros_sp_pct' => ['nullable','numeric','min:0','max:100'],
+                'otros_sp_kg' => ['nullable','numeric','min:0'],
+                'otros_cultivos_pct' => ['nullable','numeric','min:0','max:100'],
+                'otros_cultivos_kg' => ['nullable','numeric','min:0'],
+                'malezas_comunes_pct' => ['nullable','numeric','min:0','max:100'],
+                'malezas_comunes_kg' => ['nullable','numeric','min:0'],
+                'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
+                'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
+                'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
+                'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
+                'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
+            ],
+            [
+                'germinacion_pct.max' => 'La germinación no debe ser mayor a 100.',
+                'viabilidad_pct.max' => 'La viabilidad no debe ser mayor a 100.',
+            ]
+        );
 
         $data['viabilidad_pct'] = $request->has('viabilidad_pct')
             ? ($data['viabilidad_pct'] ?? null)
@@ -162,27 +168,33 @@ class AnalisisSemillasController extends Controller
 
     public function finalize(Request $request)
     {
-        $datos = $request->validate([
-            'fecha' => ['nullable','date'],
-            'estado' => ['required','in:APROBADO,RECHAZADO'],
-            'validez' => ['nullable','string','max:100'],
-            'observaciones' => ['nullable','string'],
-            'malezas_nocivas' => ['nullable','string','max:255'],
-            'malezas_comunes' => ['nullable','string','max:255'],
-            // Campos de humedad opcionales
-            'resultado' => ['nullable','numeric','min:0'],
-            'otros_sp_pct' => ['nullable','numeric','min:0','max:100'],
-            'otros_sp_kg' => ['nullable','numeric','min:0'],
-            'otros_cultivos_pct' => ['nullable','numeric','min:0','max:100'],
-            'otros_cultivos_kg' => ['nullable','numeric','min:0'],
-            'malezas_comunes_pct' => ['nullable','numeric','min:0','max:100'],
-            'malezas_comunes_kg' => ['nullable','numeric','min:0'],
-            'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
-            'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
-            'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
-            'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
-            'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
-        ]);
+        $datos = $request->validate(
+            [
+                'fecha' => ['nullable','date'],
+                'estado' => ['required','in:APROBADO,RECHAZADO'],
+                'validez' => ['nullable','string','max:100'],
+                'observaciones' => ['nullable','string'],
+                'malezas_nocivas' => ['nullable','string','max:255'],
+                'malezas_comunes' => ['nullable','string','max:255'],
+                // Campos de humedad opcionales
+                'resultado' => ['nullable','numeric','min:0'],
+                'otros_sp_pct' => ['nullable','numeric','min:0','max:100'],
+                'otros_sp_kg' => ['nullable','numeric','min:0'],
+                'otros_cultivos_pct' => ['nullable','numeric','min:0','max:100'],
+                'otros_cultivos_kg' => ['nullable','numeric','min:0'],
+                'malezas_comunes_pct' => ['nullable','numeric','min:0','max:100'],
+                'malezas_comunes_kg' => ['nullable','numeric','min:0'],
+                'malezas_prohibidas_pct' => ['nullable','numeric','min:0','max:100'],
+                'malezas_prohibidas_kg' => ['nullable','numeric','min:0'],
+                'germinacion_pct' => ['nullable','numeric','min:0','max:100'],
+                'viabilidad_pct' => ['nullable','numeric','min:0','max:100'],
+                'variavilidad_pct' => ['nullable','numeric','min:0','max:100'],
+            ],
+            [
+                'germinacion_pct.max' => 'La germinación no debe ser mayor a 100.',
+                'viabilidad_pct.max' => 'La viabilidad no debe ser mayor a 100.',
+            ]
+        );
 
         $datos['viabilidad_pct'] = $request->has('viabilidad_pct')
             ? ($datos['viabilidad_pct'] ?? null)
@@ -364,6 +376,15 @@ class AnalisisSemillasController extends Controller
         return response()->json([
             'items' => $items,
         ]);
+    }
+
+    /**
+     * Limpia la sesión del flujo de análisis para iniciar un nuevo registro.
+     */
+    public function reset(Request $request): JsonResponse
+    {
+        $request->session()->forget(['analisis.recepcion', 'analisis.humedad']);
+        return response()->json(['status' => 'ok']);
     }
 }
 

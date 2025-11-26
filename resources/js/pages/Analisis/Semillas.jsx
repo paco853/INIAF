@@ -28,6 +28,10 @@ export default function AnalisisSemillas() {
   const page = usePage();
   const { props, url } = page;
   const cultivosProp = props?.cultivos || [];
+  const recepcionProp = React.useMemo(
+    () => (props?.recepcion && typeof props.recepcion === 'object' ? props.recepcion : {}),
+    [props?.recepcion],
+  );
   const [cultivos, setCultivos] = React.useState(cultivosProp);
   const today = props?.today || new Date().toISOString().slice(0, 10);
   const errors = props?.errors || {};
@@ -55,25 +59,30 @@ export default function AnalisisSemillas() {
     [cultivosProp, today],
   );
 
+  const baseWithSession = React.useMemo(
+    () => ({ ...baseRecepcionData, ...recepcionProp }),
+    [baseRecepcionData, recepcionProp],
+  );
+
   const initialRecepcionData = React.useMemo(() => {
     if (typeof window === 'undefined') {
-      return baseRecepcionData;
+      return baseWithSession;
     }
     try {
       const raw = window.sessionStorage.getItem(RECEPCION_STORAGE_KEY);
       if (!raw) {
-        return baseRecepcionData;
+        return baseWithSession;
       }
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        return { ...baseRecepcionData, ...parsed };
+        return { ...baseWithSession, ...parsed };
       }
-      return baseRecepcionData;
+      return baseWithSession;
     } catch (error) {
       console.warn('Recepción storage parse error', error);
-      return baseRecepcionData;
+      return baseWithSession;
     }
-  }, [baseRecepcionData]);
+  }, [baseWithSession]);
 
   const { data, setData, post, processing, transform } = useForm('analisisRecepcion', initialRecepcionData);
 
@@ -82,6 +91,7 @@ export default function AnalisisSemillas() {
   const [categoriaManual, setCategoriaManual] = React.useState({ inicial: false, final: false });
   const computeUrl = '/analisis/semillas/compute';
   const varSuggestUrl = '/analisis/variedades/suggest';
+  const resetUrl = '/analisis/semillas/reset';
   const selectedCultivo = React.useMemo(
     () => cultivos.find((c) => c.especie === data.especie),
     [cultivos, data.especie],
@@ -226,22 +236,61 @@ export default function AnalisisSemillas() {
       .catch(() => {});
   }, [normalizeText]);
 
+  // Rellena campos vacíos con lo que haya en la sesión del backend (ej. al volver desde Inicio)
+  React.useEffect(() => {
+    if (!recepcionProp) return;
+    const keys = ['variedad', 'especie', 'nlab', 'semillera', 'cooperador', 'categoria_inicial', 'categoria_final', 'lote', 'bolsas', 'kgbol', 'municipio', 'comunidad', 'aut_import', 'fecha'];
+    setData((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      keys.forEach((key) => {
+        const serverVal = recepcionProp[key];
+        const hasServerVal = serverVal !== undefined && serverVal !== null && serverVal !== '';
+        const isEmpty = next[key] === undefined || next[key] === null || next[key] === '';
+        if (isEmpty && hasServerVal) {
+          next[key] = serverVal;
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [recepcionProp, setData]);
+
   const onSubmit = (e) => {
     e.preventDefault();
     post('/analisis/semillas/recepcion');
   };
 
   const handleCancel = React.useCallback(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        window.sessionStorage.removeItem(RECEPCION_STORAGE_KEY);
-        window.sessionStorage.removeItem(HUMEDAD_STORAGE_KEY);
-      } catch (error) {
-        console.warn('Recepción storage remove error', error);
+    const clearStorage = () => {
+      if (typeof window !== 'undefined') {
+        try {
+          window.sessionStorage.removeItem(RECEPCION_STORAGE_KEY);
+          window.sessionStorage.removeItem(HUMEDAD_STORAGE_KEY);
+        } catch (error) {
+          console.warn('Recepción storage remove error', error);
+        }
       }
+    };
+
+    clearStorage();
+    // Limpiar sesión en backend y recargar formulario vacío
+    if (typeof window !== 'undefined') {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || props?.csrfToken || '';
+      fetch(resetUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+        },
+      }).catch(() => {});
     }
-    router.visit('/ui');
-  }, []);
+    setCategoriaManual({ inicial: false, final: false });
+    setLoteDirty(false);
+    setVariedades([]);
+    setData(baseRecepcionData);
+    router.visit('/ui/analisis/semillas', { replace: true });
+  }, [baseRecepcionData, props?.csrfToken, resetUrl, setData]);
 
   React.useEffect(() => {
     if (queryVariedad && queryVariedad !== data.variedad) {
@@ -483,21 +532,26 @@ export default function AnalisisSemillas() {
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel>Variedad</FormLabel>
-                <Select
-                  value={data.variedad || null}
-                  onChange={(_, v) => setData('variedad', v || '')}
-                  placeholder={variedades.length ? 'Variedad' : 'Sin variedades'}
-                  disabled={cultivos.length === 0}
-                  required
-                  startDecorator={<BookOpen size={16} />}
-                >
-                  <Option value="" disabled icon={<BookOpen size={14} />}>Selecciona variedad</Option>
-                  {variedades.map((v) => (
-                    <Option key={v.id ?? v.nombre} value={v.nombre} icon={<BookOpen size={14} />}>{v.nombre}</Option>
-                  ))}
-                </Select>
-              </FormControl>
+              <FormLabel>Variedad</FormLabel>
+              <Select
+                value={data.variedad || null}
+                onChange={(_, v) => setData('variedad', v || '')}
+                placeholder={variedades.length ? 'Variedad' : 'Sin variedades'}
+                disabled={cultivos.length === 0}
+                required
+                startDecorator={<BookOpen size={16} />}
+              >
+                <Option value="" disabled icon={<BookOpen size={14} />}>Selecciona variedad</Option>
+                {data.variedad && !variedades.some((v) => v.nombre === data.variedad) && (
+                  <Option value={data.variedad} icon={<BookOpen size={14} />}>
+                    {data.variedad}
+                  </Option>
+                )}
+                {variedades.map((v) => (
+                  <Option key={v.id ?? v.nombre} value={v.nombre} icon={<BookOpen size={14} />}>{v.nombre}</Option>
+                ))}
+              </Select>
+            </FormControl>
               <FormControl>
                 <FormLabel>Semillera (opcional)</FormLabel>
                 <Input

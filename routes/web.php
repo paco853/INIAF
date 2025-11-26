@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/analisis/semillas', [AnalisisSemillasController::class, 'show'])->name('analisis.semillas');
     Route::post('/analisis/semillas/compute', [AnalisisSemillasController::class, 'compute'])->name('analisis.semillas.compute');
     Route::post('/analisis/semillas/recepcion', [AnalisisSemillasController::class, 'submitRecepcion'])->name('analisis.recepcion.submit');
+    Route::post('/analisis/semillas/reset', [AnalisisSemillasController::class, 'reset'])->name('analisis.semillas.reset');
     Route::get('/analisis/especies/suggest', [AnalisisSemillasController::class, 'suggestEspecies'])->name('analisis.especies.suggest');
     Route::get('/analisis/variedades/suggest', [AnalisisSemillasController::class, 'suggestVariedades'])->name('analisis.variedades.suggest');
     Route::get('/comunidades/suggest', [ComunidadesController::class, 'suggest'])->name('comunidades.suggest');
@@ -82,7 +83,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/documentos/create', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'create'])->name('ui.documentos.create');
     Route::get('/ui/documentos/descarga-general', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'bulk'])->name('ui.documentos.bulk');
     Route::get('/ui/documentos/{doc}/edit', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'edit'])->whereNumber('doc')->name('ui.documentos.edit');
-    Route::get('/ui/analisis/semillas', function () { return \Inertia\Inertia::render('Analisis/Semillas'); })->name('ui.analisis.semillas');
+    Route::get('/ui/analisis/semillas', function () {
+        $cultivos = \App\Models\Cultivo::orderBy('especie')
+            ->get(['id','especie','categoria_inicial','categoria_final']);
+        $recepcion = session()->get('analisis.recepcion', []);
+
+        return \Inertia\Inertia::render('Analisis/Semillas', [
+            'today' => now()->format('Y-m-d'),
+            'cultivos' => $cultivos,
+            'recepcion' => $recepcion,
+        ]);
+    })->name('ui.analisis.semillas');
     Route::get('/ui/documentos/{doc}/imprimir', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'autoprint'])->whereNumber('doc')->name('ui.documentos.print');
     Route::get('/ui/cultivos', [\App\Http\Controllers\Ui\CultivosUiController::class, 'index'])->name('ui.cultivos');
     Route::get('/ui/cultivos/create', [\App\Http\Controllers\Ui\CultivosUiController::class, 'create'])->name('ui.cultivos.create');
