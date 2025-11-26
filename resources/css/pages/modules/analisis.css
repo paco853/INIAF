@@ -256,6 +256,26 @@
     font-weight: 600;
 }
 
+.recepcion-section input[type="number"]::-webkit-inner-spin-button,
+.recepcion-section input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.recepcion-section input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.humedad-section input[type="number"]::-webkit-inner-spin-button,
+.humedad-section input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.humedad-section input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 .recepcion-form .recepcion-section:nth-of-type(1) {
     background: #f3f7ff;
     border-color: rgba(134, 167, 210, 0.7);
