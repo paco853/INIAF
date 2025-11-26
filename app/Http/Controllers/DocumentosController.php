@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Support\DocumentosHelper;
 use App\Support\ReportePayload;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class DocumentosController extends Controller
 {
@@ -360,17 +362,17 @@ class DocumentosController extends Controller
     /** Renderiza un solo documento a PDF (bytes) reutilizable para merge. */
     protected function renderSinglePdf(AnalisisDocumento $doc): string
     {
-        // Render HTML de la vista
-        $html = view('pdf.reporte', $this->buildReporteContext($doc, false))->render();
+        $baseContext = $this->buildReporteContext($doc, false);
 
         // Inyectar CSS (inline) para PDF consistente
         $cssPath = public_path('assets/css/reporte_pdf.css');
+        $css = '';
         if (is_file($cssPath) && is_readable($cssPath)) {
-            $css = @file_get_contents($cssPath);
-            if ($css !== false) {
-                $html = '<style type="text/css">'.$css.'</style>'.$html;
-            }
+            $css = (string) @file_get_contents($cssPath);
         }
+
+        // HTML completo (Browsershot renderiza todo)
+        $htmlFull = view('pdf.reporte', $baseContext)->render();
 
         // Paths opcionales (Windows) para Chrome/Node/NPM
         $chromePath = env('BROWSERSHOT_CHROME_PATH');
@@ -382,7 +384,13 @@ class DocumentosController extends Controller
             'footerCss' => $footerCss,
         ])->render();
 
-        $bs = Browsershot::html($html)
+        // Browsershot renderiza siempre el documento completo (incluye la tabla).
+        $htmlForBs = $htmlFull;
+        if ($css !== '') {
+            $htmlForBs = '<style type="text/css">'.$css.'</style>'.$htmlForBs;
+        }
+
+        $bs = Browsershot::html($htmlForBs)
             ->showBackground()
             ->emulateMedia('screen')
             ->format('letter')
@@ -397,7 +405,47 @@ class DocumentosController extends Controller
         if (!empty($nodePath))   { $bs->setNodeBinary($nodePath); }
         if (!empty($npmPath))    { $bs->setNpmBinary($npmPath); }
 
-        return $bs->pdf();
+        $bsPdf = $bs->pdf();
+
+        // Generar solo la tabla con Dompdf y unirla como segunda página (si está disponible y produce contenido)
+        $tablePdf = null;
+        if (class_exists(Dompdf::class)) {
+            try {
+                $dompdfOptions = new Options();
+                $dompdfOptions->set('isRemoteEnabled', true);
+                $dompdfOptions->set('isHtml5ParserEnabled', true);
+                $dompdfOptions->set('defaultMediaType', 'print');
+                $dompdf = new Dompdf($dompdfOptions);
+                $dompdf->setPaper('letter', 'landscape');
+
+                $htmlTable = view('pdf.reporte.tabla', $baseContext)->render();
+                $htmlTableDoc = '<html><head>';
+                if ($css !== '') {
+                    $htmlTableDoc .= '<style>'.$css.'</style>';
+                }
+                $htmlTableDoc .= '</head><body>'.$htmlTable.'</body></html>';
+
+                $dompdf->loadHtml($htmlTableDoc);
+                $dompdf->render();
+                $tablePdf = $dompdf->output();
+
+                if (strlen($tablePdf) < 5000) {
+                    $tablePdf = null;
+                }
+            } catch (\Throwable $e) {
+                $tablePdf = null;
+            }
+        }
+
+        if ($tablePdf === null) {
+            return $bsPdf;
+        }
+
+        // Une ambos PDFs: primero cuerpo completo (Browsershot), luego tabla (Dompdf)
+        $merger = new Merger();
+        $merger->addRaw($bsPdf);
+        $merger->addRaw($tablePdf);
+        return $merger->merge();
     }
 
     /** Endpoint público para iniciar descarga general desde la UI. */

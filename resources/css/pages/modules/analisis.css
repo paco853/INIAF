@@ -467,6 +467,14 @@
     box-shadow: 0 6px 18px rgba(0,0,0,0.05);
 }
 
+/* Textarea autoajustable para malezas */
+.malezas-textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 48px;
+    line-height: 1.3;
+}
+
 .mini-card__top {
     display: flex;
     align-items: center;

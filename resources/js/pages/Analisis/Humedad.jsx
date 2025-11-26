@@ -79,8 +79,8 @@ export default function AnalisisHumedad() {
       validez: humidity.validez ?? validezDefault,
       fecha: humidity.fecha ?? today,
       observaciones: humidity.observaciones ?? '',
-      malezas_nocivas: humidity.malezas_nocivas ?? '',
-      malezas_comunes: humidity.malezas_comunes ?? '',
+      malezas_nocivas: (humidity.malezas_nocivas && humidity.malezas_nocivas !== '-') ? humidity.malezas_nocivas : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS',
+      malezas_comunes: (humidity.malezas_comunes && humidity.malezas_comunes !== '-') ? humidity.malezas_comunes : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES',
     };
     numericKeys.forEach((key) => {
       base[key] = toNumericInputValue(base[key]);
@@ -450,7 +450,10 @@ export default function AnalisisHumedad() {
                 </Box>
                 <FormControl sx={{ mt: 1 }}>
                   <FormLabel>Semillas de malezas comunes</FormLabel>
-                  <Input
+                  <Textarea
+                    minRows={2}
+                    maxRows={4}
+                    className="malezas-textarea"
                     value={data.malezas_comunes}
                     onChange={handleTextChange('malezas_comunes')}
                   />
@@ -486,7 +489,10 @@ export default function AnalisisHumedad() {
                 </Box>
                 <FormControl sx={{ mt: 1 }}>
                   <FormLabel>Semillas de malezas nocivas o prohibidas</FormLabel>
-                  <Input
+                  <Textarea
+                    minRows={2}
+                    maxRows={4}
+                    className="malezas-textarea"
                     value={data.malezas_nocivas}
                     onChange={handleTextChange('malezas_nocivas')}
                   />
