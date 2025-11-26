@@ -457,6 +457,10 @@ class DocumentosController extends Controller
     /** Ejecuta la combinación y entrega un PDF con múltiples documentos. */
     public function bulkDownload(Request $request): Response
     {
+        // Aumenta el tiempo máximo de ejecución para descargas masivas
+        @set_time_limit(300);
+        @ini_set('max_execution_time', '300');
+
         $request->validate([
             'modo' => 'required|in:nlab,gestion',
             'desde' => 'required',
