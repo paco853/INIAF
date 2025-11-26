@@ -16,7 +16,7 @@
       </div>
       <div class="pdf-footer__signature">
         <div class="pdf-footer__signature-line"></div>
-        <div class="pdf-footer__signature-text">VB RESP. DEPARTAMENTAL INIAF   APROBADO </div>
+        <div class="pdf-footer__signature-text">V°B° RESP. DEPARTAMENTAL INIAF <br>  APROBADO </div>
       </div>
     </div>
   </div>
