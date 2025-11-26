@@ -38,6 +38,7 @@ export default function AnalisisSemillas() {
   const errorMessages = React.useMemo(() => Object.values(errors).filter(Boolean), [errors]);
   const RECEPCION_STORAGE_KEY = 'analisis-recepcion-form';
   const HUMEDAD_STORAGE_KEY = 'analisis-humedad-form';
+  const LOTE_DIRTY_STORAGE_KEY = 'analisis-recepcion-lote-dirty';
 
   const baseRecepcionData = React.useMemo(
     () => ({
@@ -87,7 +88,17 @@ export default function AnalisisSemillas() {
   const { data, setData, post, processing, transform } = useForm('analisisRecepcion', initialRecepcionData);
 
   const [variedades, setVariedades] = React.useState([]);
-  const [loteDirty, setLoteDirty] = React.useState(false);
+  const initialLoteDirty = React.useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const raw = window.sessionStorage.getItem(LOTE_DIRTY_STORAGE_KEY);
+      return raw === 'true';
+    } catch (error) {
+      console.warn('Lote dirty storage parse error', error);
+      return false;
+    }
+  }, []);
+  const [loteDirty, setLoteDirty] = React.useState(initialLoteDirty);
   const [categoriaManual, setCategoriaManual] = React.useState({ inicial: false, final: false });
   const computeUrl = '/analisis/semillas/compute';
   const varSuggestUrl = '/analisis/variedades/suggest';
@@ -201,6 +212,15 @@ export default function AnalisisSemillas() {
     }
   }, [data]);
 
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.sessionStorage.setItem(LOTE_DIRTY_STORAGE_KEY, loteDirty ? 'true' : 'false');
+    } catch (error) {
+      console.warn('Lote dirty storage write error', error);
+    }
+  }, [loteDirty]);
+
   // Uppercase on text inputs
   transform((curr) => {
     const next = { ...curr };
@@ -267,6 +287,7 @@ export default function AnalisisSemillas() {
         try {
           window.sessionStorage.removeItem(RECEPCION_STORAGE_KEY);
           window.sessionStorage.removeItem(HUMEDAD_STORAGE_KEY);
+          window.sessionStorage.removeItem(LOTE_DIRTY_STORAGE_KEY);
         } catch (error) {
           console.warn('Recepción storage remove error', error);
         }
