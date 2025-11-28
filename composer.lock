@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a41700bf7fb13b774b3e60e1a4ab210e",
+    "content-hash": "d6f5fdecbaa5a9aa07654a5ee303a723",
     "packages": [
         {
             "name": "brick/math",
@@ -6499,6 +6499,101 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.3.0"
             },
             "time": "2024-12-21T16:25:41+00:00"
+        },
+        {
+            "name": "tinybutstrong/opentbs",
+            "version": "v1.12.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Skrol29/opentbs.git",
+                "reference": "1ec5115c5e8ee524cdfb815669b71429f124387d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Skrol29/opentbs/zipball/1ec5115c5e8ee524cdfb815669b71429f124387d",
+                "reference": "1ec5115c5e8ee524cdfb815669b71429f124387d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.0",
+                "tinybutstrong/tinybutstrong": ">=3.15.1"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "tbs_plugin_opentbs.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Skrol29",
+                    "email": "skrol29dev@gmail.com"
+                }
+            ],
+            "description": "With OpenTBS you can merge LibreOffice, OpenOffice and Ms Office documents with PHP using the TinyButStrong template engine. Simple use LibreOffice, OpenOffice or Ms Office to edit your templates : DOCX, XLSX, PPTX, ODT, OSD, ODP and other formats.",
+            "homepage": "http://www.tinybutstrong.com/opentbs.php",
+            "keywords": [
+                "docx",
+                "odp",
+                "ods",
+                "odt",
+                "pptx",
+                "templating",
+                "xlsx"
+            ],
+            "support": {
+                "issues": "https://github.com/Skrol29/opentbs/issues",
+                "source": "https://github.com/Skrol29/opentbs/tree/v1.12.2"
+            },
+            "time": "2025-10-31T23:55:23+00:00"
+        },
+        {
+            "name": "tinybutstrong/tinybutstrong",
+            "version": "v3.15.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Skrol29/tinybutstrong.git",
+                "reference": "c4344b3599570cdf283692b2ad0d4682dc85ae52"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Skrol29/tinybutstrong/zipball/c4344b3599570cdf283692b2ad0d4682dc85ae52",
+                "reference": "c4344b3599570cdf283692b2ad0d4682dc85ae52",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "tbs_class.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Skrol29",
+                    "email": "skrol29dev@gmail.com"
+                }
+            ],
+            "description": "Template Engine for Pro and Beginners ",
+            "homepage": "http://www.tinybutstrong.com",
+            "keywords": [
+                "templating"
+            ],
+            "support": {
+                "issues": "https://github.com/Skrol29/tinybutstrong/issues",
+                "source": "https://github.com/Skrol29/tinybutstrong/tree/v3.15.2"
+            },
+            "time": "2024-05-08T01:00:58+00:00"
         },
         {
             "name": "vlucas/phpdotenv",

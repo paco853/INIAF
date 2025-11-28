@@ -47,13 +47,18 @@
       </thead>
       <tbody>
         <tr>
-          <td>{{ $fmt($doc->nlab, '#'.$doc->id) }}</td>
-          <td style="text-align:center; vertical-align:middle;">{{ $fmt($doc->especie) }}</td>
+          <td>{{ $fmt($r['nlab'] ?? $doc->nlab ?? $doc->id) }}</td>
+          <td style="text-align:center; vertical-align:middle;">{{ $fmt($r['especie'] ?? $doc->especie ?? null) }}</td>
           <td>{{ $fmt($r['variedad'] ?? null) }}</td>
-          <td class="td" style="text-align:left">
-            <div>COMUNIDAD {{ $fmt($r['comunidad'] ?? null) }}</div>
-            <div>MUNICIPIO {{ $fmt($r['municipio'] ?? null) }}</div>
-            @if(empty(trim((string)($r['comunidad'] ?? ''))) && empty(trim((string)($r['municipio'] ?? ''))))
+          <td style="text-align:left">
+            @php
+              $com = trim((string)($r['comunidad'] ?? ''));
+              $mun = trim((string)($r['municipio'] ?? ''));
+            @endphp
+            @if($com !== '' || $mun !== '')
+              <div>COMUNIDAD {{ $fmt($com) }}</div>
+              <div>MUNICIPIO {{ $fmt($mun) }}</div>
+            @else
               <div>{{ $fmt($r['origen'] ?? null) }}</div>
             @endif
           </td>
@@ -62,9 +67,9 @@
           <td>{{ $fmt($r['categoria_final'] ?? null) }}</td>
           <td>{{ $fmt($r['aut_import'] ?? null) }}</td>
           <td>{{ $fmt($r['lote'] ?? null) }}</td>
-          <td>{{ $fmt($r['kgbol'] ?? null) }}</td>
+          <td>{{ $fmt($r['total'] ?? null) }}</td>
           <td>{{ $fmt($r['bolsas'] ?? null) }}</td>
-          <td>{{ $fmt($h['resultado'] ?? null) }}</td>
+          <td>{{ $fmt($h['resultado'] ?? $h['humedad'] ?? null) }}</td>
           <td>{{ $fmt($h['otros_sp_pct'] ?? null) }}</td>
           <td>{{ $fmt($h['otros_sp_kg'] ?? null) }}</td>
           <td>{{ $fmt($h['otros_cultivos_pct'] ?? null) }}</td>
@@ -76,7 +81,7 @@
           <td>{{ $fmt($h['germinacion_pct'] ?? null) }}</td>
           <td>{{ $fmt($h['viabilidad_pct'] ?? ($h['variavilidad_pct'] ?? null)) }}</td>
           <td>{{ $fmt($doc->estado ?? null) }}</td>
-          <td>{{ $fechaEv ?? optional($doc->fecha_evaluacion)->format('d/m/Y') }}</td>
+          <td>{{ $fmt($fechaEv ?? optional($doc->fecha_evaluacion)->format('d/m/Y')) }}</td>
           <td>{{ $fmt($doc->validez ?? null) }}</td>
         </tr>
         @php
@@ -98,20 +103,20 @@
         @endphp
         
         <tr class="tabla-extra tabla-extra--obs">
-          <td colspan="19">
+          <td colspan="24">
             <strong>OBSERVACIONES:</strong>
             <span>{{ $fmt($doc->observaciones ?? null) }}</span>
           </td>
          
         </tr>
         <tr class="tabla-extra tabla-extra--malezas">
-          <td colspan="5"><strong>SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS:</strong></td>
-          <td colspan="5"><strong>SEMILLAS DE MALEZAS COMUNES:</strong></td>
+          <td colspan="12"><strong>SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS:</strong></td>
+          <td colspan="12"><strong>SEMILLAS DE MALEZAS COMUNES:</strong></td>
    
         </tr>
         <tr class="tabla-extra tabla-extra--malezas">
-          <td colspan="5"><span>{{ $malezasNocivas }}</span></td>
-          <td colspan="5"><span>{{ $malezasComunes }}</span></td>
+          <td colspan="12"><span>{{ $malezasNocivas }}</span></td>
+          <td colspan="12"><span>{{ $malezasComunes }}</span></td>
          
         </tr>
       </tbody>

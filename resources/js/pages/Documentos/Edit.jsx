@@ -14,6 +14,26 @@ import {
   Modal,
   ModalDialog,
 } from '@mui/joy';
+import {
+  Hash,
+  Sprout,
+  CalendarDays,
+  BadgeCheck,
+  Clock,
+  StickyNote,
+  Leaf,
+  Tag,
+  Building2,
+  Handshake,
+  Shield,
+  Package,
+  Scale,
+  MapPin,
+  Map,
+  ShieldCheck,
+  Thermometer,
+  Activity,
+} from 'lucide-react';
 
 const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'decimal' } });
 
@@ -27,6 +47,7 @@ const FormField = React.memo(function FormField({
   minRows = 3,
   slotProps,
   required = false,
+  startDecorator,
 }) {
   return (
     <FormControl>
@@ -37,6 +58,7 @@ const FormField = React.memo(function FormField({
           value={value ?? ''}
           onChange={onChange}
           required={required}
+          startDecorator={startDecorator}
         />
       ) : (
         <Input
@@ -45,6 +67,7 @@ const FormField = React.memo(function FormField({
           onChange={onChange}
           slotProps={slotProps}
           required={required}
+          startDecorator={startDecorator}
         />
       )}
       {error && (
@@ -250,312 +273,371 @@ export default function DocumentoEdit() {
   };
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form onSubmit={submit} noValidate className="doc-form">
       <Stack spacing={2}>
         <Typography level="h4">Editar documento #{doc.id}</Typography>
         {flash?.status && <Alert color="success" variant="soft">{flash.status}</Alert>}
         {flash?.error && <Alert color="danger" variant="soft">{flash.error}</Alert>}
+        {missingMessage && <Alert color="warning" variant="soft">{missingMessage}</Alert>}
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="N° Laboratorio"
-            value={data.nlab}
-            onChange={handleUpperChange('nlab')}
-            error={errors.nlab}
-            required
-          />
-          <FormField
-            label="Especie"
-            value={data.especie}
-            onChange={handleUpperChange('especie')}
-            error={errors.especie}
-            required
-          />
-          <FormField
-            label="Fecha evaluación"
-            type="date"
-            value={data.fecha_evaluacion}
-            onChange={handlePlainChange('fecha_evaluacion')}
-            error={errors.fecha_evaluacion}
-            required
-          />
-        </Stack>
+        <Stack className="doc-sections" spacing={2}>
+          <div className="doc-section doc-section--blue">
+            <div className="doc-section__title">
+              <BadgeCheck size={18} />
+              <span>Datos generales</span>
+            </div>
+            <Stack spacing={1.5}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="N° Laboratorio"
+                  value={data.nlab}
+                  onChange={handleUpperChange('nlab')}
+                  error={errors.nlab}
+                  required
+                  startDecorator={<Hash size={16} />}
+                />
+                <FormField
+                  label="Especie"
+                  value={data.especie}
+                  onChange={handleUpperChange('especie')}
+                  error={errors.especie}
+                  required
+                  startDecorator={<Sprout size={16} />}
+                />
+                <FormField
+                  label="Fecha evaluación"
+                  type="date"
+                  value={data.fecha_evaluacion}
+                  onChange={handlePlainChange('fecha_evaluacion')}
+                  error={errors.fecha_evaluacion}
+                  required
+                  startDecorator={<CalendarDays size={16} />}
+                />
+              </Stack>
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormControl>
-            <FormLabel>Estado</FormLabel>
-            <RadioGroup
-              value={estadoValue}
-              onChange={handleEstadoChange}
-              orientation="horizontal"
-              sx={{ gap: 0.75, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}
-              required
-            >
-              <Radio value="APROBADO" label="Aprobado" />
-              <Radio value="RECHAZADO" label="Rechazado" />
-            </RadioGroup>
-            {errors.estado && (
-              <Typography level="body-sm" color="danger">{errors.estado}</Typography>
-            )}
-          </FormControl>
-          <FormField
-            label="Validez (opcional)"
-            value={data.validez}
-            onChange={handleUpperChange('validez')}
-            error={errors.validez}
-          />
-        </Stack>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormControl>
+                  <FormLabel>Estado</FormLabel>
+                  <RadioGroup
+                    value={estadoValue}
+                    onChange={handleEstadoChange}
+                    orientation="horizontal"
+                    sx={{ gap: 0.75, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}
+                    required
+                  >
+                    <Radio value="APROBADO" label="Aprobado" />
+                    <Radio value="RECHAZADO" label="Rechazado" />
+                  </RadioGroup>
+                  {errors.estado && (
+                    <Typography level="body-sm" color="danger">{errors.estado}</Typography>
+                  )}
+                </FormControl>
+                <FormField
+                  label="Validez"
+                  value={data.validez}
+                  onChange={handleUpperChange('validez')}
+                  error={errors.validez}
+                  startDecorator={<Clock size={16} />}
+                />
+              </Stack>
 
-        <FormField
-          label="Observaciones"
-          value={data.observaciones}
-          onChange={handleUpperChange('observaciones')}
-          textarea
-          minRows={3}
-          error={errors.observaciones}
-        />
+              <FormField
+                label="Observaciones"
+                value={data.observaciones}
+                onChange={handleUpperChange('observaciones')}
+                textarea
+                minRows={3}
+                error={errors.observaciones}
+                startDecorator={<StickyNote size={16} />}
+              />
+            </Stack>
+          </div>
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="Malezas nocivas"
-            value={data.malezas_nocivas}
-            onChange={handleUpperChange('malezas_nocivas')}
-            error={errors.malezas_nocivas}
-          />
-          <FormField
-            label="Malezas comunes"
-            value={data.malezas_comunes}
-            onChange={handleUpperChange('malezas_comunes')}
-            error={errors.malezas_comunes}
-          />
-        </Stack>
+          <div className="doc-section doc-section--mint">
+            <div className="doc-section__title">
+              <Leaf size={18} />
+              <span>Malezas</span>
+            </div>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+              <FormField
+                label="Malezas nocivas"
+                value={data.malezas_nocivas}
+                onChange={handleUpperChange('malezas_nocivas')}
+                error={errors.malezas_nocivas}
+                startDecorator={<Leaf size={16} />}
+              />
+              <FormField
+                label="Malezas comunes"
+                value={data.malezas_comunes}
+                onChange={handleUpperChange('malezas_comunes')}
+                error={errors.malezas_comunes}
+                startDecorator={<Leaf size={16} />}
+              />
+            </Stack>
+          </div>
 
-        <Typography level="title-md">Recepción</Typography>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="Variedad"
-            value={data.variedad}
-            onChange={handleUpperChange('variedad')}
-            error={errors.variedad}
-            required
-          />
-          <FormField
-            label="Semillera (opcional)"
-            value={data.semillera}
-            onChange={handleUpperChange('semillera')}
-            error={errors.semillera}
-          />
-          <FormField
-            label="Cooperador (opcional)"
-            value={data.cooperador}
-            onChange={handleUpperChange('cooperador')}
-            error={errors.cooperador}
-          />
-        </Stack>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="Categoría inicial"
-            value={data.categoria_inicial}
-            onChange={handleUpperChange('categoria_inicial')}
-            error={errors.categoria_inicial}
-            required
-          />
-          <FormField
-            label="Categoría final"
-            value={data.categoria_final}
-            onChange={handleUpperChange('categoria_final')}
-            error={errors.categoria_final}
-            required
-          />
-          <FormField
-            label="Lote"
-            value={data.lote}
-            onChange={handleLoteManualChange}
-            error={errors.lote}
-            required
-          />
-        </Stack>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="Bolsas (opcional)"
-            type="number"
-            step="1"
-            min="0"
-            value={data.bolsas}
-            onChange={handlePlainChange('bolsas')}
-            slotProps={DECIMAL_INPUT_SLOT_PROPS}
-            error={errors.bolsas}
-          />
-          <FormField
-            label="Kg/bolsa (opcional)"
-            type="number"
-            step="0.01"
-            min="0"
-            value={data.kgbol}
-            onChange={handlePlainChange('kgbol')}
-            slotProps={DECIMAL_INPUT_SLOT_PROPS}
-            error={errors.kgbol}
-          />
-          <FormControl>
-            <FormLabel>Total (kg)</FormLabel>
-            <Input value={totalKg || ''} readOnly />
-          </FormControl>
-        </Stack>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormField
-            label="Municipio (opcional)"
-            value={data.municipio}
-            onChange={handleUpperChange('municipio')}
-            error={errors.municipio}
-          />
-          <FormField
-            label="Comunidad (opcional)"
-            value={data.comunidad}
-            onChange={handleUpperChange('comunidad')}
-            error={errors.comunidad}
-          />
-          <FormField
-            label="Aut. Importación"
-            value={data.aut_import}
-            onChange={handleUpperChange('aut_import')}
-            error={errors.aut_import}
-            required
-          />
-        </Stack>
+          <div className="doc-section doc-section--peach">
+            <div className="doc-section__title">
+              <Package size={18} />
+              <span>Recepción</span>
+            </div>
+            <Stack spacing={1.25}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Variedad"
+                  value={data.variedad}
+                  onChange={handleUpperChange('variedad')}
+                  error={errors.variedad}
+                  required
+                  startDecorator={<Tag size={16} />}
+                />
+                <FormField
+                  label="Semillera (opcional)"
+                  value={data.semillera}
+                  onChange={handleUpperChange('semillera')}
+                  error={errors.semillera}
+                  startDecorator={<Building2 size={16} />}
+                />
+                <FormField
+                  label="Cooperador (opcional)"
+                  value={data.cooperador}
+                  onChange={handleUpperChange('cooperador')}
+                  error={errors.cooperador}
+                  startDecorator={<Handshake size={16} />}
+                />
+              </Stack>
 
-        <Typography level="title-md">Análisis de humedad y pureza</Typography>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormField
-              label="Humedad (%)"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.resultado}
-              onChange={handlePlainChange('resultado')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.resultado}
-            />
-            <FormField
-              label="Germinación (%)"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.germinacion_pct}
-              onChange={handlePlainChange('germinacion_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.germinacion_pct}
-            />
-            <FormField
-              label="Viabilidad (%)"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.viabilidad_pct}
-              onChange={handlePlainChange('viabilidad_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.viabilidad_pct}
-            />
-          </Stack>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Categoría inicial"
+                  value={data.categoria_inicial}
+                  onChange={handleUpperChange('categoria_inicial')}
+                  error={errors.categoria_inicial}
+                  required
+                  startDecorator={<Shield size={16} />}
+                />
+                <FormField
+                  label="Categoría final"
+                  value={data.categoria_final}
+                  onChange={handleUpperChange('categoria_final')}
+                  error={errors.categoria_final}
+                  required
+                  startDecorator={<ShieldCheck size={16} />}
+                />
+                <FormField
+                  label="Lote"
+                  value={data.lote}
+                  onChange={handleLoteManualChange}
+                  error={errors.lote}
+                  required
+                  startDecorator={<Package size={16} />}
+                />
+              </Stack>
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormField
-              label="Semilla pura (otros) %"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.otros_sp_pct}
-              onChange={handlePlainChange('otros_sp_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.otros_sp_pct}
-            />
-            <FormField
-              label="Semilla pura (otros) kg"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.otros_sp_kg}
-              onChange={handlePlainChange('otros_sp_kg')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.otros_sp_kg}
-            />
-          </Stack>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Bolsas (opcional)"
+                  type="number"
+                  step="1"
+                  min="0"
+                  value={data.bolsas}
+                  onChange={handlePlainChange('bolsas')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.bolsas}
+                  startDecorator={<Scale size={16} />}
+                />
+                <FormField
+                  label="Kg/bolsa (opcional)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={data.kgbol}
+                  onChange={handlePlainChange('kgbol')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.kgbol}
+                  startDecorator={<Scale size={16} />}
+                />
+                <FormControl>
+                  <FormLabel>Total (kg)</FormLabel>
+                  <Input value={totalKg || ''} readOnly startDecorator={<Scale size={16} />} />
+                </FormControl>
+              </Stack>
+            </Stack>
+          </div>
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormField
-              label="Otros cultivos %"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.otros_cultivos_pct}
-              onChange={handlePlainChange('otros_cultivos_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.otros_cultivos_pct}
-            />
-            <FormField
-              label="Otros cultivos kg"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.otros_cultivos_kg}
-              onChange={handlePlainChange('otros_cultivos_kg')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.otros_cultivos_kg}
-            />
-          </Stack>
+          <div className="doc-section doc-section--blue">
+            <div className="doc-section__title">
+              <Map size={18} />
+              <span>Ubicación</span>
+            </div>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+              <FormField
+                label="Municipio (opcional)"
+                value={data.municipio}
+                onChange={handleUpperChange('municipio')}
+                error={errors.municipio}
+                startDecorator={<MapPin size={16} />}
+              />
+              <FormField
+                label="Comunidad (opcional)"
+                value={data.comunidad}
+                onChange={handleUpperChange('comunidad')}
+                error={errors.comunidad}
+                startDecorator={<Map size={16} />}
+              />
+              <FormField
+                label="Aut. Importación"
+                value={data.aut_import}
+                onChange={handleUpperChange('aut_import')}
+                error={errors.aut_import}
+                required
+                startDecorator={<Shield size={16} />}
+              />
+            </Stack>
+          </div>
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormField
-              label="Malezas comunes %"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.malezas_comunes_pct}
-              onChange={handlePlainChange('malezas_comunes_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.malezas_comunes_pct}
-            />
-            <FormField
-              label="Malezas comunes kg"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.malezas_comunes_kg}
-              onChange={handlePlainChange('malezas_comunes_kg')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.malezas_comunes_kg}
-            />
-          </Stack>
+          <div className="doc-section doc-section--mint">
+            <div className="doc-section__title">
+              <Thermometer size={18} />
+              <span>Análisis de humedad y pureza</span>
+            </div>
+            <Stack spacing={1.25}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Humedad (%)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.resultado}
+                  onChange={handlePlainChange('resultado')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.resultado}
+                  startDecorator={<Thermometer size={16} />}
+                />
+                <FormField
+                  label="Germinación (%)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.germinacion_pct}
+                  onChange={handlePlainChange('germinacion_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.germinacion_pct}
+                  startDecorator={<Activity size={16} />}
+                />
+                <FormField
+                  label="Viabilidad (%)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.viabilidad_pct}
+                  onChange={handlePlainChange('viabilidad_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.viabilidad_pct}
+                  startDecorator={<Activity size={16} />}
+                />
+              </Stack>
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <FormField
-              label="Malezas prohibidas %"
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={data.malezas_prohibidas_pct}
-              onChange={handlePlainChange('malezas_prohibidas_pct')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.malezas_prohibidas_pct}
-            />
-            <FormField
-              label="Malezas prohibidas kg"
-              type="number"
-              step="0.01"
-              min="0"
-              value={data.malezas_prohibidas_kg}
-              onChange={handlePlainChange('malezas_prohibidas_kg')}
-              slotProps={DECIMAL_INPUT_SLOT_PROPS}
-              error={errors.malezas_prohibidas_kg}
-            />
-          </Stack>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Semilla pura (otros) %"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.otros_sp_pct}
+                  onChange={handlePlainChange('otros_sp_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.otros_sp_pct}
+                />
+                <FormField
+                  label="Semilla pura (otros) kg"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={data.otros_sp_kg}
+                  onChange={handlePlainChange('otros_sp_kg')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.otros_sp_kg}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Otros cultivos %"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.otros_cultivos_pct}
+                  onChange={handlePlainChange('otros_cultivos_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.otros_cultivos_pct}
+                />
+                <FormField
+                  label="Otros cultivos kg"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={data.otros_cultivos_kg}
+                  onChange={handlePlainChange('otros_cultivos_kg')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.otros_cultivos_kg}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Malezas comunes %"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.malezas_comunes_pct}
+                  onChange={handlePlainChange('malezas_comunes_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.malezas_comunes_pct}
+                />
+                <FormField
+                  label="Malezas comunes kg"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={data.malezas_comunes_kg}
+                  onChange={handlePlainChange('malezas_comunes_kg')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.malezas_comunes_kg}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
+                  label="Malezas prohibidas %"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={data.malezas_prohibidas_pct}
+                  onChange={handlePlainChange('malezas_prohibidas_pct')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.malezas_prohibidas_pct}
+                />
+                <FormField
+                  label="Malezas prohibidas kg"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={data.malezas_prohibidas_kg}
+                  onChange={handlePlainChange('malezas_prohibidas_kg')}
+                  slotProps={DECIMAL_INPUT_SLOT_PROPS}
+                  error={errors.malezas_prohibidas_kg}
+                />
+              </Stack>
+            </Stack>
+          </div>
         </Stack>
 
         <Stack direction="row" spacing={1}>

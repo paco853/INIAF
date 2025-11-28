@@ -124,6 +124,16 @@ export default function Documentos() {
     frame.src = `${src}#toolbar=0`;
   }, []);
 
+  const handleWordDownload = React.useCallback((docId) => {
+    if (!docId) return;
+    const url = `/documentos/${docId}/word`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.click();
+  }, []);
+
   const handleDownloadChange = React.useCallback(
     (field) => (event, valueProp) => {
       const value = typeof valueProp === 'string' ? valueProp : event?.target?.value ?? '';
@@ -334,32 +344,32 @@ export default function Documentos() {
                         size="sm"
                         variant="solid"
                         color="primary"
-                        component={Link}
-                        href={`/ui/documentos/${d.id}/edit`}
-                        className="action-btn action-btn--primary"
-                        sx={{ flex: 1 }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="neutral"
-                        component="a"
-                        href={`/documentos/${d.id}/imprimir?inline=1`}
-                        target="_blank"
-                        className="action-btn action-btn--neutral"
-                        sx={{ flex: 1 }}
-                      >
-                        Ver PDF
-                      </Button>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5}>
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        color="neutral"
-                        onClick={() => handlePrint(d.id)}
+                    component={Link}
+                    href={`/ui/documentos/${d.id}/edit`}
+                    className="action-btn action-btn--primary"
+                    sx={{ flex: 1 }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    color="neutral"
+                    component="a"
+                    href={`/documentos/${d.id}/imprimir?inline=1`}
+                    target="_blank"
+                    className="action-btn action-btn--neutral"
+                    sx={{ flex: 1 }}
+                  >
+                    Ver PDF
+                  </Button>
+                </Stack>
+                <Stack direction="row" spacing={0.5}>
+                  <Button
+                    size="sm"
+                    variant="outlined"
+                    color="neutral"
+                    onClick={() => handlePrint(d.id)}
                         className="action-btn action-btn--neutral"
                         sx={{ flex: 1 }}
                       >
