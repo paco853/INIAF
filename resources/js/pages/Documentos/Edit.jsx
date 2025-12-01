@@ -281,6 +281,7 @@ export default function DocumentoEdit() {
         {missingMessage && <Alert color="warning" variant="soft">{missingMessage}</Alert>}
 
         <Stack className="doc-sections" spacing={2}>
+          {/* Datos generales */}
           <div className="doc-section doc-section--blue">
             <div className="doc-section__title">
               <BadgeCheck size={18} />
@@ -314,68 +315,42 @@ export default function DocumentoEdit() {
                   startDecorator={<CalendarDays size={16} />}
                 />
               </Stack>
-
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
-                <FormControl>
-                  <FormLabel>Estado</FormLabel>
-                  <RadioGroup
-                    value={estadoValue}
-                    onChange={handleEstadoChange}
-                    orientation="horizontal"
-                    sx={{ gap: 0.75, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}
-                    required
-                  >
-                    <Radio value="APROBADO" label="Aprobado" />
-                    <Radio value="RECHAZADO" label="Rechazado" />
-                  </RadioGroup>
-                  {errors.estado && (
-                    <Typography level="body-sm" color="danger">{errors.estado}</Typography>
-                  )}
-                </FormControl>
-                <FormField
-                  label="Validez"
-                  value={data.validez}
-                  onChange={handleUpperChange('validez')}
-                  error={errors.validez}
-                  startDecorator={<Clock size={16} />}
-                />
-              </Stack>
-
-              <FormField
-                label="Observaciones"
-                value={data.observaciones}
-                onChange={handleUpperChange('observaciones')}
-                textarea
-                minRows={3}
-                error={errors.observaciones}
-                startDecorator={<StickyNote size={16} />}
-              />
             </Stack>
           </div>
 
-          <div className="doc-section doc-section--mint">
+          {/* Ubicación */}
+          <div className="doc-section doc-section--blue">
             <div className="doc-section__title">
-              <Leaf size={18} />
-              <span>Malezas</span>
+              <Map size={18} />
+              <span>Ubicación</span>
             </div>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
               <FormField
-                label="Malezas nocivas"
-                value={data.malezas_nocivas}
-                onChange={handleUpperChange('malezas_nocivas')}
-                error={errors.malezas_nocivas}
-                startDecorator={<Leaf size={16} />}
+                label="Municipio (opcional)"
+                value={data.municipio}
+                onChange={handleUpperChange('municipio')}
+                error={errors.municipio}
+                startDecorator={<MapPin size={16} />}
               />
               <FormField
-                label="Malezas comunes"
-                value={data.malezas_comunes}
-                onChange={handleUpperChange('malezas_comunes')}
-                error={errors.malezas_comunes}
-                startDecorator={<Leaf size={16} />}
+                label="Comunidad (opcional)"
+                value={data.comunidad}
+                onChange={handleUpperChange('comunidad')}
+                error={errors.comunidad}
+                startDecorator={<Map size={16} />}
+              />
+              <FormField
+                label="Aut. Importación"
+                value={data.aut_import}
+                onChange={handleUpperChange('aut_import')}
+                error={errors.aut_import}
+                required
+                startDecorator={<Shield size={16} />}
               />
             </Stack>
           </div>
 
+          {/* Recepción */}
           <div className="doc-section doc-section--peach">
             <div className="doc-section__title">
               <Package size={18} />
@@ -465,37 +440,7 @@ export default function DocumentoEdit() {
             </Stack>
           </div>
 
-          <div className="doc-section doc-section--blue">
-            <div className="doc-section__title">
-              <Map size={18} />
-              <span>Ubicación</span>
-            </div>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
-              <FormField
-                label="Municipio (opcional)"
-                value={data.municipio}
-                onChange={handleUpperChange('municipio')}
-                error={errors.municipio}
-                startDecorator={<MapPin size={16} />}
-              />
-              <FormField
-                label="Comunidad (opcional)"
-                value={data.comunidad}
-                onChange={handleUpperChange('comunidad')}
-                error={errors.comunidad}
-                startDecorator={<Map size={16} />}
-              />
-              <FormField
-                label="Aut. Importación"
-                value={data.aut_import}
-                onChange={handleUpperChange('aut_import')}
-                error={errors.aut_import}
-                required
-                startDecorator={<Shield size={16} />}
-              />
-            </Stack>
-          </div>
-
+          {/* Análisis */}
           <div className="doc-section doc-section--mint">
             <div className="doc-section__title">
               <Thermometer size={18} />
@@ -637,6 +582,80 @@ export default function DocumentoEdit() {
                 />
               </Stack>
             </Stack>
+          </div>
+
+          {/* Estado y validez */}
+          <div className="doc-section">
+            <div className="doc-section__title">
+              <ShieldCheck size={18} />
+              <span>Estado y validez</span>
+            </div>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+              <FormControl>
+                <FormLabel>Estado</FormLabel>
+                <RadioGroup
+                  value={estadoValue}
+                  onChange={handleEstadoChange}
+                  orientation="horizontal"
+                  sx={{ gap: 0.75, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}
+                  required
+                >
+                  <Radio value="APROBADO" label="Aprobado" />
+                  <Radio value="RECHAZADO" label="Rechazado" />
+                </RadioGroup>
+                {errors.estado && (
+                  <Typography level="body-sm" color="danger">{errors.estado}</Typography>
+                )}
+              </FormControl>
+              <FormField
+                label="Validez"
+                value={data.validez}
+                onChange={handleUpperChange('validez')}
+                error={errors.validez}
+                startDecorator={<Clock size={16} />}
+              />
+            </Stack>
+          </div>
+
+          {/* Malezas */}
+          <div className="doc-section doc-section--mint">
+            <div className="doc-section__title">
+              <Leaf size={18} />
+              <span>Malezas</span>
+            </div>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+              <FormField
+                label="Malezas nocivas"
+                value={data.malezas_nocivas}
+                onChange={handleUpperChange('malezas_nocivas')}
+                error={errors.malezas_nocivas}
+                startDecorator={<Leaf size={16} />}
+              />
+              <FormField
+                label="Malezas comunes"
+                value={data.malezas_comunes}
+                onChange={handleUpperChange('malezas_comunes')}
+                error={errors.malezas_comunes}
+                startDecorator={<Leaf size={16} />}
+              />
+            </Stack>
+          </div>
+
+          {/* Observaciones */}
+          <div className="doc-section">
+            <div className="doc-section__title">
+              <StickyNote size={18} />
+              <span>Observaciones</span>
+            </div>
+            <FormField
+              label="Observaciones"
+              value={data.observaciones}
+              onChange={handleUpperChange('observaciones')}
+              textarea
+              minRows={3}
+              error={errors.observaciones}
+              startDecorator={<StickyNote size={16} />}
+            />
           </div>
         </Stack>
 

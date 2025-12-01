@@ -532,6 +532,8 @@ export default function AnalisisSemillas() {
               </Box>
               <FormControl>
                 <FormLabel>Especie</FormLabel>
+               
+
                 <Select
                   value={data.especie || null}
                   onChange={(_, v) => {
@@ -541,9 +543,14 @@ export default function AnalisisSemillas() {
                       ...prev,
                       especie: nextEspecie,
                       variedad: '',
+                      
                     }));
+                    
+
                   }}
+                  
                   required
+                  
                   startDecorator={<Sprout size={16} />}
                 >
                   <Option value="" disabled icon={<Sprout size={14} />}>Selecciona especie</Option>
@@ -551,6 +558,10 @@ export default function AnalisisSemillas() {
                     <Option key={c.id} value={c.especie} icon={<Sprout size={14} />}>{c.especie}</Option>
                   ))}
                 </Select>
+                <input hidden required value={data.especie || ""}onChange={() => {}}
+/>
+                
+                  
               </FormControl>
               <FormControl>
               <FormLabel>Variedad</FormLabel>

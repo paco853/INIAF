@@ -1,0 +1,11 @@
+.admin-users-table {
+    margin-top: 16px;
+}
+
+.admin-users-row {
+    transition: background 0.2s ease;
+}
+
+.admin-users-row:hover {
+    background: #f8fafc;
+}

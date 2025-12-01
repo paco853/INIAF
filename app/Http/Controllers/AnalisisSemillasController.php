@@ -73,6 +73,11 @@ class AnalisisSemillasController extends Controller
         } catch (\Throwable $e) { /* silent */ }
 
         $humedad = session()->get('analisis.humedad', []);
+        $recepcion = session()->get('analisis.recepcion', []);
+
+        if (!isset($humedad['especie']) && isset($recepcion['especie'])) {
+            $humedad['especie'] = $recepcion['especie'];
+        }
 
         return Inertia::render('Analisis/Humedad', [
             'today' => now()->format('Y-m-d'),

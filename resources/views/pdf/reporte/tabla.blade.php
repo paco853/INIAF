@@ -67,7 +67,7 @@
           <td>{{ $fmt($r['categoria_final'] ?? null) }}</td>
           <td>{{ $fmt($r['aut_import'] ?? null) }}</td>
           <td>{{ $fmt($r['lote'] ?? null) }}</td>
-          <td>{{ $fmt($r['total'] ?? null) }}</td>
+          <td>{{ $fmt($r['kgbol'] ?? $doc->kgbol ?? null) }}</td>
           <td>{{ $fmt($r['bolsas'] ?? null) }}</td>
           <td>{{ $fmt($h['resultado'] ?? $h['humedad'] ?? null) }}</td>
           <td>{{ $fmt($h['otros_sp_pct'] ?? null) }}</td>
@@ -84,9 +84,10 @@
           <td>{{ $fmt($fechaEv ?? optional($doc->fecha_evaluacion)->format('d/m/Y')) }}</td>
           <td>{{ $fmt($doc->validez ?? null) }}</td>
         </tr>
-        @php
-          $defaultNocivas = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS';
-          $defaultComunes = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES';
+          @php
+          $especieLabel = strtoupper(trim((string)($r['especie'] ?? $doc->especie ?? 'SIN ESPECIE')));
+          $defaultNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS ({$especieLabel})";
+          $defaultComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES ({$especieLabel})";
           $malezasNocivas = $doc->malezas_nocivas;
           $malezasComunes = $doc->malezas_comunes;
           $clean = static function ($value) {

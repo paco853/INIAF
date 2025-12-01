@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use App\Support\AccessConfig;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -42,8 +43,10 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name ?? null,
                     'email' => $request->user()->email ?? null,
+                    'is_admin' => (bool) ($request->user()->is_admin ?? false),
                 ] : null,
             ],
+            'access' => fn () => AccessConfig::all(),
             'flash' => [
                 'status' => fn () => session('status'),
                 'success' => fn () => session('success'),

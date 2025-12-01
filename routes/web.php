@@ -1,18 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminLoginController;
 use App\Http\Controllers\AnalisisSemillasController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\VariedadesController;
-use App\Http\Controllers\ValidezController;
+use App\Http\Controllers\ComunidadesController;
 use App\Http\Controllers\CultivosController;
 use App\Http\Controllers\DocumentosController;
-use App\Http\Controllers\ComunidadesController;
+use App\Http\Controllers\UserLoginController;
+use App\Http\Controllers\ValidezController;
+use App\Http\Controllers\VariedadesController;
+use App\Http\Controllers\Ui\Admin\UsersIndexController;
+use App\Http\Controllers\Ui\Admin\UsersManagementController;
 
 // Auth
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::get('/login', [UserLoginController::class, 'showLogin'])->name('login');
+    Route::post('/login', [UserLoginController::class, 'login'])->name('login.attempt');
+    Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.attempt');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
 });
@@ -43,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/documentos/{doc}', [DocumentosController::class, 'show'])->whereNumber('doc')->name('documentos.show');
     Route::get('/documentos/{doc}/edit', [DocumentosController::class, 'edit'])->whereNumber('doc')->name('documentos.edit');
     Route::put('/documentos/{doc}', [DocumentosController::class, 'update'])->whereNumber('doc')->name('documentos.update');
-    Route::delete('/documentos/{doc}', [DocumentosController::class, 'destroy'])->whereNumber('doc')->name('documentos.destroy');
+    Route::delete('/documentos/{doc}', [DocumentosController::class, 'destroy'])->whereNumber('doc')->name('documentos.destroy')->middleware('access:deleteDocs');
 
     // Comunidades (edición rápida desde UI moderna)
     Route::post('/comunidades', [ComunidadesController::class, 'store'])->name('comunidades.store');
@@ -55,24 +60,26 @@ Route::middleware('auth')->group(function () {
     Route::post('/documentos/descarga-general', [DocumentosController::class, 'bulkDownload'])->name('documentos.bulk_download');
 
     // Variedades
-    Route::get('/variedades', [VariedadesController::class, 'index'])->name('variedades.index');
-    Route::get('/variedades/create', [VariedadesController::class, 'create'])->name('variedades.create');
-    Route::post('/variedades', [VariedadesController::class, 'store'])->name('variedades.store');
-    Route::get('/variedades/cultivo/{cultivo}', [VariedadesController::class, 'manage'])->name('variedades.manage');
-    Route::put('/variedades/cultivo/{cultivo}', [VariedadesController::class, 'bulkUpdate'])->name('variedades.manage.update');
-    Route::get('/variedades/{variedad}/edit', [VariedadesController::class, 'edit'])->name('variedades.edit');
-    Route::put('/variedades/{variedad}', [VariedadesController::class, 'update'])->name('variedades.update');
-    Route::delete('/variedades/{variedad}', [VariedadesController::class, 'destroy'])->name('variedades.destroy');
-    Route::get('/backups/export', [\App\Http\Controllers\BackupsController::class, 'export'])->name('backups.export');
-    Route::post('/backups/generate', [\App\Http\Controllers\BackupsController::class, 'generate'])->name('backups.generate');
-    Route::get('/backups/download', [\App\Http\Controllers\BackupsController::class, 'download'])->name('backups.download');
-    Route::delete('/backups/delete', [\App\Http\Controllers\BackupsController::class, 'destroy'])->name('backups.delete');
-    Route::post('/backups/import', [\App\Http\Controllers\BackupsController::class, 'import'])->name('backups.import');
+    Route::middleware('access:manageCatalogs')->group(function () {
+        Route::get('/variedades', [VariedadesController::class, 'index'])->name('variedades.index');
+        Route::get('/variedades/create', [VariedadesController::class, 'create'])->name('variedades.create');
+        Route::post('/variedades', [VariedadesController::class, 'store'])->name('variedades.store');
+        Route::get('/variedades/cultivo/{cultivo}', [VariedadesController::class, 'manage'])->name('variedades.manage');
+        Route::put('/variedades/cultivo/{cultivo}', [VariedadesController::class, 'bulkUpdate'])->name('variedades.manage.update');
+        Route::get('/variedades/{variedad}/edit', [VariedadesController::class, 'edit'])->name('variedades.edit');
+        Route::put('/variedades/{variedad}', [VariedadesController::class, 'update'])->name('variedades.update');
+        Route::delete('/variedades/{variedad}', [VariedadesController::class, 'destroy'])->name('variedades.destroy');
+    });
+    Route::get('/backups/export', [\App\Http\Controllers\BackupsController::class, 'export'])->name('backups.export')->middleware('access:exportData');
+    Route::post('/backups/generate', [\App\Http\Controllers\BackupsController::class, 'generate'])->name('backups.generate')->middleware('access:exportData');
+    Route::get('/backups/download', [\App\Http\Controllers\BackupsController::class, 'download'])->name('backups.download')->middleware('access:exportData');
+    Route::delete('/backups/delete', [\App\Http\Controllers\BackupsController::class, 'destroy'])->name('backups.delete')->middleware('access:deleteBackups');
+    Route::post('/backups/import', [\App\Http\Controllers\BackupsController::class, 'import'])->name('backups.import')->middleware('access:restoreData');
 
     // Validez de an?lisis
 
     // Cultivos CRUD
-    Route::resource('cultivos', CultivosController::class)->except(['show']);
+    Route::resource('cultivos', CultivosController::class)->except(['show'])->middleware('access:manageCatalogs');
 });
 
 
@@ -95,14 +102,27 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('ui.analisis.semillas');
     Route::get('/ui/documentos/{doc}/imprimir', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'autoprint'])->whereNumber('doc')->name('ui.documentos.print');
-    Route::get('/ui/cultivos', [\App\Http\Controllers\Ui\CultivosUiController::class, 'index'])->name('ui.cultivos');
-    Route::get('/ui/cultivos/create', [\App\Http\Controllers\Ui\CultivosUiController::class, 'create'])->name('ui.cultivos.create');
-    Route::get('/ui/cultivos/{cultivo}/edit', [\App\Http\Controllers\Ui\CultivosUiController::class, 'edit'])->whereNumber('cultivo')->name('ui.cultivos.edit');
-    Route::get('/ui/variedades', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'index'])->name('ui.variedades');
-    Route::get('/ui/variedades/create', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'create'])->name('ui.variedades.create');
-    Route::get('/ui/variedades/{variedad}/edit', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'edit'])->whereNumber('variedad')->name('ui.variedades.edit');
-    Route::get('/ui/variedades/cultivo/{cultivo}', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'manage'])->whereNumber('cultivo')->name('ui.variedades.manage');
+    Route::get('/ui/cultivos', [\App\Http\Controllers\Ui\CultivosUiController::class, 'index'])->name('ui.cultivos')->middleware('access:manageCatalogs');
+    Route::get('/ui/cultivos/create', [\App\Http\Controllers\Ui\CultivosUiController::class, 'create'])->name('ui.cultivos.create')->middleware('access:manageCatalogs');
+    Route::get('/ui/cultivos/{cultivo}/edit', [\App\Http\Controllers\Ui\CultivosUiController::class, 'edit'])->whereNumber('cultivo')->name('ui.cultivos.edit')->middleware('access:manageCatalogs');
+    Route::get('/ui/variedades', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'index'])->name('ui.variedades')->middleware('access:manageCatalogs');
+    Route::get('/ui/variedades/create', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'create'])->name('ui.variedades.create')->middleware('access:manageCatalogs');
+    Route::get('/ui/variedades/{variedad}/edit', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'edit'])->whereNumber('variedad')->name('ui.variedades.edit')->middleware('access:manageCatalogs');
+    Route::get('/ui/variedades/cultivo/{cultivo}', [\App\Http\Controllers\Ui\VariedadesUiController::class, 'manage'])->whereNumber('cultivo')->name('ui.variedades.manage')->middleware('access:manageCatalogs');
     Route::get('/ui/backups', [\App\Http\Controllers\Ui\BackupsUiController::class, 'index'])->name('ui.backups');
+    Route::middleware('admin')->group(function () {
+        Route::get('/ui/roles-permisos', [\App\Http\Controllers\Ui\RolesPermisosController::class, 'index'])->name('ui.roles-permisos');
+        Route::post('/ui/roles-permisos', [\App\Http\Controllers\Ui\RolesPermisosController::class, 'update'])->name('ui.roles-permisos.update');
+
+        Route::get('/ui/usuarios', [UsersIndexController::class, 'index'])->name('ui.usuarios');
+        Route::post('/ui/usuarios', [UsersManagementController::class, 'store'])->name('ui.usuarios.store');
+        Route::get('/ui/usuarios/{user}/edit', [UsersManagementController::class, 'edit'])->whereNumber('user')->name('ui.usuarios.edit');
+        Route::put('/ui/usuarios/{user}', [UsersManagementController::class, 'update'])->whereNumber('user')->name('ui.usuarios.update');
+        Route::delete('/ui/usuarios/{user}', [UsersManagementController::class, 'destroy'])->whereNumber('user')->name('ui.usuarios.destroy');
+        Route::post('/ui/usuarios/{user}/toggle', [UsersManagementController::class, 'toggle'])->whereNumber('user')->name('ui.usuarios.toggle');
+    });
+    Route::get('/ui/password', [AuthController::class, 'showChangePassword'])->name('password.edit');
+    Route::post('/ui/password', [AuthController::class, 'updatePassword'])->name('password.update');
 });
 
 

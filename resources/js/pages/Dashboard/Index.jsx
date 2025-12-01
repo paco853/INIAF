@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Stack, Grid } from '@mui/joy';
 import { usePage } from '@inertiajs/react';
-import { FileText, CheckSquare, Ban, BarChart3 } from 'lucide-react';
+import { FileText, CheckSquare, Ban, BarChart3, Users } from 'lucide-react';
 import FiltersBar from './components/FiltersBar.jsx';
 import KpiGrid from './components/KpiGrid.jsx';
 import WeeklySummary from './components/WeeklySummary.jsx';
@@ -11,11 +11,21 @@ import KpiPickerModal from './components/KpiPickerModal.jsx';
 import CustomizeKpisModal from './components/CustomizeKpisModal.jsx';
 import CultivosModal from './components/CultivosModal.jsx';
 import CommunitiesModal from './components/CommunitiesModal.jsx';
+import UserHistoryModal from './components/UserHistoryModal.jsx';
 
 const KPI_STORAGE_KEY = 'dashboard-selected-kpis';
-const DEFAULT_KPI_KEYS = ['totalHoy', 'certificados', 'rechazados', 'cultivos', 'comunidades'];
+const BASE_KPI_KEYS = ['totalHoy', 'certificados', 'rechazados', 'cultivos', 'comunidades'];
+const ADMIN_KPI_KEY = 'usuariosHistorial';
 
 const KPI_DEFS = {
+  [ADMIN_KPI_KEY]: {
+    key: ADMIN_KPI_KEY,
+    label: 'Usuarios Historial',
+    color: '#059669',
+    iconNode: <Users size={16} />,
+    iconBg: '#dcfce7',
+    iconColor: '#047857',
+  },
   totalHoy: {
     key: 'totalHoy',
     label: 'Total solicitudes hoy',
@@ -59,7 +69,16 @@ const KPI_DEFS = {
 };
 
 export default function Dashboard() {
-  const { stats = {}, chart = [], recientes = [], cultivos = [], comunidades = [] } = usePage().props;
+  const {
+    stats = {},
+    chart = [],
+    recientes = [],
+    cultivos = [],
+    comunidades = [],
+    userHistory = [],
+    auth = {},
+  } = usePage().props;
+  const isAdmin = Boolean(auth?.user?.is_admin);
   const normalizeText = React.useCallback((text) => (
     (text || '')
       .replace(/[“”"']/g, '')
@@ -67,14 +86,22 @@ export default function Dashboard() {
       .trim()
   ), []);
   const analisisPorCultivo = Array.isArray(chart) ? chart : [];
+  const initialKpiKeys = isAdmin
+    ? [ADMIN_KPI_KEY, ...BASE_KPI_KEYS]
+    : [...BASE_KPI_KEYS];
+  const [selectedKpiKeys, setSelectedKpiKeys] = React.useState(() => initialKpiKeys);
   const [activeSlice, setActiveSlice] = React.useState(null);
   const [selectedDetail, setSelectedDetail] = React.useState(null);
-  const [selectedKpiKeys, setSelectedKpiKeys] = React.useState(DEFAULT_KPI_KEYS);
   const [showKpiPicker, setShowKpiPicker] = React.useState(false);
   const [showCustomize, setShowCustomize] = React.useState(false);
   const [cultivosModalOpen, setCultivosModalOpen] = React.useState(false);
   const [comunidadesModalOpen, setComunidadesModalOpen] = React.useState(false);
+  const [showUserHistory, setShowUserHistory] = React.useState(false);
   const loadedKpisRef = React.useRef(false);
+  const userHistoryEntries = React.useMemo(
+    () => (Array.isArray(userHistory) ? userHistory : []),
+    [userHistory],
+  );
   const cultivosList = React.useMemo(() => {
     if (Array.isArray(cultivos) && cultivos.length > 0) {
       return cultivos;
@@ -124,8 +151,13 @@ export default function Dashboard() {
     return set.size;
   }, [comunidadesList]);
   const availableKpiKeys = React.useMemo(
-    () => Object.keys(KPI_DEFS).filter((k) => !selectedKpiKeys.includes(k)),
-    [selectedKpiKeys],
+    () => Object.keys(KPI_DEFS).filter((k) => {
+      if (k === ADMIN_KPI_KEY && !isAdmin) {
+        return false;
+      }
+      return !selectedKpiKeys.includes(k);
+    }),
+    [selectedKpiKeys, isAdmin],
   );
 
   React.useEffect(() => {
@@ -163,6 +195,7 @@ export default function Dashboard() {
 
   const kpis = React.useMemo(() => {
     const valuesMap = {
+      usuariosHistorial: stats.userHistoryCount ?? userHistoryEntries.length,
       totalHoy: stats.totalHoy ?? 0,
       certificados: stats.certificados ?? 0,
       rechazados: stats.rechazados ?? 0,
@@ -171,21 +204,28 @@ export default function Dashboard() {
     };
 
     const cards = selectedKpiKeys.map((key) => {
+      if (key === ADMIN_KPI_KEY && !isAdmin) {
+        return null;
+      }
       const def = KPI_DEFS[key];
       if (!def) return null;
-      return {
-        ...def,
-        value: valuesMap[key] ?? 0,
-        onClick: key === 'cultivos'
+      const onClick = key === 'usuariosHistorial'
+        ? () => setShowUserHistory(true)
+        : key === 'cultivos'
           ? () => setCultivosModalOpen(true)
           : key === 'comunidades'
             ? () => setComunidadesModalOpen(true)
-            : undefined,
+            : undefined;
+      return {
+        ...def,
+        value: valuesMap[key] ?? 0,
+        onClick,
+        subtitle: key === 'usuariosHistorial' ? 'Historial activo' : def.subtitle,
       };
     }).filter(Boolean);
 
     return cards;
-  }, [selectedKpiKeys, stats, totalCultivos, availableKpiKeys]);
+  }, [selectedKpiKeys, stats, totalCultivos, availableKpiKeys, isAdmin]);
 
   const handleAddKpi = (key) => {
     if (!key) return;
@@ -286,6 +326,7 @@ export default function Dashboard() {
         selectedKeys={selectedKpiKeys}
         onSave={setSelectedKpiKeys}
       />
+      <UserHistoryModal open={showUserHistory} onClose={() => setShowUserHistory(false)} entries={userHistoryEntries} />
       <CultivosModal
         open={cultivosModalOpen}
         onClose={() => setCultivosModalOpen(false)}

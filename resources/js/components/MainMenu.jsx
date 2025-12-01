@@ -16,6 +16,8 @@ import {
   Sprout,
   Leaf,
   Database,
+  ShieldCheck,
+  Users,
 } from 'lucide-react';
 import '../../css/pages/modules/menu.css';
 
@@ -68,10 +70,20 @@ const SubLink = ({ href, label, active, icon, onNavigate, className }) => (
   </ListItem>
 );
 
-export default function MainMenu({ collapsed = false, onNavigate }) {
+export default function MainMenu({ collapsed = false, onNavigate, user }) {
   const isActive = useActiveMatcher();
   const [configOpen, setConfigOpen] = React.useState(false);
-  const configActive = ['/ui/cultivos', '/ui/variedades', '/ui/backups'].some(isActive);
+  const isAdmin = React.useMemo(() => {
+    const rawRole = (user?.role || user?.perfil || '').toString().toLowerCase();
+    const flag = user?.is_admin === true || user?.admin === true || rawRole === 'admin';
+    return Boolean(flag);
+  }, [user]);
+  const configActive = [
+    '/ui/cultivos',
+    '/ui/variedades',
+    '/ui/backups',
+    ...(isAdmin ? ['/ui/roles-permisos', '/ui/usuarios'] : []),
+  ].some(isActive);
   const showConfig = configOpen || configActive;
 
   React.useEffect(() => {
@@ -169,6 +181,26 @@ export default function MainMenu({ collapsed = false, onNavigate }) {
               icon={<Database size={18} />}
               className="menu-sublink--system"
             />
+            {isAdmin && (
+              <>
+                <SubLink
+                  href="/ui/roles-permisos"
+                  label="Roles y Permisos"
+                  active={isActive('/ui/roles-permisos')}
+                  onNavigate={onNavigate}
+                  icon={<ShieldCheck size={18} />}
+                  className="menu-sublink--system"
+                />
+                <SubLink
+                  href="/ui/usuarios"
+                  label="Usuarios"
+                  active={isActive('/ui/usuarios')}
+                  onNavigate={onNavigate}
+                  icon={<Users size={18} />}
+                  className="menu-sublink--system"
+                />
+              </>
+            )}
           </List>
         </List>
       </Box>

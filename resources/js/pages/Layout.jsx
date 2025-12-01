@@ -157,7 +157,7 @@ export default function Layout({ children }) {
         )}
         {sidebarOpen && <Box className="sidebar-separator" />}
         <Box sx={{ flex: 1, overflowY: 'auto', width: '100%' }}>
-          <MainMenu collapsed={!sidebarOpen} onNavigate={handleMenuNavigate} />
+          <MainMenu collapsed={!sidebarOpen} onNavigate={handleMenuNavigate} user={user} />
         </Box>
         {sidebarOpen && (
           <Box className="sidebar-user">
@@ -176,6 +176,17 @@ export default function Layout({ children }) {
                 )}
               </Box>
             </Box>
+            <Button
+              className="sidebar-user__logout"
+              variant="outlined"
+              color="primary"
+              fullWidth
+              sx={{ mb: 1 }}
+              component={Link}
+              href="/ui/password"
+            >
+              Cambiar contraseña
+            </Button>
             <Button
               className="sidebar-user__logout"
               variant="plain"

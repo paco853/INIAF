@@ -1,0 +1,150 @@
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin: 0;
+    background-color: #f7f8ff;
+    color: #233153;
+  }
+}
+
+.access-denied-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: radial-gradient(circle at top, #f7f8ff, #f1f3ff 45%, #e6e8ff);
+}
+
+.access-card {
+  width: min(640px, 100%);
+  background: #fff;
+  border-radius: 36px;
+  padding: 2.75rem;
+  box-shadow: 0 25px 45px rgba(51, 64, 128, 0.12);
+  border: 1px solid rgba(35, 49, 83, 0.07);
+  text-align: center;
+}
+
+.window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #8592be;
+}
+
+.window-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-flex;
+  box-shadow: inset 0 0 0 1px rgba(19, 25, 49, 0.05);
+}
+
+.dot-red {
+  background: #ff5f56;
+}
+
+.dot-yellow {
+  background: #ffbd2e;
+}
+
+.dot-green {
+  background: #28c940;
+}
+
+.window-context {
+  font-size: 0.85rem;
+  color: #8592be;
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: rgba(255, 95, 86, 0.14);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 95, 86, 0.4);
+}
+
+.lock-icon {
+  font-size: 2rem;
+  color: #ff5f56;
+}
+
+.access-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  color: #101432;
+}
+
+.access-card p {
+  margin: 0.25rem 0;
+  color: #5c678a;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.9rem 1.75rem;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #276dff, #3f8bff);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 20px rgba(39, 109, 255, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(39, 109, 255, 0.35);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.error-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1rem;
+  border-radius: 32px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  background: #12215a;
+  color: #fff;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 640px) {
+  .access-card {
+    padding: 2rem;
+  }
+
+  .access-card h1 {
+    font-size: 1.75rem;
+  }
+}

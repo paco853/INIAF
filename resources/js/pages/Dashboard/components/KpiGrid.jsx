@@ -47,6 +47,11 @@ const KpiGrid = ({ items }) => (
             <Typography level="h2" sx={{ color: item.color, mt: 1 }}>
               {item.value}
             </Typography>
+            {item.subtitle && (
+              <Typography level="body-xs" sx={{ color: '#047857', mt: 0.5 }}>
+                {item.subtitle}
+              </Typography>
+            )}
           </CardContent>
         </Card>
       </Grid>

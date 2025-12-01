@@ -62,6 +62,10 @@ export default function AnalisisHumedad() {
 
   const numericKeysSet = React.useMemo(() => new Set(numericKeys), []);
 
+  const especieLabel = React.useMemo(() => (
+    humidity.especie ? humidity.especie.toUpperCase() : 'SIN ESPECIE'
+  ), [humidity.especie]);
+
   const baseHumedadData = React.useMemo(() => {
     const base = {
       resultado: humidity.resultado ?? '',
@@ -79,8 +83,8 @@ export default function AnalisisHumedad() {
       validez: humidity.validez ?? validezDefault,
       fecha: humidity.fecha ?? today,
       observaciones: humidity.observaciones ?? '',
-      malezas_nocivas: (humidity.malezas_nocivas && humidity.malezas_nocivas !== '-') ? humidity.malezas_nocivas : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS',
-      malezas_comunes: (humidity.malezas_comunes && humidity.malezas_comunes !== '-') ? humidity.malezas_comunes : 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES',
+      malezas_nocivas: (humidity.malezas_nocivas && humidity.malezas_nocivas !== '-') ? humidity.malezas_nocivas : `EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS (${especieLabel})`,
+      malezas_comunes:(humidity.malezas_comunes && humidity.malezas_comunes !== '-') ? humidity.malezas_comunes : `EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES (${especieLabel})`,
     };
     // Prefill semilla pura (%) en 100 si no viene dato
     if (base.otros_sp_pct === '') {

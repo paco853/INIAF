@@ -74,6 +74,7 @@ export default defineConfig(({ mode }) => {
             laravel({
                 input: [
                     'resources/css/app.css',
+                    'resources/css/pages/access-denied.css',
                     'resources/js/app.js',
                     'resources/js/inertia.jsx',
                 ],

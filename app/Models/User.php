@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Admin;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'active',
     ];
 
     /**
@@ -43,6 +45,21 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
         ];
+    }
+
+    public function admin()
+    {
+        return $this->hasOne(Admin::class, 'email', 'email');
+    }
+
+    public function getIsAdminAttribute(): bool
+    {
+        if ($this->relationLoaded('admin')) {
+            return (bool) $this->admin;
+        }
+
+        return $this->admin()->exists();
     }
 }

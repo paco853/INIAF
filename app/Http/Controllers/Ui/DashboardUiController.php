@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\AnalisisDocumento;
 use App\Models\Cultivo;
 use App\Models\Comunidad;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -109,6 +112,42 @@ class DashboardUiController extends Controller
         $totalComunidades = $comunidades->count();
         $totalMunicipios = $comunidades->pluck('municipio')->filter()->unique()->count();
 
+        $userSessions = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->orderByDesc('last_activity')
+            ->limit(6)
+            ->get();
+        $userIds = $userSessions->pluck('user_id')->filter()->unique()->values();
+        $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+        $now = now();
+        $userHistory = $userSessions
+            ->map(function ($session) use ($users, $now) {
+                $user = $users->get($session->user_id);
+                if (!$user) {
+                    return null;
+                }
+
+                $connectedAt = Carbon::createFromTimestamp($session->last_activity);
+                $minutesAgo = max(0, $now->diffInMinutes($connectedAt));
+                $connectionLabel = $minutesAgo === 0
+                    ? 'Hace unos segundos'
+                    : ($minutesAgo < 60
+                        ? "Hace {$minutesAgo} min"
+                        : 'Hace ' . round($minutesAgo / 60, 1) . ' h');
+
+                return [
+                    'id' => $session->id,
+                    'user' => $user->name,
+                    'email' => $user->email,
+                    'connection' => $connectionLabel,
+                    'details' => 'Actividad registrada recientemente',
+                    'timestamp' => $connectedAt->format('d/m/Y H:i'),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
         return Inertia::render('Dashboard/Index', [
             'stats' => [
                 'totalHoy' => $totalHoy,
@@ -117,11 +156,13 @@ class DashboardUiController extends Controller
                 'rechazados' => $rechazados,
                 'comunidades' => $totalComunidades,
                 'municipios' => $totalMunicipios,
+                'userHistoryCount' => count($userHistory),
             ],
             'chart' => $chart,
             'recientes' => $recientes,
             'cultivos' => $cultivos,
             'comunidades' => $comunidades,
+            'userHistory' => $userHistory,
         ]);
     }
 }

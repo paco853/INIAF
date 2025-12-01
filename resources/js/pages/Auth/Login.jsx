@@ -1,14 +1,18 @@
 import React from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Mail, Lock } from 'lucide-react';
+import { Head, useForm } from '@inertiajs/react';
+import { User, Lock } from 'lucide-react';
+import AdminLoginModal from '../../components/AdminLoginModal.jsx';
 
 export default function Login() {
   const { data, setData, post, processing, errors, reset } = useForm({
-    email: '',
+    username: '',
     password: '',
     remember: false,
   });
 
+  const loginErrorMessage = errors.login || errors.username;
+
+  const [adminModalOpen, setAdminModalOpen] = React.useState(false);
   React.useEffect(() => {
     return () => {
       reset('password');
@@ -33,28 +37,29 @@ export default function Login() {
           <img className="login-logo" src="/images/titulo.png" alt="INIAF" loading="lazy" />
           <h2>Iniciar sesión</h2>
 
-          {errors.email && (
+          {loginErrorMessage && (
             <div className="alert">
-              <div>{errors.email}</div>
+              <div>{loginErrorMessage}</div>
             </div>
           )}
 
           <form className="form" onSubmit={submit}>
             <label className="field">
-              <span>Correo</span>
+              <span>Usuario</span>
               <div className="input-shell">
-                <Mail className="input-icon" aria-hidden="true" />
+                <User className="input-icon" aria-hidden="true" />
                 <input
-                  type="email"
-                  name="email"
+                  type="text"
+                  name="username"
                   autoComplete="username"
-                  value={data.email}
-                  onChange={handleChange('email')}
-                  placeholder="Ingresa tu correo"
+                  value={data.username}
+                  onChange={handleChange('username')}
+                  placeholder="Ingresa tu usuario"
                   required
                 />
               </div>
             </label>
+
             <label className="field">
               <span>Contraseña</span>
               <div className="input-shell">
@@ -70,6 +75,7 @@ export default function Login() {
                 />
               </div>
             </label>
+
             <label className="checkbox">
               <input
                 type="checkbox"
@@ -79,17 +85,27 @@ export default function Login() {
               />
               Recordarme
             </label>
+
             <button type="submit" className="btn-primary" disabled={processing}>
               {processing ? 'Ingresando…' : 'Entrar'}
             </button>
           </form>
 
-          <p className="hint">Usuario de prueba: admin@example.com / password</p>
           <p className="hint">
-            ¿No tienes cuenta? <Link href="/register">Regístrate</Link>
+            ¿Eres administrador?{' '}
+            <span
+              className="hint-link"
+              onClick={() => setAdminModalOpen(true)}
+              role="button"
+              tabIndex={0}
+            >
+              Iniciar modo admin
+            </span>
           </p>
         </main>
       </div>
+
+      <AdminLoginModal open={adminModalOpen} onClose={() => setAdminModalOpen(false)} />
     </>
   );
 }

@@ -1,0 +1,22 @@
+.admin-user-edit-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.admin-user-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-user-edit-sheet {
+    padding: 24px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
