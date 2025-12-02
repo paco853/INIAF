@@ -81,6 +81,7 @@ export default function AnalisisSemillas() {
             handleTextChange={handleTextChange}
             handleEspecieChange={handleEspecieChange}
             handleVariedadChange={handleVariedadChange}
+            handleAnioChange={handleAnioChange}
             createVariedadHref={createVariedadHref}
           />
 
@@ -89,7 +90,6 @@ export default function AnalisisSemillas() {
             handleCategoriaChange={handleCategoriaChange}
             handleLoteChange={handleLoteChange}
             regenerateLote={regenerateLote}
-            handleAnioChange={handleAnioChange}
             handleBolsasChange={handleBolsasChange}
             handleKgbolChange={handleKgbolChange}
           />

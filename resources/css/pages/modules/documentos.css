@@ -152,8 +152,25 @@
     margin-bottom: 0.75rem;
 }
 
-.doc-section__title svg {
-    color: #2563eb;
+ .doc-section__title svg {
+     color: #2563eb;
+ }
+
+.page--documentos-edit .doc-section--peach .JoyStack-root,
+.page--documentos-edit .doc-section--mint .JoyStack-root,
+.page--documentos-edit .doc-section--blue .JoyStack-root {
+    width: 100%;
+    gap: 1rem;
+}
+
+.doc-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.25rem;
+}
+
+.doc-section__grid .JoyFormControl-root {
+    min-width: 0;
 }
 
 .doc-section--blue {
@@ -173,6 +190,17 @@
 
 .doc-sections .JoyStack-root {
     width: 100%;
+}
+
+.page--documentos-edit .doc-section .JoyStack-root {
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page--documentos-edit .doc-form .JoyFormControl-root {
+    width: 100%;
+    min-width: 180px;
+    flex: 1 1 210px;
 }
 
 .page--documentos-autoprint .iframe-full {

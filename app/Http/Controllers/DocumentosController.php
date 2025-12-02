@@ -18,6 +18,9 @@ use Dompdf\Options;
 
 class DocumentosController extends Controller
 {
+    private const FALLBACK_MALEZAS_NOCIVAS = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS';
+    private const FALLBACK_MALEZAS_COMUNES = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES';
+
     /** Crea un documento (store). */
     public function store(Request $request): RedirectResponse
     {
@@ -30,6 +33,7 @@ class DocumentosController extends Controller
             'observaciones' => ['nullable','string'],
             'malezas_nocivas' => ['nullable','string','max:255'],
             'malezas_comunes' => ['nullable','string','max:255'],
+            'anio' => ['nullable','integer','min:1900','max:2100'],
             // Recepción
             'variedad' => ['required','string','max:150'],
             'semillera' => ['nullable','string','max:150'],
@@ -64,6 +68,14 @@ class DocumentosController extends Controller
             unset($data['estado']);
         }
 
+        $data['malezas_nocivas'] = $this->sanitizeMalezaText(
+            $data['malezas_nocivas'] ?? '',
+            self::FALLBACK_MALEZAS_NOCIVAS,
+        );
+        $data['malezas_comunes'] = $this->sanitizeMalezaText(
+            $data['malezas_comunes'] ?? '',
+            self::FALLBACK_MALEZAS_COMUNES,
+        );
         $doc->fill($data);
 
         $recepcion = [
@@ -75,12 +87,16 @@ class DocumentosController extends Controller
             'categoria_inicial' => $request->input('categoria_inicial'),
             'categoria_final' => $request->input('categoria_final'),
             'lote' => $request->input('lote'),
+            'anio' => $request->input('anio'),
             'bolsas' => $request->input('bolsas'),
             'kgbol' => $request->input('kgbol'),
             'municipio' => $request->input('municipio'),
             'comunidad' => $request->input('comunidad'),
             'aut_import' => $request->input('aut_import'),
         ];
+        if ($recepcion['anio'] === '') {
+            $recepcion['anio'] = null;
+        }
         $recepcion['origen'] = DocumentosHelper::buildOrigen($recepcion['comunidad'] ?? '', $recepcion['municipio'] ?? '');
         $b = isset($recepcion['bolsas']) ? (float)$recepcion['bolsas'] : null;
         $k = isset($recepcion['kgbol']) ? (float)$recepcion['kgbol'] : null;
@@ -213,6 +229,7 @@ class DocumentosController extends Controller
             'categoria_inicial' => ['required','string','max:100'],
             'categoria_final' => ['required','string','max:100'],
             'lote' => ['required','string','max:100'],
+            'anio' => ['nullable','integer','min:1900','max:2100'],
             'bolsas' => ['nullable','numeric','min:0'],
             'kgbol' => ['nullable','numeric','min:0'],
             'municipio' => ['nullable','string','max:150'],
@@ -234,7 +251,7 @@ class DocumentosController extends Controller
 
         // Actualizar bloque de recepción dentro del JSON
         $recepKeys = [
-            'nlab','especie','variedad','semillera','cooperador','categoria_inicial','categoria_final','lote','bolsas','kgbol','municipio','comunidad','aut_import'
+            'nlab','especie','variedad','semillera','cooperador','categoria_inicial','categoria_final','lote','anio','bolsas','kgbol','municipio','comunidad','aut_import'
         ];
         $recepcion = $doc->recepcion ?? [];
         $rTouched = false;
@@ -245,6 +262,9 @@ class DocumentosController extends Controller
             // Total calculado si bolsas y kgbol presentes
             $b = isset($recepcion['bolsas']) ? (float)$recepcion['bolsas'] : null;
             $k = isset($recepcion['kgbol']) ? (float)$recepcion['kgbol'] : null;
+            if (isset($recepcion['anio']) && $recepcion['anio'] === '') {
+                $recepcion['anio'] = null;
+            }
             $recepcion['origen'] = DocumentosHelper::buildOrigen($recepcion['comunidad'] ?? '', $recepcion['municipio'] ?? '');
             if ($b !== null && $k !== null) { $recepcion['total'] = $b * $k; }
             $doc->recepcion = $recepcion;
@@ -273,7 +293,14 @@ class DocumentosController extends Controller
         } else {
             unset($data['estado']);
         }
-
+        $data['malezas_nocivas'] = $this->sanitizeMalezaText(
+            $data['malezas_nocivas'] ?? '',
+            self::FALLBACK_MALEZAS_NOCIVAS,
+        );
+        $data['malezas_comunes'] = $this->sanitizeMalezaText(
+            $data['malezas_comunes'] ?? '',
+            self::FALLBACK_MALEZAS_COMUNES,
+        );
         $doc->fill($data);
         // Limpia datos legados para que no se reinyecten valores antiguos como fallback.
         $doc->datos = null;
@@ -317,6 +344,18 @@ class DocumentosController extends Controller
         }
 
         return null;
+    }
+
+    private function sanitizeMalezaText(?string $value, string $fallbackPrefix): string
+    {
+        $text = trim((string) ($value ?? ''));
+        if ($text === '') {
+            return '';
+        }
+        if ($fallbackPrefix !== '' && str_starts_with($text, $fallbackPrefix)) {
+            return trim(preg_replace('/\s*\([^)]*\)$/', '', $text));
+        }
+        return $text;
     }
 
     /** Renderiza un solo documento a PDF (bytes) reutilizable para merge. */

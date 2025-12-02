@@ -93,6 +93,16 @@ class DocumentosUiController extends Controller
                 $totalCalculado = $b * $k;
             }
         }
+        $loteSuggestions = AnalisisDocumento::query()
+            ->whereNotNull('recepcion')
+            ->limit(30)
+            ->get()
+            ->map(function ($document) {
+                return $document->recepcion['lote'] ?? null;
+            })
+            ->filter()
+            ->unique()
+            ->values();
 
         return Inertia::render('Documentos/Edit', [
             'doc' => [
@@ -111,6 +121,7 @@ class DocumentosUiController extends Controller
                 'categoria_inicial' => $recepcion['categoria_inicial'] ?? null,
                 'categoria_final' => $recepcion['categoria_final'] ?? null,
                 'lote' => $recepcion['lote'] ?? null,
+                'anio' => $recepcion['anio'] ?? null,
                 'bolsas' => $recepcion['bolsas'] ?? null,
                 'kgbol' => $recepcion['kgbol'] ?? null,
                 'municipio' => $recepcion['municipio'] ?? null,
@@ -130,6 +141,7 @@ class DocumentosUiController extends Controller
                 'viabilidad_pct' => $humedad['viabilidad_pct']
                     ?? ($humedad['variavilidad_pct'] ?? ($datos['viabilidad_pct'] ?? ($datos['variavilidad_pct'] ?? null))),
             ],
+            'loteSuggestions' => $loteSuggestions,
         ]);
     }
 

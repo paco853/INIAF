@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 
 const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'decimal' } });
+const NUMBER_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'numeric' } });
 
 const FormField = React.memo(function FormField({
   label,
@@ -79,7 +80,7 @@ const FormField = React.memo(function FormField({
 
 export default function DocumentoEdit() {
   const { props } = usePage();
-  const { doc = {}, flash } = props;
+  const { doc = {}, flash, loteSuggestions = [] } = props;
   const initialTotal = React.useMemo(() => (
     doc?.total != null ? String(doc.total) : ''
   ), [doc]);
@@ -103,6 +104,7 @@ export default function DocumentoEdit() {
     cooperador: doc.cooperador ?? '',
     categoria_inicial: doc.categoria_inicial ?? '',
     categoria_final: doc.categoria_final ?? '',
+    anio: doc.anio ?? '',
     lote: doc.lote ?? '',
     bolsas: doc.bolsas ?? '',
     kgbol: doc.kgbol ?? '',
@@ -168,6 +170,14 @@ export default function DocumentoEdit() {
     ? `Completa los campos obligatorios: ${missingRequiredLabels.join(', ')}`
     : '';
 
+  const lotes = React.useMemo(() => {
+    const base = Array.isArray(loteSuggestions) ? [...loteSuggestions] : [];
+    if (doc.lote) {
+      base.unshift(doc.lote);
+    }
+    return Array.from(new Set(base)).filter(Boolean);
+  }, [doc.lote, loteSuggestions]);
+
   React.useEffect(() => {
     if (!hasMissingRequired) {
       setShowMissingModal(false);
@@ -193,6 +203,20 @@ export default function DocumentoEdit() {
     },
     [setData],
   );
+
+  const handleAnioChange = React.useCallback(
+    (event) => {
+      setLoteDirty(false);
+      setData('anio', event.target.value ?? '');
+    },
+    [setData],
+  );
+
+  const handleTextareaInput = React.useCallback((event) => {
+    const target = event.target;
+    target.style.height = 'auto';
+    target.style.height = `${target.scrollHeight}px`;
+  }, []);
 
   const estadoValue = React.useMemo(() => data.estado || 'APROBADO', [data.estado]);
 
@@ -229,19 +253,25 @@ export default function DocumentoEdit() {
       .join('');
     const lab = (data.nlab || '').trim();
     const especieInitial = ((data.especie || '').trim().charAt(0) || '').toUpperCase();
-    let year = new Date().getFullYear();
-    if (data.fecha_evaluacion) {
-      const parsed = new Date(data.fecha_evaluacion);
-      if (!Number.isNaN(parsed.getTime())) {
-        year = parsed.getFullYear();
+    const manualYear = String(data.anio ?? '').trim();
+    let yearPart = manualYear;
+    if (!/^\d{4}$/.test(yearPart)) {
+      if (data.fecha_evaluacion) {
+        const parsed = new Date(data.fecha_evaluacion);
+        if (!Number.isNaN(parsed.getTime())) {
+          yearPart = String(parsed.getFullYear());
+        }
+      }
+      if (!yearPart) {
+        yearPart = String(new Date().getFullYear());
       }
     }
-    const parts = [initials, lab, especieInitial, String(year)];
+    const parts = [initials, lab, especieInitial, yearPart];
     return parts
       .filter((segment) => segment && segment.length > 0)
       .join('-')
       .toUpperCase();
-  }, [data.cooperador, data.nlab, data.especie, data.fecha_evaluacion]);
+  }, [data.cooperador, data.nlab, data.especie, data.fecha_evaluacion, data.anio]);
 
   React.useEffect(() => {
     if (loteDirty) {
@@ -274,6 +304,11 @@ export default function DocumentoEdit() {
 
   return (
     <form onSubmit={submit} noValidate className="doc-form">
+      <datalist id="lote-suggestions">
+        {lotes.map((value) => (
+          <option key={value} value={value} />
+        ))}
+      </datalist>
       <Stack spacing={2}>
         <Typography level="h4">Editar documento #{doc.id}</Typography>
         {flash?.status && <Alert color="success" variant="soft">{flash.status}</Alert>}
@@ -400,16 +435,33 @@ export default function DocumentoEdit() {
                   startDecorator={<ShieldCheck size={16} />}
                 />
                 <FormField
+                  label="Año"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  value={data.anio}
+                  onChange={handleAnioChange}
+                  slotProps={NUMBER_INPUT_SLOT_PROPS}
+                  error={errors.anio}
+                  startDecorator={<Clock size={16} />}
+                />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
+                <FormField
                   label="Lote"
                   value={data.lote}
                   onChange={handleLoteManualChange}
                   error={errors.lote}
                   required
                   startDecorator={<Package size={16} />}
+                  slotProps={{
+                    input: {
+                      list: 'lote-suggestions',
+                      autoComplete: 'on',
+                    },
+                  }}
                 />
-              </Stack>
-
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
                 <FormField
                   label="Bolsas (opcional)"
                   type="number"
@@ -432,6 +484,9 @@ export default function DocumentoEdit() {
                   error={errors.kgbol}
                   startDecorator={<Scale size={16} />}
                 />
+              </Stack>
+
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
                 <FormControl>
                   <FormLabel>Total (kg)</FormLabel>
                   <Input value={totalKg || ''} readOnly startDecorator={<Scale size={16} />} />
@@ -630,6 +685,14 @@ export default function DocumentoEdit() {
                 onChange={handleUpperChange('malezas_nocivas')}
                 error={errors.malezas_nocivas}
                 startDecorator={<Leaf size={16} />}
+                textarea
+                minRows={2}
+                slotProps={{
+                  input: {
+                    onInput: handleTextareaInput,
+                    style: { overflow: 'hidden' },
+                  },
+                }}
               />
               <FormField
                 label="Malezas comunes"
@@ -637,6 +700,14 @@ export default function DocumentoEdit() {
                 onChange={handleUpperChange('malezas_comunes')}
                 error={errors.malezas_comunes}
                 startDecorator={<Leaf size={16} />}
+                textarea
+                minRows={2}
+                slotProps={{
+                  input: {
+                    onInput: handleTextareaInput,
+                    style: { overflow: 'hidden' },
+                  },
+                }}
               />
             </Stack>
           </div>

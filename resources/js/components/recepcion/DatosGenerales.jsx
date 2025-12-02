@@ -8,7 +8,7 @@ import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import Alert from '@mui/joy/Alert';
 import Link from '@mui/joy/Link';
-import { FlaskConical, Sprout, BookOpen, Home, Users } from 'lucide-react';
+import { FlaskConical, Sprout, BookOpen, Home, Users, Calendar } from 'lucide-react';
 
 export default function DatosGenerales({
   data,
@@ -17,6 +17,7 @@ export default function DatosGenerales({
   handleTextChange,
   handleEspecieChange,
   handleVariedadChange,
+  handleAnioChange,
   createVariedadHref,
 }) {
   return (
@@ -25,6 +26,18 @@ export default function DatosGenerales({
         Datos Generales y Origen
       </Typography>
       <Box className="recepcion-grid recepcion-grid--lab">
+        <FormControl>
+          <FormLabel>Año / Campaña</FormLabel>
+          <Input
+            type="number"
+            placeholder="2024"
+            min={1900}
+            max={2100}
+            value={data.anio ?? ''}
+            onChange={handleAnioChange}
+            startDecorator={<Calendar size={16} />}
+          />
+        </FormControl>
         <Box className="lab-card">
           <FormLabel>Nº Lab</FormLabel>
           <Input

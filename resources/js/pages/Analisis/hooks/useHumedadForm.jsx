@@ -2,6 +2,20 @@ import React from 'react';
 import { useForm } from '@inertiajs/react';
 
 export const HUMEDAD_STORAGE_KEY = 'analisis-humedad-form';
+const FALLBACK_MALEZAS_NOCIVAS = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS';
+const FALLBACK_MALEZAS_COMUNES = 'EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES';
+const sanitizeMalezaText = (value, fallback) => {
+  const text = (value ?? '').toString().trim();
+  if (text === '') return '';
+  if (!fallback) return text;
+  if (!text.startsWith(fallback)) return text;
+  return text.replace(/\s*\([^)]*\)$/, '').trim();
+};
+const sanitizeHumedadFields = (source = {}) => ({
+  ...source,
+  malezas_nocivas: sanitizeMalezaText(source.malezas_nocivas, FALLBACK_MALEZAS_NOCIVAS),
+  malezas_comunes: sanitizeMalezaText(source.malezas_comunes, FALLBACK_MALEZAS_COMUNES),
+});
 
 export function useHumedadForm(props) {
   const humidity = props?.humedad || {};
@@ -9,12 +23,10 @@ export function useHumedadForm(props) {
   const errors = props?.errors || {};
 
   const mergeStoredHumedadData = React.useCallback(
-    (base, stored) => {
-      if (!stored || typeof stored !== 'object') {
-        return base;
-      }
-      return { ...base, ...stored };
-    },
+    (base, stored) => sanitizeHumedadFields({
+      ...base,
+      ...(stored && typeof stored === 'object' ? stored : {}),
+    }),
     [],
   );
 

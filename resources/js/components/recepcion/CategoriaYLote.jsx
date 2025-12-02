@@ -14,7 +14,6 @@ export default function CategoriaYLote({
   handleCategoriaChange,
   handleLoteChange,
   regenerateLote,
-  handleAnioChange,
   handleBolsasChange,
   handleKgbolChange,
 }) {
@@ -83,16 +82,6 @@ export default function CategoriaYLote({
             </Button>
           </Stack>
         </FormControl>
-        <LabeledInput
-          label="Año"
-          type="number"
-          placeholder="Año"
-          min={1900}
-          max={2100}
-          step={1}
-          value={data.anio ?? ''}
-          onChange={handleAnioChange}
-        />
         <LabeledInput
           label="Cantidad (bolsas)"
           placeholder="Bolsas"

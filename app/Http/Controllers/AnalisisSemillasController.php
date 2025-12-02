@@ -20,13 +20,6 @@ class AnalisisSemillasController extends Controller
             'today' => now()->format('Y-m-d'),
             'cultivos' => $cultivos,
         ]);
-
-        // Normalizar mayúsculas en campos de texto
-        foreach (['especie','variedad','semillera','cooperador','categoria_inicial','categoria_final','lote','municipio','comunidad','aut_import'] as $key) {
-            if (isset($data[$key]) && is_string($data[$key])) {
-                $data[$key] = \Illuminate\Support\Str::upper($data[$key]);
-            }
-        }
     }
 
     public function compute(Request $request): JsonResponse
@@ -297,9 +290,8 @@ class AnalisisSemillasController extends Controller
 
     private function prepareHumedadData(array $humedad, array $recepcion, ?string $validezDefault, string $today): array
     {
-        $especieLabel = $this->buildEspecieLabel($recepcion, $humedad);
-        $fallbackNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS ({$especieLabel})";
-        $fallbackComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES ({$especieLabel})";
+        $fallbackNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS";
+        $fallbackComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES";
 
         $viabilidad = $humedad['viabilidad_pct'] ?? $humedad['variavilidad_pct'] ?? null;
 
@@ -319,8 +311,14 @@ class AnalisisSemillasController extends Controller
             'validez' => $this->normalizeTextValue($humedad['validez'] ?? $validezDefault ?? ''),
             'fecha' => $humedad['fecha'] ?? $today,
             'observaciones' => $this->normalizeTextValue($humedad['observaciones'] ?? ''),
-            'malezas_nocivas' => $this->chooseMalezaFallback($humedad['malezas_nocivas'] ?? null, $fallbackNocivas),
-            'malezas_comunes' => $this->chooseMalezaFallback($humedad['malezas_comunes'] ?? null, $fallbackComunes),
+            'malezas_nocivas' => $this->sanitizeMalezaText(
+                $this->chooseMalezaFallback($humedad['malezas_nocivas'] ?? null, $fallbackNocivas),
+                $fallbackNocivas,
+            ),
+            'malezas_comunes' => $this->sanitizeMalezaText(
+                $this->chooseMalezaFallback($humedad['malezas_comunes'] ?? null, $fallbackComunes),
+                $fallbackComunes,
+            ),
         ];
 
         if ($prepared['otros_sp_pct'] === '') {
@@ -328,12 +326,6 @@ class AnalisisSemillasController extends Controller
         }
 
         return $prepared;
-    }
-
-    private function buildEspecieLabel(array $recepcion, array $humedad): string
-    {
-        $label = Str::upper(trim((string) ($recepcion['especie'] ?? $humedad['especie'] ?? '')));
-        return $label === '' ? 'SIN ESPECIE' : $label;
     }
 
     private function normalizeNumericInput($value): string
@@ -361,6 +353,17 @@ class AnalisisSemillasController extends Controller
             return $fallback;
         }
         return Str::upper($trimmed);
+    }
+
+    private function sanitizeMalezaText(string $value, string $fallbackPrefix): string
+    {
+        if ($fallbackPrefix === '') {
+            return $value;
+        }
+        if (!str_starts_with($value, $fallbackPrefix)) {
+            return $value;
+        }
+        return trim(preg_replace('/\s*\([^)]*\)$/', '', $value));
     }
 
     private function normalizeYear(?string $value): ?string
