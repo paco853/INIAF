@@ -19,7 +19,11 @@ import {
   Gauge,
   Shield,
 } from 'lucide-react';
-import { HUMEDAD_STORAGE_KEY, useHumedadForm } from './hooks/useHumedadForm';
+import {
+  HUMEDAD_STORAGE_KEY,
+  useHumedadForm,
+} from './hooks/useHumedadForm';
+import { useObservacionAutoFill } from './hooks/useObservacionAutoFill';
 
 const toNumericInputValue = (value) => {
   if (value === null || value === undefined) return '';
@@ -250,11 +254,12 @@ const ControlMalezaSection = ({
 
 const DictamenSection = ({
   data,
-  handleTextChange,
   handleValidezChange,
   numberInputProps,
   validezDefault,
   setData,
+  onEstadoChange,
+  handleObservacionChange,
 }) => (
   <Box className="humedad-section">
     <SectionHeader
@@ -269,7 +274,7 @@ const DictamenSection = ({
         <Textarea
           minRows={6}
           value={data.observaciones}
-          onChange={handleTextChange('observaciones')}
+          onChange={handleObservacionChange}
         />
       </FormControl>
       <Box className="humedad-card-mini card--soft state-card">
@@ -287,7 +292,7 @@ const DictamenSection = ({
               name="estado"
               value="APROBADO"
               checked={data.estado === 'APROBADO'}
-              onChange={(e) => setData('estado', e.target.value)}
+              onChange={(e) => onEstadoChange(e.target.value)}
               required
             />
             <span className="state-icon success">✓</span>
@@ -303,7 +308,7 @@ const DictamenSection = ({
               name="estado"
               value="RECHAZADO"
               checked={data.estado === 'RECHAZADO'}
-              onChange={(e) => setData('estado', e.target.value)}
+              onChange={(e) => onEstadoChange(e.target.value)}
             />
             <span className="state-icon danger">✕</span>
             <span className="state-label">Rechazado</span>
@@ -347,6 +352,16 @@ export default function AnalisisHumedad() {
     numberInputProps,
     validezDefault,
   } = useHumedadForm(props);
+
+  const recepcion = props?.recepcion ?? {};
+  const { onEstadoChange, handleObservacionChange } = useObservacionAutoFill({
+    estado: data.estado,
+    observaciones: data.observaciones,
+    categoriaFinal: recepcion.categoria_final ?? '',
+    especie: recepcion.especie ?? '',
+    anio: recepcion.anio ?? '',
+    setData,
+  });
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -425,11 +440,12 @@ export default function AnalisisHumedad() {
           />
           <DictamenSection
             data={data}
-            handleTextChange={handleTextChange}
             handleValidezChange={handleValidezChange}
             numberInputProps={numberInputProps}
             validezDefault={validezDefault}
             setData={setData}
+            onEstadoChange={onEstadoChange}
+            handleObservacionChange={handleObservacionChange}
           />
           <Stack
             direction={{ xs: 'column', sm: 'row' }}

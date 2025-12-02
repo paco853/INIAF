@@ -21,7 +21,6 @@ import Alert from '@mui/joy/Alert';
 import Stack from '@mui/joy/Stack';
 import Paginator from '../../components/Paginator.jsx';
 import { Link, router, usePage } from '@inertiajs/react';
-import { useDebouncedCallback } from '../../hooks/useDebounce.js';
 
 export default function Documentos() {
   const { props } = usePage();
@@ -36,52 +35,57 @@ export default function Documentos() {
   });
   const [downloadError, setDownloadError] = React.useState('');
   const [filterState, setFilterState] = React.useState({
-    gestion: filters?.gestion ?? '',
+    anio: filters?.anio ?? '',
     nlab: filters?.nlab ?? '',
     especie: filters?.especie ?? '',
     estado: filters?.estado ?? '',
-    fecha_desde: filters?.fecha_desde ?? '',
-    fecha_hasta: filters?.fecha_hasta ?? '',
   });
 
   React.useEffect(() => {
     setFilterState({
-      gestion: filters?.gestion ?? '',
+      anio: filters?.anio ?? '',
       nlab: filters?.nlab ?? '',
       especie: filters?.especie ?? '',
       estado: filters?.estado ?? '',
-      fecha_desde: filters?.fecha_desde ?? '',
-      fecha_hasta: filters?.fecha_hasta ?? '',
     });
   }, [filters]);
 
-  const sendFilters = useDebouncedCallback((next) => {
+  const handleFilterChange = React.useCallback((key) => (event) => {
+    const value = event.target.value;
+    setFilterState((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleYearChange = React.useCallback((event) => {
+    const value = event.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+    setFilterState((prev) => ({ ...prev, anio: value }));
+  }, []);
+
+  const handleEstadoChange = React.useCallback((_, value) => {
+    setFilterState((prev) => ({ ...prev, estado: value ?? '' }));
+  }, []);
+
+  const applyFilters = React.useCallback(() => {
     const payload = Object.fromEntries(
-      Object.entries(next).filter(([, value]) => value != null && value !== ''),
+      Object.entries(filterState).filter(([, value]) => value != null && value !== ''),
     );
     router.get('/ui/documentos', payload, { preserveState: true, replace: true });
-  }, 400);
+  }, [filterState, router]);
 
-  const updateFilter = React.useCallback((key, value) => {
-    setFilterState((prev) => {
-      const next = { ...prev, [key]: value };
-      sendFilters(next);
-      return next;
-    });
-  }, [sendFilters]);
+  const handleFilterSubmit = React.useCallback((event) => {
+    event.preventDefault();
+    applyFilters();
+  }, [applyFilters]);
 
   const clearFilters = React.useCallback(() => {
     const empty = {
-      gestion: '',
+      anio: '',
       nlab: '',
       especie: '',
       estado: '',
-      fecha_desde: '',
-      fecha_hasta: '',
     };
     setFilterState(empty);
     router.get('/ui/documentos', {}, { preserveState: true, replace: true });
-  }, []);
+  }, [router]);
 
   const onDelete = async (id) => {
     if (!confirm('¿Desea eliminar este documento?')) return;
@@ -188,20 +192,23 @@ export default function Documentos() {
           borderRadius: 18,
         }}
       >
-        <div className="filters-grid">
+        <form className="filters-grid" onSubmit={handleFilterSubmit}>
           <Input
             size="sm"
             className="filters-control"
-            placeholder="Gestión (año)"
-            value={filterState.gestion}
-            onChange={(event) => updateFilter('gestion', event.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+            type="number"
+            placeholder="Año campaña"
+            min={1900}
+            max={2100}
+            value={filterState.anio}
+            onChange={handleYearChange}
           />
           <Input
             size="sm"
             className="filters-control"
             placeholder="N° Laboratorio"
             value={filterState.nlab}
-            onChange={(event) => updateFilter('nlab', event.target.value)}
+            onChange={handleFilterChange('nlab')}
           />
           <Input
             size="sm"
@@ -209,42 +216,34 @@ export default function Documentos() {
             placeholder="Buscar especie..."
             startDecorator={<Search size={14} />}
             value={filterState.especie}
-            onChange={(event) => updateFilter('especie', event.target.value)}
+            onChange={handleFilterChange('especie')}
           />
           <Select
             size="sm"
             className="filters-control"
             value={filterState.estado || null}
-            onChange={(_, value) => updateFilter('estado', value ?? '')}
+            onChange={handleEstadoChange}
             placeholder="Estado"
           >
             <Option value="APROBADO">Aprobado</Option>
             <Option value="RECHAZADO">Rechazado</Option>
           </Select>
-          <Input
-            size="sm"
-            type="date"
-            className="filters-control"
-            value={filterState.fecha_desde}
-            onChange={(event) => updateFilter('fecha_desde', event.target.value)}
-          />
-          <Input
-            size="sm"
-            type="date"
-            className="filters-control"
-            value={filterState.fecha_hasta}
-            onChange={(event) => updateFilter('fecha_hasta', event.target.value)}
-          />
-          <Button
-            size="sm"
-            variant="plain"
-            color="primary"
-            onClick={clearFilters}
-            className="filters__clear"
-          >
-            Limpiar filtros
-          </Button>
-        </div>
+          <Stack direction="row" spacing={1} className="filters-actions">
+            <Button type="submit" size="sm" variant="solid">
+              Buscar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="plain"
+              color="primary"
+              onClick={clearFilters}
+              className="filters__clear"
+            >
+              Limpiar filtros
+            </Button>
+          </Stack>
+        </form>
       </Sheet>
 
       <Modal open={downloadModalOpen} onClose={() => setDownloadModalOpen(false)}>
@@ -324,75 +323,75 @@ export default function Documentos() {
             <tr>
               <th className="table-col--sm">N° Lab</th>
               <th>Especie</th>
-              <th className="table-col--md">Fecha</th>
+              <th className="table-col--sm">Año campaña</th>
+              <th className="table-col--md">Fecha de Evaluacion</th>
               <th className="table-col--sm">Estado</th>
               <th className="table-col--xl">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {docs?.data?.map((d) => {
-              return (
-                <tr key={d.id}>
-                  <td>{d.nlab ?? '-'}</td>
-                  <td>{d.especie ?? '-'}</td>
-                  <td>{d.fecha_evaluacion ?? '-'}</td>
-                  <td>{renderEstadoBadge(d.estado)}</td>
-                  <td>
-                    <Stack spacing={0.75}>
-                      <Stack direction="row" spacing={0.5}>
-                        <Button
+            {docs?.data?.map((d) => (
+              <tr key={d.id}>
+                <td>{d.nlab ?? '-'}</td>
+                <td>{d.especie ?? '-'}</td>
+                <td>{d.recepcion?.anio ?? '-'}</td>
+                <td>{d.fecha_evaluacion ?? '-'}</td>
+                <td>{renderEstadoBadge(d.estado)}</td>
+                <td>
+                  <Stack spacing={0.75}>
+                    <Stack direction="row" spacing={0.5}>
+                      <Button
                         size="sm"
                         variant="solid"
                         color="primary"
-                    component={Link}
-                    href={`/ui/documentos/${d.id}/edit`}
-                    className="action-btn action-btn--primary"
-                    sx={{ flex: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="soft"
-                    color="neutral"
-                    component="a"
-                    href={`/documentos/${d.id}/imprimir?inline=1`}
-                    target="_blank"
-                    className="action-btn action-btn--neutral"
-                    sx={{ flex: 1 }}
-                  >
-                    Ver PDF
-                  </Button>
-                </Stack>
-                <Stack direction="row" spacing={0.5}>
-                  <Button
-                    size="sm"
-                    variant="outlined"
-                    color="neutral"
-                    onClick={() => handlePrint(d.id)}
+                        component={Link}
+                        href={`/ui/documentos/${d.id}/edit`}
+                        className="action-btn action-btn--primary"
+                        sx={{ flex: 1 }}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="soft"
+                        color="neutral"
+                        component="a"
+                        href={`/documentos/${d.id}/imprimir?inline=1`}
+                        target="_blank"
+                        className="action-btn action-btn--neutral"
+                        sx={{ flex: 1 }}
+                      >
+                        Ver PDF
+                      </Button>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5}>
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        color="neutral"
+                        onClick={() => handlePrint(d.id)}
                         className="action-btn action-btn--neutral"
                         sx={{ flex: 1 }}
                       >
                         Imprimir
                       </Button>
-                        <Button
-                          size="sm"
-                          variant="outlined"
-                          color="danger"
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        color="danger"
                         loading={deletingId === d.id}
                         disabled={deletingId === d.id}
                         onClick={() => onDelete(d.id)}
                         className="action-btn action-btn--danger"
                         sx={{ flex: 1 }}
                       >
-                          Eliminar
-                        </Button>
-                      </Stack>
+                        Eliminar
+                      </Button>
                     </Stack>
-                  </td>
-                </tr>
-              );
-            })}
+                  </Stack>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </Table>
         <Stack
@@ -416,6 +415,8 @@ export default function Documentos() {
               <Typography level="title-sm">{d.nlab ?? '-'}</Typography>
               <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Especie</Typography>
               <Typography level="title-sm">{d.especie ?? '-'}</Typography>
+              <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Año campaña</Typography>
+              <Typography level="title-sm">{d.recepcion?.anio ?? '-'}</Typography>
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
                 <Chip size="sm" variant="soft" color="neutral">Fecha: {d.fecha_evaluacion ?? '-'}</Chip>
                 {renderEstadoBadge(d.estado)}

@@ -29,6 +29,7 @@ class DocumentosUiController extends Controller
             'estado' => trim((string) $request->query('estado', '')),
             'fecha_desde' => trim((string) $request->query('fecha_desde', '')),
             'fecha_hasta' => trim((string) $request->query('fecha_hasta', '')),
+            'anio' => trim((string) $request->query('anio', '')),
         ];
 
         $query = AnalisisDocumento::query()->orderByDesc('id');
@@ -47,6 +48,10 @@ class DocumentosUiController extends Controller
 
         if ($filters['estado'] !== '') {
             $query->where('estado', strtoupper($filters['estado']));
+        }
+
+        if ($filters['anio'] !== '') {
+            $query->where('recepcion->anio', $filters['anio']);
         }
 
         if ($filters['fecha_desde'] !== '') {

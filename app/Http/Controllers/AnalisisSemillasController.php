@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 use App\Models\Cultivo;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -75,6 +76,7 @@ class AnalisisSemillasController extends Controller
             'today' => now()->format('Y-m-d'),
             'validezDefault' => $validezDefault,
             'humedad' => $prepared,
+            'recepcion' => $recepcion,
         ]);
     }
 
@@ -87,8 +89,18 @@ class AnalisisSemillasController extends Controller
 
     public function submitRecepcion(Request $request)
     {
+        $anioForUnique = $this->normalizeYear($request->input('anio'));
+        $nlabUniqueRule = Rule::unique('analisis_documentos', 'nlab')
+            ->where(function ($query) use ($anioForUnique) {
+                if ($anioForUnique === null) {
+                    $query->whereNull('recepcion->anio');
+                } else {
+                    $query->where('recepcion->anio', $anioForUnique);
+                }
+            });
+
         $data = $request->validate([
-            'nlab' => ['required','string','max:50', 'unique:analisis_documentos,nlab'],
+            'nlab' => ['required','string','max:50', $nlabUniqueRule],
             'especie' => ['required','string','max:150'],
             // 'latin' removido del formulario
             'variedad' => ['nullable','string','max:150'],
@@ -107,7 +119,7 @@ class AnalisisSemillasController extends Controller
             'comunidad' => ['nullable','string','max:150'],
             'aut_import' => ['nullable','string','max:150'],
         ], [
-            'nlab.unique' => 'Este número de laboratorio ya existe.',
+            'nlab.unique' => 'Este número de laboratorio ya existe para la campaña indicada.',
         ]);
 
         // Calcular automáticamente campos derivados
