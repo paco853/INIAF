@@ -37,6 +37,7 @@ class AnalisisSemillasController extends Controller
             'nlab' => ['nullable', 'string', 'max:50'],
             'bolsas' => ['nullable', 'numeric'],
             'kgbol' => ['nullable', 'numeric'],
+            'anio' => ['nullable', 'integer', 'min:1900', 'max:2100'],
         ]);
 
         $especie = $data['especie'] ?? '';
@@ -44,8 +45,9 @@ class AnalisisSemillasController extends Controller
         $nlab = $data['nlab'] ?? '';
         $bolsas = (float) ($data['bolsas'] ?? 0);
         $kgbol = (float) ($data['kgbol'] ?? 0);
+        $anioValue = $this->normalizeYear($data['anio'] ?? null);
 
-        $lote = $this->generateLote($cooperador, $nlab, $especie);
+        $lote = $this->generateLote($cooperador, $nlab, $especie, $anioValue);
         $total = $bolsas * $kgbol;
 
         return response()->json([
@@ -74,15 +76,12 @@ class AnalisisSemillasController extends Controller
 
         $humedad = session()->get('analisis.humedad', []);
         $recepcion = session()->get('analisis.recepcion', []);
-
-        if (!isset($humedad['especie']) && isset($recepcion['especie'])) {
-            $humedad['especie'] = $recepcion['especie'];
-        }
+        $prepared = $this->prepareHumedadData($humedad, $recepcion, $validezDefault, now()->format('Y-m-d'));
 
         return Inertia::render('Analisis/Humedad', [
             'today' => now()->format('Y-m-d'),
             'validezDefault' => $validezDefault,
-            'humedad' => $humedad,
+            'humedad' => $prepared,
         ]);
     }
 
@@ -110,6 +109,7 @@ class AnalisisSemillasController extends Controller
             'kgbol' => ['nullable','numeric','min:0'],
             // 'total' se calcula automáticamente
             'fecha' => ['nullable','date'],
+            'anio' => ['nullable','integer','min:1900','max:2100'],
             'municipio' => ['nullable','string','max:150'],
             'comunidad' => ['nullable','string','max:150'],
             'aut_import' => ['nullable','string','max:150'],
@@ -121,7 +121,16 @@ class AnalisisSemillasController extends Controller
         $aut = trim((string)($data['aut_import'] ?? ''));
         $data['aut_import'] = ($aut === '') ? 'NINGUNO' : $aut;
         // latin removido del formulario
-        $data['lote'] = $this->generateLote($data['cooperador'] ?? '', $data['nlab'] ?? '', $data['especie'] ?? '');
+        $anioValue = $this->normalizeYear($data['anio'] ?? null);
+        if ($anioValue !== null) {
+            $data['anio'] = $anioValue;
+        } else {
+            unset($data['anio']);
+        }
+        $inputLote = trim((string) ($data['lote'] ?? ''));
+        $data['lote'] = $inputLote !== ''
+            ? Str::upper($inputLote)
+            : $this->generateLote($data['cooperador'] ?? '', $data['nlab'] ?? '', $data['especie'] ?? '', $anioValue);
         $bolsas = (float)($data['bolsas'] ?? 0);
         $kgbol = (float)($data['kgbol'] ?? 0);
         $data['total'] = $bolsas * $kgbol;
@@ -286,15 +295,96 @@ class AnalisisSemillasController extends Controller
         return $especie ? ucfirst(trim($especie)) : '';
     }
 
-    private function generateLote(?string $cooperador, ?string $nlab, ?string $especie): string
+    private function prepareHumedadData(array $humedad, array $recepcion, ?string $validezDefault, string $today): array
+    {
+        $especieLabel = $this->buildEspecieLabel($recepcion, $humedad);
+        $fallbackNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS ({$especieLabel})";
+        $fallbackComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES ({$especieLabel})";
+
+        $viabilidad = $humedad['viabilidad_pct'] ?? $humedad['variavilidad_pct'] ?? null;
+
+        $prepared = [
+            'resultado' => $this->normalizeNumericInput($humedad['resultado'] ?? null),
+            'otros_sp_pct' => $this->normalizeNumericInput($humedad['otros_sp_pct'] ?? null),
+            'otros_sp_kg' => $this->normalizeNumericInput($humedad['otros_sp_kg'] ?? null),
+            'otros_cultivos_pct' => $this->normalizeNumericInput($humedad['otros_cultivos_pct'] ?? null),
+            'otros_cultivos_kg' => $this->normalizeNumericInput($humedad['otros_cultivos_kg'] ?? null),
+            'malezas_comunes_pct' => $this->normalizeNumericInput($humedad['malezas_comunes_pct'] ?? null),
+            'malezas_comunes_kg' => $this->normalizeNumericInput($humedad['malezas_comunes_kg'] ?? null),
+            'malezas_prohibidas_pct' => $this->normalizeNumericInput($humedad['malezas_prohibidas_pct'] ?? null),
+            'malezas_prohibidas_kg' => $this->normalizeNumericInput($humedad['malezas_prohibidas_kg'] ?? null),
+            'germinacion_pct' => $this->normalizeNumericInput($humedad['germinacion_pct'] ?? null),
+            'viabilidad_pct' => $this->normalizeNumericInput($viabilidad),
+            'estado' => $this->normalizeTextValue($humedad['estado'] ?? ''),
+            'validez' => $this->normalizeTextValue($humedad['validez'] ?? $validezDefault ?? ''),
+            'fecha' => $humedad['fecha'] ?? $today,
+            'observaciones' => $this->normalizeTextValue($humedad['observaciones'] ?? ''),
+            'malezas_nocivas' => $this->chooseMalezaFallback($humedad['malezas_nocivas'] ?? null, $fallbackNocivas),
+            'malezas_comunes' => $this->chooseMalezaFallback($humedad['malezas_comunes'] ?? null, $fallbackComunes),
+        ];
+
+        if ($prepared['otros_sp_pct'] === '') {
+            $prepared['otros_sp_pct'] = '100';
+        }
+
+        return $prepared;
+    }
+
+    private function buildEspecieLabel(array $recepcion, array $humedad): string
+    {
+        $label = Str::upper(trim((string) ($recepcion['especie'] ?? $humedad['especie'] ?? '')));
+        return $label === '' ? 'SIN ESPECIE' : $label;
+    }
+
+    private function normalizeNumericInput($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        $str = trim((string) $value);
+        if ($str === '') {
+            return '';
+        }
+        return is_numeric($str) ? $str : '';
+    }
+
+    private function normalizeTextValue(?string $value): string
+    {
+        $trimmed = trim((string) ($value ?? ''));
+        return $trimmed === '' ? '' : Str::upper($trimmed);
+    }
+
+    private function chooseMalezaFallback(?string $value, string $fallback): string
+    {
+        $trimmed = trim((string) ($value ?? ''));
+        if ($trimmed === '' || $trimmed === '-') {
+            return $fallback;
+        }
+        return Str::upper($trimmed);
+    }
+
+    private function normalizeYear(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $trimmed = trim((string) $value);
+        return preg_match('/^\d{4}$/', $trimmed) ? $trimmed : null;
+    }
+
+    private function generateLote(?string $cooperador, ?string $nlab, ?string $especie, ?string $year = null): string
     {
         $ini = collect(preg_split('/\s+/', (string) $cooperador, -1, PREG_SPLIT_NO_EMPTY))
             ->map(fn($w) => Str::upper(Str::substr($w, 0, 1)))
             ->implode('');
         $lab = trim((string) $nlab);
         $eIni = Str::upper(Str::substr(trim((string) $especie), 0, 1));
-        $yyyy = now()->format('Y');
-        return collect([$ini, $lab, $eIni, $yyyy])
+        $yearValue = trim((string) ($year ?? ''));
+        $parts = [$ini, $lab, $eIni];
+        if ($yearValue !== '') {
+            $parts[] = $yearValue;
+        }
+        return collect($parts)
             ->filter(fn($v) => $v !== '')
             ->implode('-');
     }

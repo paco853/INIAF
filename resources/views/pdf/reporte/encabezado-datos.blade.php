@@ -6,7 +6,7 @@
     </div>
     <div class="meta-col meta-right">
       <div class="meta-nlab"><strong>N° DE ANALISIS:</strong> {{ $fmt($doc->nlab, '#'.$doc->id) }}</div>
-      <div class="meta-year"><strong>AÑO:</strong> {{ optional($doc->fecha_evaluacion)->format('Y') }}</div>
+      <div class="meta-year"><strong>AÑO:</strong> {{ $fmt($r['anio'] ?? optional($doc->fecha_evaluacion)->format('Y')) }}</div>
       @php
         use Carbon\Carbon;
         $fechaLarga = null;

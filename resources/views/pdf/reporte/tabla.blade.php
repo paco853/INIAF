@@ -85,9 +85,8 @@
           <td>{{ $fmt($doc->validez ?? null) }}</td>
         </tr>
           @php
-          $especieLabel = strtoupper(trim((string)($r['especie'] ?? $doc->especie ?? 'SIN ESPECIE')));
-          $defaultNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS ({$especieLabel})";
-          $defaultComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES ({$especieLabel})";
+          $defaultNocivas = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS";
+          $defaultComunes = "EN LA MUESTRA NO SE ENCONTRARON SEMILLAS DE MALEZAS COMUNES";
           $malezasNocivas = $doc->malezas_nocivas;
           $malezasComunes = $doc->malezas_comunes;
           $clean = static function ($value) {
@@ -104,20 +103,20 @@
         @endphp
         
         <tr class="tabla-extra tabla-extra--obs">
-          <td colspan="24">
+          <td colspan="19">
             <strong>OBSERVACIONES:</strong>
             <span>{{ $fmt($doc->observaciones ?? null) }}</span>
           </td>
          
         </tr>
         <tr class="tabla-extra tabla-extra--malezas">
-          <td colspan="12"><strong>SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS:</strong></td>
-          <td colspan="12"><strong>SEMILLAS DE MALEZAS COMUNES:</strong></td>
+          <td colspan="5"><strong>SEMILLAS DE MALEZAS NOCIVAS O PROHIBIDAS:</strong></td>
+          <td colspan="5"><strong>SEMILLAS DE MALEZAS COMUNES:</strong></td>
    
         </tr>
         <tr class="tabla-extra tabla-extra--malezas">
-          <td colspan="12"><span>{{ $malezasNocivas }}</span></td>
-          <td colspan="12"><span>{{ $malezasComunes }}</span></td>
+          <td colspan="5"><span>{{ $malezasNocivas }}</span></td>
+          <td colspan="5"><span>{{ $malezasComunes }}</span></td>
          
         </tr>
       </tbody>

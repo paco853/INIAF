@@ -1,18 +1,33 @@
 .backups-page {
-    gap: 20px;
+    padding: 2.5rem 3rem;
+    gap: 24px;
+    width: min(1500px, 100%);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(239, 246, 255, 0.85));
 }
 
 .backups-panels {
-    align-items: stretch;
+    align-items: center;
+    width: 100%;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .backup-card {
-    flex: 1;
+    flex: 1 0 40%;
     min-height: 260px;
+    max-width: 520px;
     border-radius: 18px;
-    padding: 18px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    padding: 24px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+    background: rgba(255,255,255,0.94);
 }
 
 .backup-card--export {
@@ -56,63 +71,109 @@
 }
 
 .backup-history {
-    padding: 14px;
+    width: 100%;
+    padding: 18px 16px;
     border-radius: 16px;
     border: 1px solid #e5e7eb;
+    margin-top: 0;
+    align-self: center;
 }
 
-.history-header,
-.history-row {
-    display: grid;
-    grid-template-columns: 2.2fr 1.4fr 1fr 1fr 1fr 1.2fr;
-    gap: 8px;
-    align-items: center;
-    padding: 10px 4px;
+.history-table-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+    width: calc(100% + 36px);
+    margin: 0 -18px;
+    padding: 0 18px 0 8px;
 }
 
-.history-header {
+.history-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.25);
+    border-radius: 999px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.history-table th,
+.history-table td {
+    text-align: left;
+    padding: 12px 10px;
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 0.82rem;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-table th {
     color: #6b7280;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.history-row {
+.history-table tbody tr {
     border-bottom: 1px solid #f1f5f9;
 }
 
-.history-row:last-child {
+.history-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.history-col--file {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.history-row td {
+    vertical-align: middle;
 }
 
-.history-col--actions {
+.history-row td:last-child {
     display: flex;
     justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.history-col--name {
+    width: 35%;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.history-col--date {
+    width: 18%;
+}
+
+.history-col--size {
+    width: 12%;
+}
+
+.history-col--user {
+    width: 15%;
+}
+
+.history-col--status {
+    width: 12%;
 }
 
 @media (max-width: 900px) {
-    .history-header,
-    .history-row {
-        grid-template-columns: 2fr 1.4fr 1fr;
-        grid-template-areas:
-            "file date size"
-            "file status actions";
-        row-gap: 6px;
+    .history-table th,
+    .history-table td {
+        padding: 10px 8px;
     }
-    .history-col--file { grid-area: file; }
-    .history-header .history-col:nth-child(2),
-    .history-row .history-col:nth-child(2) { grid-area: date; }
-    .history-header .history-col:nth-child(3),
-    .history-row .history-col:nth-child(3) { grid-area: size; }
-    .history-header .history-col:nth-child(4),
-    .history-row .history-col:nth-child(4) { display: none; }
-    .history-header .history-col:nth-child(5),
-    .history-row .history-col:nth-child(5) { grid-area: status; }
-    .history-header .history-col:nth-child(6),
-    .history-row .history-col:nth-child(6) { grid-area: actions; justify-content: flex-start; }
+    .history-table th {
+        font-size: 0.68rem;
+    }
+    .history-table td {
+        font-size: 0.75rem;
+    }
 }
 
 @media (max-width: 700px) {
