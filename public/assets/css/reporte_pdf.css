@@ -50,7 +50,7 @@ html, body {
   vertical-align: top;
 }
 .logo-left img{
-  height: 18mm;       /* súbelo a 20mm, 22mm, etc. si lo quieres más grande */
+  height: 18mm;       
   width: auto;
   display: block;
 }
@@ -133,8 +133,8 @@ h1,h2{ margin:0; text-align:center }
 .meta-col{ display:table-cell; width:50%; font-size:11px; line-height:1.5; vertical-align:top }
 .meta-col strong{ font-weight:700; font-size:11px }
 .meta-right{ text-align:right; padding-right:0; transform: translateX(-18mm); } /* mueve N° análisis/ a la izquierda */
-.meta-nlab{ margin-top: 2mm; display:block; } /* empuja el N° de análisis un poco hacia abajo */
-.meta-year{ display:block; transform: translateX(-10mm); margin-top: 2mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
+.meta-nlab{ margin-top: -1; display:block; } /* N° de análisis alineado más arriba */
+.meta-year{ display:block; transform: translateX(-10mm); margin-top: 7mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
 .meta-date{ display:block; text-align:right; transform: translateX(48mm); } /* empuja la fecha hacia la derecha */
 
 /* Tabla principal */
