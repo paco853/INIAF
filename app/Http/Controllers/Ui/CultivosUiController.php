@@ -58,7 +58,7 @@ class CultivosUiController extends Controller
 
     public function edit(Cultivo $cultivo): InertiaResponse
     {
-        $cultivo->load('validez:id,cultivo_id,dias');
+        $cultivo->load('validez:id,cultivo_id,dias,unidad,cantidad');
         $validez = $cultivo->validez;
         return Inertia::render('Cultivos/Edit', [
             'cultivo' => [
