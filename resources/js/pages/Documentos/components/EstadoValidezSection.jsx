@@ -1,20 +1,27 @@
 import React from 'react';
-import { Stack, FormControl, FormLabel, RadioGroup, Radio, Typography } from '@mui/joy';
+import {
+  Stack,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  Option,
+  Typography,
+  RadioGroup,
+  Radio,
+} from '@mui/joy';
 import { ShieldCheck, Clock } from 'lucide-react';
-import FormField from '../../../components/FormField';
+import { DEFAULT_VALIDEZ_UNIT, VALIDEZ_UNITS } from '../../Cultivos/validezUtils';
 
 export default function EstadoValidezSection({
-  data,
   errors,
   estadoValue,
   onEstadoChange,
-  onUpperChange,
+  validezAmount,
+  validezUnit,
+  onValidezAmountChange,
+  onValidezUnitChange,
 }) {
-  // DOCUMENTO_EDIT_COMPONENT
-
-
-
-  
   return (
     <div className="doc-section">
       <div className="doc-section__title">
@@ -38,13 +45,36 @@ export default function EstadoValidezSection({
             <Typography level="body-sm" color="danger">{errors.estado}</Typography>
           )}
         </FormControl>
-        <FormField
-          label="Validez"
-          value={data.validez}
-          onChange={onUpperChange('validez')}
-          error={errors.validez}
-          startDecorator={<Clock size={16} />}
-        />
+        <FormControl error={Boolean(errors.validez)}>
+          <FormLabel>
+            Validez
+            <Typography component="span" level="body-xs" sx={{ color: 'text.tertiary', ml: 0.5 }}>
+              (Selecciona cantidad y unidad)
+            </Typography>
+          </FormLabel>
+          <Stack direction="row" spacing={1}>
+            <Input
+              type="number"
+              min={0}
+              value={validezAmount}
+              onChange={(event) => onValidezAmountChange(event.target.value)}
+              startDecorator={<Clock size={16} />}
+              sx={{ flex: 1 }}
+            />
+            <Select
+              value={validezUnit || DEFAULT_VALIDEZ_UNIT}
+              onChange={(_, value) => onValidezUnitChange(value)}
+              sx={{ minWidth: 110 }}
+            >
+              {VALIDEZ_UNITS.map((unit) => (
+                <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+              ))}
+            </Select>
+          </Stack>
+          {errors.validez && (
+            <Typography level="body-sm" color="danger">{errors.validez}</Typography>
+          )}
+        </FormControl>
       </Stack>
     </div>
   );

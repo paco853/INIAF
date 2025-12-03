@@ -150,6 +150,10 @@ class BackupsController extends Controller
             $target = 'cultivos';
         }
 
+        if ($target === 'documentos') {
+            return $this->importDocumentosBackup($payload);
+        }
+
         if ($target !== 'cultivos') {
             return back()->withErrors(['file' => 'Este backup es de "'.$target.'" y solo se pueden importar cultivos y variedades.'])->withInput();
         }
@@ -218,6 +222,50 @@ class BackupsController extends Controller
                         'updated_at' => $now,
                     ]);
                 }
+            }
+        });
+
+        return redirect()->route('ui.backups')->with('status', 'Backup restaurado correctamente.');
+    }
+
+    protected function importDocumentosBackup(array $payload)
+    {
+        $documentos = data_get($payload, 'data.documentos');
+        if (!is_array($documentos)) {
+            return back()->withErrors(['file' => 'El archivo no contiene documentos válidos.'])->withInput();
+        }
+
+        foreach ($documentos as $idx => $doc) {
+            if (!is_array($doc)) {
+                return back()->withErrors(['file' => "Documento #$idx no es válido."])->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($documentos) {
+            try {
+                DB::statement('TRUNCATE TABLE analisis_documentos RESTART IDENTITY CASCADE');
+            } catch (\Throwable $e) {
+                DB::table('analisis_documentos')->delete();
+            }
+
+            foreach ($documentos as $doc) {
+                $now = now();
+                DB::table('analisis_documentos')->insert(array_filter([
+                    'id' => $doc['id'] ?? null,
+                    'nlab' => $doc['nlab'] ?? null,
+                    'especie' => $doc['especie'] ?? null,
+                    'fecha_evaluacion' => $doc['fecha_evaluacion'] ?? null,
+                    'estado' => $doc['estado'] ?? null,
+                    'validez' => $doc['validez'] ?? null,
+                    'observaciones' => $doc['observaciones'] ?? null,
+                    'malezas_nocivas' => $doc['malezas_nocivas'] ?? null,
+                    'malezas_comunes' => $doc['malezas_comunes'] ?? null,
+                    'recepcion' => isset($doc['recepcion']) ? json_encode($doc['recepcion'], JSON_UNESCAPED_UNICODE) : null,
+                    'humedad' => isset($doc['humedad']) ? json_encode($doc['humedad'], JSON_UNESCAPED_UNICODE) : null,
+                    'datos' => isset($doc['datos']) ? json_encode($doc['datos'], JSON_UNESCAPED_UNICODE) : null,
+                    'created_at' => $doc['created_at'] ?? $now,
+                    'updated_at' => $doc['updated_at'] ?? $now,
+                ], fn ($v) => $v !== null));
             }
         });
 

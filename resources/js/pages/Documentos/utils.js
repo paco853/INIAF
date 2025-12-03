@@ -160,12 +160,12 @@ export const buildCultivosMetadata = (cultivos = []) => {
 
     if (especieName) {
       especiesSet.add(especieName);
-      metaMap.set(especieName, {
-        categoria_inicial: categoriaInicial,
-        categoria_final: categoriaFinal,
-        variedades,
-        validezLabel: formatValidezLabel(cultivo?.validez_dias),
-      });
+        metaMap.set(especieName, {
+          categoria_inicial: categoriaInicial,
+          categoria_final: categoriaFinal,
+          variedades,
+          validezLabel: formatValidezLabel(cultivo?.validez),
+        });
     }
     if (categoriaInicial) {
       categoriaInicialSet.add(categoriaInicial);

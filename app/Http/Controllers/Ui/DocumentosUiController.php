@@ -123,7 +123,7 @@ class DocumentosUiController extends Controller
         $cultivos = Cultivo::query()
             ->with([
                 'variedades:id,cultivo_id,nombre',
-                'validez:id,cultivo_id,dias',
+                'validez:id,cultivo_id,dias,unidad,cantidad',
             ])
             ->orderBy('especie')
             ->get(['id','especie','categoria_inicial','categoria_final']);
@@ -175,7 +175,11 @@ class DocumentosUiController extends Controller
                     'variedades' => $cultivo->variedades
                         ? $cultivo->variedades->pluck('nombre')->filter()->values()->toArray()
                         : [],
-                    'validez_dias' => optional($cultivo->validez)->dias,
+                    'validez' => $cultivo->validez ? [
+                        'dias' => $cultivo->validez->dias,
+                        'cantidad' => $cultivo->validez->cantidad,
+                        'unidad' => $cultivo->validez->unidad,
+                    ] : null,
                 ];
             }),
         ]);

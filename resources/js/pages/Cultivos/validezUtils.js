@@ -33,6 +33,52 @@ export const splitDiasIntoAmountUnit = (dias) => {
   return { amount: String(parsed), unit: DEFAULT_VALIDEZ_UNIT };
 };
 
+const removeAccents = (text) => (
+  (text ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+);
+
+const sanitizeAmountPart = (value) => value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+
+export const parseValidezLabel = (label) => {
+  const raw = (label ?? '').toString();
+  const trimmed = raw.trim();
+  if (trimmed === '') {
+    return { amount: '', unit: DEFAULT_VALIDEZ_UNIT };
+  }
+  const normalized = removeAccents(trimmed).toUpperCase();
+  if (normalized === '') {
+    return { amount: '', unit: DEFAULT_VALIDEZ_UNIT };
+  }
+
+  let matchedUnit = null;
+  let amountPart = normalized;
+  for (const entry of VALIDEZ_UNITS) {
+    const patterns = [
+      entry.value.toUpperCase(),
+      removeAccents(entry.label).toUpperCase(),
+    ].filter(Boolean);
+    for (const pattern of patterns) {
+      if (pattern && normalized.endsWith(pattern)) {
+        matchedUnit = entry;
+        amountPart = normalized.slice(0, normalized.length - pattern.length).trim();
+        break;
+      }
+    }
+    if (matchedUnit) {
+      break;
+    }
+  }
+
+  if (!matchedUnit) {
+    return { amount: sanitizeAmountPart(normalized), unit: DEFAULT_VALIDEZ_UNIT };
+  }
+
+  return {
+    amount: sanitizeAmountPart(amountPart),
+    unit: matchedUnit.value,
+  };
+};
+
 export const formatValidezLabel = (validez) => {
   if (!validez) return '';
   if (typeof validez === 'object') {

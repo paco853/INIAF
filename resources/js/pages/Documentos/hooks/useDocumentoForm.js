@@ -23,6 +23,11 @@ import {
   REQUIRED_LABELS,
   buildInitialFormData,
 } from '../config';
+import {
+  DEFAULT_VALIDEZ_UNIT,
+  formatValidezLabel,
+  parseValidezLabel,
+} from '../../Cultivos/validezUtils';
 
 export default function useDocumentoForm({ doc = {}, loteSuggestions = [], cultivos = [] }) {
   const {
@@ -60,13 +65,34 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     () => getVariedadOptions(cultivosMeta, data.especie, data.variedad, variedadGlobalOptions),
     [cultivosMeta, data.especie, data.variedad, variedadGlobalOptions],
   );
+  const initialValidez = React.useMemo(
+    () => parseValidezLabel(doc.validez ?? ''),
+    [doc.validez],
+  );
+
+  const [validezAmount, setValidezAmount] = React.useState(initialValidez.amount);
+  const [validezUnit, setValidezUnit] = React.useState(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
+
+  React.useEffect(() => {
+    setValidezAmount(initialValidez.amount);
+    setValidezUnit(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
+  }, [initialValidez.amount, initialValidez.unit]);
 
   React.useEffect(() => {
     if (!validezAutoLabel) {
       return;
     }
-    setData('validez', validezAutoLabel);
-  }, [validezAutoLabel, setData]);
+    const parsed = parseValidezLabel(validezAutoLabel);
+    setValidezAmount(parsed.amount);
+    setValidezUnit(parsed.unit);
+  }, [validezAutoLabel]);
+
+  React.useEffect(() => {
+    setData('validez', formatValidezLabel({
+      cantidad: validezAmount,
+      unidad: validezUnit,
+    }));
+  }, [setData, validezAmount, validezUnit]);
 
   const missingRequired = React.useMemo(() => (
     REQUIRED_FIELDS.filter((f) => {
@@ -197,6 +223,14 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     },
     [setData],
   );
+
+  const handleValidezAmountChange = React.useCallback((value) => {
+    setValidezAmount(value ?? '');
+  }, []);
+
+  const handleValidezUnitChange = React.useCallback((value) => {
+    setValidezUnit(value || DEFAULT_VALIDEZ_UNIT);
+  }, []);
 
   const handleTextareaInput = React.useCallback((event) => {
     const target = event.target;
@@ -384,6 +418,10 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     handlePlainChange,
     handleVariedadSelect,
     handleEspecieSelect,
+    validezAmount,
+    validezUnit,
+    handleValidezAmountChange,
+    handleValidezUnitChange,
     handleObservacionesChange,
     handleAnioChange,
     handleTextareaInput,

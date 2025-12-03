@@ -58,6 +58,10 @@ export default function DocumentoEdit() {
     handlePlainChange,
     handleVariedadSelect,
     handleEspecieSelect,
+    validezAmount,
+    validezUnit,
+    handleValidezAmountChange,
+    handleValidezUnitChange,
     handleObservacionesChange,
     handleAnioChange,
     handleTextareaInput,
@@ -143,11 +147,13 @@ export default function DocumentoEdit() {
           />
 
           <EstadoValidezSection
-            data={data}
             errors={errors}
             estadoValue={estadoValue}
             onEstadoChange={handleEstadoChange}
-            onUpperChange={handleUpperChange}
+            validezAmount={validezAmount}
+            validezUnit={validezUnit}
+            onValidezAmountChange={handleValidezAmountChange}
+            onValidezUnitChange={handleValidezUnitChange}
           />
 
           <MalezasSection

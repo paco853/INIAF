@@ -61,10 +61,11 @@ class AnalisisSemillasController extends Controller
                 $cultivo = \App\Models\Cultivo::whereRaw('LOWER(especie) = ?', [Str::lower($esp)])
                     ->first();
                 if ($cultivo && $cultivo->validez) {
-                    $dias = (int) ($cultivo->validez->dias ?? 0);
-                    if ($dias > 0) {
-                        $validezDefault = ValidezFormatter::fromDias($dias);
-                    }
+                    $validezDefault = ValidezFormatter::format(
+                        $cultivo->validez->cantidad,
+                        $cultivo->validez->unidad,
+                        $cultivo->validez->dias,
+                    );
                 }
             }
         } catch (\Throwable $e) { /* silent */ }

@@ -12,6 +12,8 @@ import {
   RadioGroup,
   Radio,
 } from '@mui/joy';
+import EstadoValidezSection from './components/EstadoValidezSection';
+import { DEFAULT_VALIDEZ_UNIT, formatValidezLabel } from '../Cultivos/validezUtils';
 
 const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'decimal' } });
 
@@ -180,6 +182,24 @@ export default function DocumentoCreate() {
     [setData],
   );
 
+  const [validezAmount, setValidezAmount] = React.useState('');
+  const [validezUnit, setValidezUnit] = React.useState(DEFAULT_VALIDEZ_UNIT);
+
+  React.useEffect(() => {
+    setData('validez', formatValidezLabel({
+      cantidad: validezAmount,
+      unidad: validezUnit,
+    }));
+  }, [setData, validezAmount, validezUnit]);
+
+  const handleValidezAmountChange = React.useCallback((value) => {
+    setValidezAmount(value ?? '');
+  }, []);
+
+  const handleValidezUnitChange = React.useCallback((value) => {
+    setValidezUnit(value || DEFAULT_VALIDEZ_UNIT);
+  }, []);
+
   const totalKg = React.useMemo(() => {
     const bolsasNum = parseFloat(data.bolsas);
     const kgbolNum = parseFloat(data.kgbol);
@@ -273,31 +293,15 @@ export default function DocumentoCreate() {
           />
         </Stack>
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <FormControl>
-            <FormLabel>Estado</FormLabel>
-            <RadioGroup
-              value={estadoValue}
-              onChange={handleEstadoChange}
-              orientation="horizontal"
-              sx={{ gap: 0.75, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}
-              required
-            >
-              <Radio value="APROBADO" label="Aprobado" />
-              <Radio value="RECHAZADO" label="Rechazado" />
-            </RadioGroup>
-            {errors.estado && (
-              <Typography level="body-sm" color="danger">{errors.estado}</Typography>
-            )}
-          </FormControl>
-          <FormField
-            label="Validez"
-            value={data.validez}
-            onChange={handleUpperChange('validez')}
-            error={errors.validez}
-            required
-          />
-        </Stack>
+        <EstadoValidezSection
+          errors={errors}
+          estadoValue={estadoValue}
+          onEstadoChange={handleEstadoChange}
+          validezAmount={validezAmount}
+          validezUnit={validezUnit}
+          onValidezAmountChange={handleValidezAmountChange}
+          onValidezUnitChange={handleValidezUnitChange}
+        />
 
         <FormField
           label="Observaciones"
