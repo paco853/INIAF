@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\AnalisisDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 use Spatie\Browsershot\Browsershot;
 use iio\libmergepdf\Merger;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use App\Support\DocumentosHelper;
 use App\Support\ReporteContextBuilder;
 use Dompdf\Dompdf;
@@ -24,8 +26,12 @@ class DocumentosController extends Controller
     /** Crea un documento (store). */
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'nlab' => ['required','string','max:50'],
+        $anioForUnique = $this->normalizeYear($request->input('anio'));
+        $request->merge(['anio' => $anioForUnique]);
+        $nlabUniqueRule = $this->makeNlabUniqueRule($anioForUnique);
+
+        $rules = [
+            'nlab' => ['required','string','max:50',$nlabUniqueRule],
             'especie' => ['required','string','max:150'],
             'fecha_evaluacion' => ['required','date'],
             'estado' => ['required', Rule::in(['APROBADO','RECHAZADO', true, false, 1, 0, '1', '0'])],
@@ -58,7 +64,23 @@ class DocumentosController extends Controller
             'germinacion_pct' => ['nullable','numeric'],
             'viabilidad_pct' => ['nullable','numeric'],
             'variavilidad_pct' => ['nullable','numeric'],
-        ]);
+        ];
+        $messages = [
+            'nlab.unique' => 'Este número de laboratorio ya existe.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            if ($request->header('X-Inertia')) {
+                return redirect()
+                    ->route('ui.documentos.create')
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+            throw new ValidationException($validator);
+        }
+
+        $data = $validator->validated();
 
         $doc = new AnalisisDocumento();
         $estado = $this->normalizeEstado($request->input('estado'));
@@ -213,8 +235,16 @@ class DocumentosController extends Controller
             }
         }
 
-        $data = $request->validate([
-            'nlab' => ['required','string','max:50'],
+        $existingRecepcion = is_array($doc->recepcion) ? $doc->recepcion : [];
+        $existingAnio = $existingRecepcion['anio'] ?? null;
+        $anioInput = $request->exists('anio') ? $request->input('anio') : $existingAnio;
+        $anioForUnique = $this->normalizeYear($anioInput);
+        if ($request->exists('anio')) {
+            $request->merge(['anio' => $anioForUnique]);
+        }
+
+        $rules = [
+            'nlab' => ['required','string','max:50',$this->makeNlabUniqueRule($anioForUnique, $doc->id)],
             'especie' => ['required','string','max:150'],
             'fecha_evaluacion' => ['required','date'],
             'estado' => ['required', Rule::in(['APROBADO','RECHAZADO', true, false, 1, 0, '1', '0'])],
@@ -247,7 +277,23 @@ class DocumentosController extends Controller
             'germinacion_pct' => ['nullable','numeric'],
             'viabilidad_pct' => ['nullable','numeric'],
             'variavilidad_pct' => ['nullable','numeric'],
-        ]);
+        ];
+        $messages = [
+            'nlab.unique' => 'Este número de laboratorio ya existe.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            if ($request->header('X-Inertia')) {
+                return redirect()
+                    ->route('ui.documentos.edit', $doc)
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+            throw new ValidationException($validator);
+        }
+
+        $data = $validator->validated();
 
         // Actualizar bloque de recepción dentro del JSON
         $recepKeys = [
@@ -310,6 +356,29 @@ class DocumentosController extends Controller
         return redirect($redirectTo)->with('status', 'Documento actualizado');
     }
 
+    /** Verifica rápidamente si un N° de laboratorio ya existe para una campaña. */
+    public function checkNlab(Request $request): JsonResponse
+    {
+        $nlab = strtoupper(trim((string) $request->query('nlab', '')));
+        $anio = $this->normalizeYear($request->query('anio'));
+        $ignoreId = $request->query('ignore_id');
+        if ($nlab === '') {
+            return response()->json(['exists' => false]);
+        }
+
+        $query = AnalisisDocumento::query()->whereRaw('UPPER(nlab) = ?', [$nlab]);
+        if ($anio === null) {
+            $query->whereNull('recepcion->anio');
+        } else {
+            $query->where('recepcion->anio', $anio);
+        }
+        if (!empty($ignoreId)) {
+            $query->where('id', '!=', (int) $ignoreId);
+        }
+
+        return response()->json(['exists' => $query->exists()]);
+    }
+
     protected function buildReporteContext(AnalisisDocumento $doc, bool $isPreview): array
     {
         return ReporteContextBuilder::build($doc, $isPreview);
@@ -344,6 +413,33 @@ class DocumentosController extends Controller
         }
 
         return null;
+    }
+
+    private function makeNlabUniqueRule(?string $anio, ?int $ignoreId = null): \Illuminate\Validation\Rules\Unique
+    {
+        $rule = Rule::unique('analisis_documentos', 'nlab')
+            ->where(function ($query) use ($anio) {
+                if ($anio === null) {
+                    $query->whereNull('recepcion->anio');
+                } else {
+                    $query->where('recepcion->anio', $anio);
+                }
+            });
+
+        if ($ignoreId !== null) {
+            $rule->ignore($ignoreId);
+        }
+
+        return $rule;
+    }
+
+    private function normalizeYear(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $trimmed = trim((string) $value);
+        return preg_match('/^\d{4}$/', $trimmed) ? $trimmed : null;
     }
 
     private function sanitizeMalezaText(?string $value, string $fallbackPrefix): string

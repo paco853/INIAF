@@ -15,6 +15,7 @@ export default function AnalisisSemillas() {
     processing,
     errorMessages,
     flash,
+    errors,
     cultivos,
     variedades,
     municipiosSugeridos,
@@ -83,6 +84,7 @@ export default function AnalisisSemillas() {
             handleVariedadChange={handleVariedadChange}
             handleAnioChange={handleAnioChange}
             createVariedadHref={createVariedadHref}
+            errors={errors}
           />
 
           <CategoriaYLote

@@ -131,6 +131,16 @@
     background: #fff;
 }
 
+.page--documentos-edit .doc-form input[type='number'] {
+    -moz-appearance: textfield;
+}
+
+.page--documentos-edit .doc-form input[type='number']::-webkit-inner-spin-button,
+.page--documentos-edit .doc-form input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .doc-section {
     border-radius: 16px;
     padding: 1rem 1.1rem 1.25rem;

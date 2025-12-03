@@ -23,6 +23,9 @@ export function useRecepcionForm() {
   const { props, url } = usePage();
 
   const cultivosProp = props?.cultivos || [];
+  const errors = React.useMemo(() => (
+    props?.errors && typeof props.errors === 'object' ? props.errors : {}
+  ), [props?.errors]);
   const recepcionProp = React.useMemo(
     () => (props?.recepcion && typeof props.recepcion === 'object' ? props.recepcion : {}),
     [props?.recepcion],
@@ -560,7 +563,8 @@ export function useRecepcionForm() {
   return {
     data,
     processing,
-    errorMessages: Object.values(props?.errors || {}).filter(Boolean),
+    errorMessages: Object.values(errors).filter(Boolean),
+    errors,
     flash: props?.flash || {},
     cultivos,
     variedades,

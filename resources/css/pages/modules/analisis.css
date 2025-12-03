@@ -212,6 +212,19 @@
     width: 100%;
 }
 
+.lab-card--error {
+    border-color: rgba(226, 95, 88, 0.7);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 0 0 1px rgba(226,95,88,0.18), 0 6px 14px rgba(226,95,88,0.18);
+}
+
+.lab-card-error-text {
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+    margin-top: 2px;
+    color: #c7362f;
+}
+
 .lab-icon {
     width: 28px;
     height: 28px;

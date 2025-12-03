@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     // Documentos
     Route::get('/documentos', [DocumentosController::class, 'index'])->name('documentos.index');
     Route::post('/documentos', [DocumentosController::class, 'store'])->name('documentos.store');
+    Route::get('/documentos/check-nlab', [DocumentosController::class, 'checkNlab'])->name('documentos.check_nlab');
     Route::get('/documentos/{doc}/imprimir', [DocumentosController::class, 'imprimir'])->whereNumber('doc')->name('documentos.print');
     Route::get('/documentos/{doc}', [DocumentosController::class, 'show'])->whereNumber('doc')->name('documentos.show');
     Route::get('/documentos/{doc}/edit', [DocumentosController::class, 'edit'])->whereNumber('doc')->name('documentos.edit');

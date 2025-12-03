@@ -19,7 +19,10 @@ export default function DatosGenerales({
   handleVariedadChange,
   handleAnioChange,
   createVariedadHref,
+  errors = {},
 }) {
+  const labError = errors?.nlab;
+  const hasLabError = Boolean(labError);
   return (
     <Box className="recepcion-section">
       <Typography level="title-md" className="section-title">
@@ -38,7 +41,7 @@ export default function DatosGenerales({
             startDecorator={<Calendar size={16} />}
           />
         </FormControl>
-        <Box className="lab-card">
+        <Box className={`lab-card${hasLabError ? ' lab-card--error' : ''}`}>
           <FormLabel>Nº Lab</FormLabel>
           <Input
             placeholder="Nº Lab"
@@ -46,7 +49,13 @@ export default function DatosGenerales({
             onChange={handleTextChange('nlab')}
             required
             startDecorator={<FlaskConical size={16} />}
+            error={hasLabError}
           />
+          {hasLabError && (
+            <Typography level="body-sm" color="danger" className="lab-card-error-text">
+              {labError}
+            </Typography>
+          )}
         </Box>
 
         <FormControl>

@@ -4,7 +4,6 @@ import {
   Stack,
   Typography,
   Input,
-  Textarea,
   Button,
   FormControl,
   FormLabel,
@@ -13,6 +12,8 @@ import {
   Radio,
   Modal,
   ModalDialog,
+  Select,
+  Option,
 } from '@mui/joy';
 import {
   Hash,
@@ -29,58 +30,32 @@ import {
   Package,
   Scale,
   MapPin,
-  Map,
+  Map as MapIcon,
   ShieldCheck,
   Thermometer,
   Activity,
 } from 'lucide-react';
 
-const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'decimal' } });
-const NUMBER_INPUT_SLOT_PROPS = Object.freeze({ input: { inputMode: 'numeric' } });
+import FormField from '../../components/FormField';
+import {
+  DECIMAL_INPUT_SLOT_PROPS,
+  NUMBER_INPUT_SLOT_PROPS,
+  normalizeUpper,
+  buildObservationText,
+  toUpperValue,
+  buildAutoLoteValue,
+  calculateTotalKg,
+  buildCultivosMetadata,
+  getVariedadOptions,
+} from './utils';
 
-const FormField = React.memo(function FormField({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  textarea = false,
-  error,
-  minRows = 3,
-  slotProps,
-  required = false,
-  startDecorator,
-}) {
-  return (
-    <FormControl>
-      <FormLabel>{label}</FormLabel>
-      {textarea ? (
-        <Textarea
-          minRows={minRows}
-          value={value ?? ''}
-          onChange={onChange}
-          required={required}
-          startDecorator={startDecorator}
-        />
-      ) : (
-        <Input
-          type={type}
-          value={value ?? ''}
-          onChange={onChange}
-          slotProps={slotProps}
-          required={required}
-          startDecorator={startDecorator}
-        />
-      )}
-      {error && (
-        <Typography level="body-sm" color="danger">{error}</Typography>
-      )}
-    </FormControl>
-  );
-});
+const AUTO_LOTE_UPPER_FIELDS = new Set(['nlab']);
+const AUTO_LOTE_NO_TRIM_FIELDS = new Set(['cooperador']);
+const AUTO_LOTE_PLAIN_FIELDS = new Set(['fecha_evaluacion']);
 
 export default function DocumentoEdit() {
   const { props } = usePage();
-  const { doc = {}, flash, loteSuggestions = [] } = props;
+  const { doc = {}, flash, loteSuggestions = [], cultivos = [] } = props;
   const initialTotal = React.useMemo(() => (
     doc?.total != null ? String(doc.total) : ''
   ), [doc]);
@@ -125,6 +100,9 @@ export default function DocumentoEdit() {
   });
   const [loteDirty, setLoteDirty] = React.useState(Boolean(doc.lote));
   const [showMissingModal, setShowMissingModal] = React.useState(false);
+  const [nlabClientError, setNlabClientError] = React.useState('');
+  const [checkingNlab, setCheckingNlab] = React.useState(false);
+  const autoObservationRef = React.useRef('');
   const REQUIRED_FIELDS = React.useMemo(() => ([
     'nlab',
     'especie',
@@ -153,6 +131,21 @@ export default function DocumentoEdit() {
     kgbol: 'Kg/bolsa',
     aut_import: 'Aut. Importación',
   }), []);
+  const cultivosMetadata = React.useMemo(
+    () => buildCultivosMetadata(Array.isArray(cultivos) ? cultivos : []),
+    [cultivos],
+  );
+  const {
+    metaMap: cultivosMeta,
+    especiesOptions,
+    categoriaInicialOptions,
+    categoriaFinalOptions,
+    variedadGlobalOptions,
+  } = cultivosMetadata;
+  const variedadOptions = React.useMemo(
+    () => getVariedadOptions(cultivosMeta, data.especie, data.variedad, variedadGlobalOptions),
+    [cultivosMeta, data.especie, data.variedad, variedadGlobalOptions],
+  );
 
   const missingRequired = React.useMemo(() => (
     REQUIRED_FIELDS.filter((f) => {
@@ -169,6 +162,11 @@ export default function DocumentoEdit() {
   const missingMessage = hasMissingRequired
     ? `Completa los campos obligatorios: ${missingRequiredLabels.join(', ')}`
     : '';
+  const serverErrors = React.useMemo(
+    () => Object.values(errors || {}).filter(Boolean),
+    [errors],
+  );
+  const nlabFieldError = errors.nlab ?? nlabClientError;
 
   const lotes = React.useMemo(() => {
     const base = Array.isArray(loteSuggestions) ? [...loteSuggestions] : [];
@@ -184,22 +182,82 @@ export default function DocumentoEdit() {
     }
   }, [hasMissingRequired]);
 
-  const toUpper = React.useCallback((value) => (
-    typeof value === 'string' ? value.toUpperCase() : value
-  ), []);
-
   const handleUpperChange = React.useCallback(
     (name) => (event) => {
       const value = event.target.value ?? '';
-      setData(name, toUpper(value));
+      setData(name, toUpperValue(value));
+      if (name === 'nlab') {
+        setNlabClientError('');
+      }
+      if (AUTO_LOTE_UPPER_FIELDS.has(name)) {
+        setLoteDirty(false);
+      }
     },
-    [setData, toUpper],
+    [setData, setLoteDirty, setNlabClientError],
+  );
+  const handleUpperNoTrimChange = React.useCallback(
+    (name) => (event) => {
+      const value = event.target.value ?? '';
+      setData(name, toUpperValue(value, { trim: false }));
+      if (AUTO_LOTE_NO_TRIM_FIELDS.has(name)) {
+        setLoteDirty(false);
+      }
+    },
+    [setData, setLoteDirty],
   );
 
   const handlePlainChange = React.useCallback(
     (name) => (event) => {
       const value = event.target.value ?? '';
       setData(name, value);
+      if (AUTO_LOTE_PLAIN_FIELDS.has(name)) {
+        setLoteDirty(false);
+      }
+    },
+    [setData, setLoteDirty],
+  );
+  const handleEspecieSelect = React.useCallback(
+    (_, value) => {
+      const normalized = toUpperValue(value || '');
+      setData('especie', normalized);
+      if (!normalized) {
+        setLoteDirty(false);
+        return;
+      }
+      const meta = cultivosMeta.get(normalized);
+      if (meta) {
+        if (meta.categoria_inicial) {
+          setData('categoria_inicial', meta.categoria_inicial);
+        }
+        if (meta.categoria_final) {
+          setData('categoria_final', meta.categoria_final);
+        }
+        const currentVariedad = normalizeUpper(data.variedad);
+        if (meta.variedades.length > 0) {
+          const nextVariedad = meta.variedades.includes(currentVariedad)
+            ? currentVariedad
+            : meta.variedades[0];
+          setData('variedad', nextVariedad);
+        } else {
+          setData('variedad', '');
+        }
+      }
+      setLoteDirty(false);
+    },
+    [cultivosMeta, data.variedad, setData, setLoteDirty],
+  );
+  const handleObservacionesChange = React.useCallback(
+    (event) => {
+      autoObservationRef.current = null;
+      const value = event.target.value ?? '';
+      setData('observaciones', toUpperValue(value));
+    },
+    [setData],
+  );
+  const handleVariedadSelect = React.useCallback(
+    (_, value) => {
+      const normalized = toUpperValue(value || '');
+      setData('variedad', normalized);
     },
     [setData],
   );
@@ -207,9 +265,10 @@ export default function DocumentoEdit() {
   const handleAnioChange = React.useCallback(
     (event) => {
       setLoteDirty(false);
+      setNlabClientError('');
       setData('anio', event.target.value ?? '');
     },
-    [setData],
+    [setData, setNlabClientError, setLoteDirty],
   );
 
   const handleTextareaInput = React.useCallback((event) => {
@@ -218,6 +277,16 @@ export default function DocumentoEdit() {
     target.style.height = `${target.scrollHeight}px`;
   }, []);
 
+  const generateObservation = React.useCallback(
+    (
+      nextEstado = data.estado,
+      nextCategoria = data.categoria_final,
+      nextEspecie = data.especie,
+      nextAnio = data.anio,
+    ) => buildObservationText(nextEstado, nextCategoria, nextEspecie, nextAnio),
+    [data.anio, data.categoria_final, data.estado, data.especie],
+  );
+
   const estadoValue = React.useMemo(() => data.estado || 'APROBADO', [data.estado]);
 
   const handleEstadoChange = React.useCallback(
@@ -225,53 +294,45 @@ export default function DocumentoEdit() {
       const next = event.target.value;
       if (next === 'APROBADO') {
         setData('estado', 'APROBADO');
+        const suggestion = generateObservation('APROBADO');
+        if (suggestion) {
+          setData('observaciones', suggestion);
+          autoObservationRef.current = suggestion;
+        } else {
+          autoObservationRef.current = '';
+        }
       } else if (next === 'RECHAZADO') {
         setData('estado', 'RECHAZADO');
+        const suggestion = generateObservation('RECHAZADO');
+        if (suggestion) {
+          setData('observaciones', suggestion);
+          autoObservationRef.current = suggestion;
+        } else {
+          autoObservationRef.current = '';
+        }
       } else {
         setData('estado', '');
+        autoObservationRef.current = '';
       }
     },
-    [setData],
+    [generateObservation, setData],
   );
 
-  const totalKg = React.useMemo(() => {
-    const bolsasNum = Number(data.bolsas);
-    const kgbolNum = Number(data.kgbol);
-    if (Number.isFinite(bolsasNum) && Number.isFinite(kgbolNum) && data.bolsas !== '' && data.kgbol !== '') {
-      const total = bolsasNum * kgbolNum;
-      return Number.isFinite(total) ? total.toFixed(2) : '';
-    }
-    return '';
-  }, [data.bolsas, data.kgbol]);
+  const totalKg = React.useMemo(
+    () => calculateTotalKg(data.bolsas, data.kgbol),
+    [data.bolsas, data.kgbol],
+  );
 
-  const buildAutoLote = React.useCallback(() => {
-    const initials = (data.cooperador || '')
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((word) => word[0])
-      .join('');
-    const lab = (data.nlab || '').trim();
-    const especieInitial = ((data.especie || '').trim().charAt(0) || '').toUpperCase();
-    const manualYear = String(data.anio ?? '').trim();
-    let yearPart = manualYear;
-    if (!/^\d{4}$/.test(yearPart)) {
-      if (data.fecha_evaluacion) {
-        const parsed = new Date(data.fecha_evaluacion);
-        if (!Number.isNaN(parsed.getTime())) {
-          yearPart = String(parsed.getFullYear());
-        }
-      }
-      if (!yearPart) {
-        yearPart = String(new Date().getFullYear());
-      }
-    }
-    const parts = [initials, lab, especieInitial, yearPart];
-    return parts
-      .filter((segment) => segment && segment.length > 0)
-      .join('-')
-      .toUpperCase();
-  }, [data.cooperador, data.nlab, data.especie, data.fecha_evaluacion, data.anio]);
+  const buildAutoLote = React.useCallback(
+    () => buildAutoLoteValue({
+      cooperador: data.cooperador,
+      nlab: data.nlab,
+      especie: data.especie,
+      fechaEvaluacion: data.fecha_evaluacion,
+      anio: data.anio,
+    }),
+    [data.cooperador, data.nlab, data.especie, data.fecha_evaluacion, data.anio],
+  );
 
   React.useEffect(() => {
     if (loteDirty) {
@@ -285,21 +346,90 @@ export default function DocumentoEdit() {
 
   const handleLoteManualChange = React.useCallback(
     (event) => {
-      setLoteDirty(true);
       const value = event.target.value ?? '';
-      setData('lote', toUpper(value));
+      const normalized = toUpperValue(value);
+      setData('lote', normalized);
+      if (normalized === '') {
+        setLoteDirty(false);
+      } else {
+        setLoteDirty(true);
+      }
     },
-    [setData, toUpper],
+    [setData, setLoteDirty],
   );
 
-  const submit = (e) => {
+  React.useEffect(() => {
+    if (autoObservationRef.current === null) {
+      return;
+    }
+    if (data.estado !== 'APROBADO' && data.estado !== 'RECHAZADO') {
+      autoObservationRef.current = '';
+      return;
+    }
+    const suggestion = generateObservation();
+    if (!suggestion) {
+      return;
+    }
+    if (data.observaciones === suggestion) {
+      autoObservationRef.current = suggestion;
+      return;
+    }
+    setData('observaciones', suggestion);
+    autoObservationRef.current = suggestion;
+  }, [data.estado, data.categoria_final, data.especie, data.anio, data.observaciones, generateObservation, setData]);
+
+  const checkNlabDuplicate = React.useCallback(async () => {
+    const lab = (data.nlab || '').trim();
+    if (lab === '') {
+      return false;
+    }
+    const params = new URLSearchParams();
+    params.set('nlab', lab);
+    const anioValue = (data.anio || '').toString().trim();
+    if (anioValue !== '') {
+      params.set('anio', anioValue);
+    }
+    if (doc?.id) {
+      params.set('ignore_id', String(doc.id));
+    }
+    try {
+      const response = await fetch(`/documentos/check-nlab?${params.toString()}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!response.ok) {
+        return false;
+      }
+      const payload = await response.json();
+      return Boolean(payload.exists);
+    } catch (error) {
+      return false;
+    }
+  }, [data.anio, data.nlab, doc?.id]);
+
+  const submit = async (e) => {
     e.preventDefault();
     if (hasMissingRequired) {
       setShowMissingModal(true);
       return;
     }
     setShowMissingModal(false);
-    put(`/documentos/${doc.id}`);
+    setCheckingNlab(true);
+    const existsDuplicate = await checkNlabDuplicate();
+    setCheckingNlab(false);
+    if (existsDuplicate) {
+      setNlabClientError('Este número de laboratorio ya existe para la campaña seleccionada.');
+      setShowMissingModal(false);
+      return;
+    }
+    setNlabClientError('');
+    put(`/documentos/${doc.id}`, {
+      preserveScroll: true,
+      preserveState: (page) => {
+        const nextErrors = page?.props?.errors || {};
+        return Object.keys(nextErrors).length === 0;
+      },
+      onError: () => setShowMissingModal(false),
+    });
   };
 
   return (
@@ -309,11 +439,39 @@ export default function DocumentoEdit() {
           <option key={value} value={value} />
         ))}
       </datalist>
+      <datalist id="documento-categorias-finales">
+        {categoriaFinalOptions.map((value) => (
+          <option key={value} value={value} />
+        ))}
+      </datalist>
+      <datalist id="documento-categorias-iniciales">
+        {categoriaInicialOptions.map((value) => (
+          <option key={value} value={value} />
+        ))}
+      </datalist>
       <Stack spacing={2}>
         <Typography level="h4">Editar documento #{doc.id}</Typography>
         {flash?.status && <Alert color="success" variant="soft">{flash.status}</Alert>}
         {flash?.error && <Alert color="danger" variant="soft">{flash.error}</Alert>}
         {missingMessage && <Alert color="warning" variant="soft">{missingMessage}</Alert>}
+        {nlabClientError && (
+          <Alert color="warning" variant="soft">
+            {nlabClientError}
+          </Alert>
+        )}
+        {serverErrors.length > 0 && (
+          <Alert color="danger" variant="soft">
+            <Typography level="title-sm" sx={{ fontWeight: 700, mb: 0.5 }}>
+              Corrige los siguientes campos:
+            </Typography>
+            <ul className="list-compact">
+              {serverErrors.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+        
 
         <Stack className="doc-sections" spacing={2}>
           {/* Datos generales */}
@@ -328,18 +486,32 @@ export default function DocumentoEdit() {
                   label="N° Laboratorio"
                   value={data.nlab}
                   onChange={handleUpperChange('nlab')}
-                  error={errors.nlab}
+                  error={nlabFieldError}
                   required
                   startDecorator={<Hash size={16} />}
                 />
-                <FormField
-                  label="Especie"
-                  value={data.especie}
-                  onChange={handleUpperChange('especie')}
-                  error={errors.especie}
-                  required
-                  startDecorator={<Sprout size={16} />}
-                />
+                <FormControl error={Boolean(errors.especie)}>
+                  <FormLabel>Especie</FormLabel>
+                  <Select
+                    value={data.especie || null}
+                    onChange={handleEspecieSelect}
+                    placeholder="Selecciona especie"
+                    startDecorator={<Sprout size={16} />}
+                    required
+                    sx={{ minWidth: 200 }}
+                  >
+                    {especiesOptions.map((value) => (
+                      <Option key={value} value={value}>
+                        {value}
+                      </Option>
+                    ))}
+                  </Select>
+                  {errors.especie && (
+                    <Typography level="body-sm" color="danger" sx={{ mt: 0.25 }}>
+                      {errors.especie}
+                    </Typography>
+                  )}
+                </FormControl>
                 <FormField
                   label="Fecha evaluación"
                   type="date"
@@ -356,7 +528,7 @@ export default function DocumentoEdit() {
           {/* Ubicación */}
           <div className="doc-section doc-section--blue">
             <div className="doc-section__title">
-              <Map size={18} />
+              <MapIcon size={18} />
               <span>Ubicación</span>
             </div>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
@@ -372,7 +544,7 @@ export default function DocumentoEdit() {
                 value={data.comunidad}
                 onChange={handleUpperChange('comunidad')}
                 error={errors.comunidad}
-                startDecorator={<Map size={16} />}
+                startDecorator={<MapIcon size={16} />}
               />
               <FormField
                 label="Aut. Importación"
@@ -393,25 +565,38 @@ export default function DocumentoEdit() {
             </div>
             <Stack spacing={1.25}>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25}>
-                <FormField
-                  label="Variedad"
-                  value={data.variedad}
-                  onChange={handleUpperChange('variedad')}
-                  error={errors.variedad}
-                  required
-                  startDecorator={<Tag size={16} />}
-                />
+                <FormControl error={Boolean(errors.variedad)}>
+                  <FormLabel>Variedad</FormLabel>
+                  <Select
+                    value={data.variedad || null}
+                    onChange={handleVariedadSelect}
+                    placeholder="Selecciona variedad"
+                    startDecorator={<Tag size={16} />}
+                    required
+                  >
+                    {variedadOptions.map((value) => (
+                      <Option key={value} value={value}>
+                        {value}
+                      </Option>
+                    ))}
+                  </Select>
+                  {errors.variedad && (
+                    <Typography level="body-sm" color="danger" sx={{ mt: 0.25 }}>
+                      {errors.variedad}
+                    </Typography>
+                  )}
+                </FormControl>
                 <FormField
                   label="Semillera (opcional)"
                   value={data.semillera}
-                  onChange={handleUpperChange('semillera')}
+                  onChange={handleUpperNoTrimChange('semillera')}
                   error={errors.semillera}
                   startDecorator={<Building2 size={16} />}
                 />
                 <FormField
                   label="Cooperador (opcional)"
                   value={data.cooperador}
-                  onChange={handleUpperChange('cooperador')}
+                  onChange={handleUpperNoTrimChange('cooperador')}
                   error={errors.cooperador}
                   startDecorator={<Handshake size={16} />}
                 />
@@ -425,6 +610,12 @@ export default function DocumentoEdit() {
                   error={errors.categoria_inicial}
                   required
                   startDecorator={<Shield size={16} />}
+                  slotProps={{
+                    input: {
+                      list: 'documento-categorias-iniciales',
+                      autoComplete: 'on',
+                    },
+                  }}
                 />
                 <FormField
                   label="Categoría final"
@@ -433,6 +624,12 @@ export default function DocumentoEdit() {
                   error={errors.categoria_final}
                   required
                   startDecorator={<ShieldCheck size={16} />}
+                  slotProps={{
+                    input: {
+                      list: 'documento-categorias-finales',
+                      autoComplete: 'on',
+                    },
+                  }}
                 />
                 <FormField
                   label="Año"
@@ -721,7 +918,7 @@ export default function DocumentoEdit() {
             <FormField
               label="Observaciones"
               value={data.observaciones}
-              onChange={handleUpperChange('observaciones')}
+              onChange={handleObservacionesChange}
               textarea
               minRows={3}
               error={errors.observaciones}
@@ -731,7 +928,9 @@ export default function DocumentoEdit() {
         </Stack>
 
         <Stack direction="row" spacing={1}>
-          <Button type="submit" variant="solid" disabled={processing}>Guardar</Button>
+          <Button type="submit" variant="solid" disabled={processing || checkingNlab}>
+            {checkingNlab ? 'Validando…' : 'Guardar'}
+          </Button>
           <Button variant="outlined" color="neutral" component={Link} href="/ui/documentos">Cancelar</Button>
         </Stack>
       </Stack>
@@ -746,7 +945,7 @@ export default function DocumentoEdit() {
             </Button>
           </Stack>
         </ModalDialog>
-      </Modal>
+      </Modal>  
     </form>
   );
 }

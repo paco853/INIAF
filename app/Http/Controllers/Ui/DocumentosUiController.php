@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ui;
 
 use App\Http\Controllers\Controller;
 use App\Models\AnalisisDocumento;
+use App\Models\Cultivo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -109,6 +110,11 @@ class DocumentosUiController extends Controller
             ->unique()
             ->values();
 
+        $cultivos = Cultivo::query()
+            ->with(['variedades:id,cultivo_id,nombre'])
+            ->orderBy('especie')
+            ->get(['id','especie','categoria_inicial','categoria_final']);
+
         return Inertia::render('Documentos/Edit', [
             'doc' => [
                 'id' => $doc->id,
@@ -147,6 +153,17 @@ class DocumentosUiController extends Controller
                     ?? ($humedad['variavilidad_pct'] ?? ($datos['viabilidad_pct'] ?? ($datos['variavilidad_pct'] ?? null))),
             ],
             'loteSuggestions' => $loteSuggestions,
+            'cultivos' => $cultivos->map(function ($cultivo) {
+                return [
+                    'id' => $cultivo->id,
+                    'especie' => $cultivo->especie,
+                    'categoria_inicial' => $cultivo->categoria_inicial,
+                    'categoria_final' => $cultivo->categoria_final,
+                    'variedades' => $cultivo->variedades
+                        ? $cultivo->variedades->pluck('nombre')->filter()->values()->toArray()
+                        : [],
+                ];
+            }),
         ]);
     }
 
