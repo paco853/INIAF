@@ -111,7 +111,7 @@ export default function Cultivos() {
                 <td>{c.especie}</td>
                 <td>{c.categoria_inicial ?? '-'}</td>
                 <td>{c.categoria_final ?? '-'}</td>
-                <td>{formatValidezLabel(c.dias) || (c.dias != null ? `${c.dias} días` : '—')}</td>
+                <td>{formatValidezLabel(c.validez) || '—'}</td>
                 <td>
                   <Stack direction="row" spacing={1}>
                     <Button size="sm" variant="outlined" component={Link} href={`/ui/cultivos/${c.id}/edit`}>Editar</Button>
@@ -172,7 +172,7 @@ export default function Cultivos() {
                   <Chip size="sm" variant="soft" color="primary">Cat. Inicial: {c.categoria_inicial ?? '-'}</Chip>
                   <Chip size="sm" variant="soft" color="primary">Cat. Final: {c.categoria_final ?? '-'}</Chip>
                   <Chip size="sm" variant="soft" color="success">
-                    Validez: {formatValidezLabel(c.dias) || (c.dias != null ? `${c.dias} días` : '—')}
+                    Validez: {formatValidezLabel(c.validez) || '—'}
                   </Chip>
                 </JoyStack>
               </Sheet>

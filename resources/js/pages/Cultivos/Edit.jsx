@@ -12,15 +12,21 @@ import {
   Option,
 } from '@mui/joy';
 import {
+  convertAmountToDias,
   DEFAULT_VALIDEZ_UNIT,
   VALIDEZ_UNITS,
-  convertAmountToDias,
-  splitDiasIntoAmountUnit,
 } from './validezUtils';
 
 export default function CultivoEdit() {
   const { props } = usePage();
   const { cultivo, flash } = props;
+  const initialValidez = React.useMemo(
+    () => ({
+      unit: cultivo.validez?.unidad ?? DEFAULT_VALIDEZ_UNIT,
+      amount: cultivo.validez?.cantidad ?? cultivo.dias ?? '',
+    }),
+    [cultivo.validez?.unidad, cultivo.validez?.cantidad, cultivo.dias],
+  );
   const {
     data,
     setData,
@@ -31,24 +37,27 @@ export default function CultivoEdit() {
     especie: cultivo.especie ?? '',
     categoria_inicial: cultivo.categoria_inicial ?? '',
     categoria_final: cultivo.categoria_final ?? '',
-    dias: cultivo.dias ?? '',
+    dias: cultivo.validez?.dias ?? cultivo.dias ?? '',
+    validez_amount: initialValidez.amount ?? '',
+    validez_unit: initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT,
   });
-  const initialValidez = React.useMemo(
-    () => splitDiasIntoAmountUnit(cultivo.dias),
-    [cultivo.dias],
-  );
   const [validezUnit, setValidezUnit] = React.useState(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
   const [validezValue, setValidezValue] = React.useState(initialValidez.amount || '');
 
   React.useEffect(() => {
     setValidezUnit(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
     setValidezValue(initialValidez.amount || '');
-  }, [initialValidez.amount, initialValidez.unit]);
+    setData('validez_amount', initialValidez.amount ?? '');
+    setData('validez_unit', initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT);
+    setData('dias', convertAmountToDias(initialValidez.amount ?? '', initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT));
+  }, [initialValidez.unit, initialValidez.amount, setData]);
 
   const updateDias = React.useCallback(
     (amount, unit) => {
       const next = convertAmountToDias(amount, unit);
       setData('dias', next);
+      setData('validez_amount', amount);
+      setData('validez_unit', unit);
     },
     [setData],
   );

@@ -14,6 +14,8 @@ class Validez extends Model
     protected $fillable = [
         'cultivo_id',
         'dias',
+        'unidad',
+        'cantidad',
     ];
 
     public function cultivo()
@@ -21,4 +23,3 @@ class Validez extends Model
         return $this->belongsTo(Cultivo::class);
     }
 }
-

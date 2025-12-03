@@ -12,9 +12,9 @@ import {
   Option,
 } from '@mui/joy';
 import {
+  convertAmountToDias,
   DEFAULT_VALIDEZ_UNIT,
   VALIDEZ_UNITS,
-  convertAmountToDias,
 } from './validezUtils';
 
 export default function CultivoCreate() {
@@ -31,6 +31,8 @@ export default function CultivoCreate() {
     categoria_inicial: '',
     categoria_final: '',
     dias: '',
+    validez_amount: '',
+    validez_unit: DEFAULT_VALIDEZ_UNIT,
   });
   const [validezUnit, setValidezUnit] = React.useState(DEFAULT_VALIDEZ_UNIT);
   const [validezValue, setValidezValue] = React.useState('');
@@ -38,6 +40,8 @@ export default function CultivoCreate() {
   const updateDias = React.useCallback((amount, unit) => {
     const next = convertAmountToDias(amount, unit);
     setData('dias', next);
+    setData('validez_amount', amount);
+    setData('validez_unit', unit);
   }, [setData]);
 
   const handleChange = React.useCallback(
@@ -91,32 +95,32 @@ export default function CultivoCreate() {
                 (Selecciona cantidad y unidad)
               </Typography>
             </FormLabel>
-            <Stack direction="row" spacing={1}>
-              <Input
-                type="number"
-                min={0}
-                value={validezValue}
-                onChange={(event) => {
-                  const next = event.target.value;
-                  setValidezValue(next);
-                  updateDias(next, validezUnit);
-                }}
-                sx={{ flex: 1 }}
-              />
-              <Select
-                value={validezUnit}
-                onChange={(_, value) => {
-                  const nextUnit = value || DEFAULT_VALIDEZ_UNIT;
-                  setValidezUnit(nextUnit);
-                  updateDias(validezValue, nextUnit);
-                }}
-                sx={{ minWidth: 110 }}
-              >
-                {VALIDEZ_UNITS.map((unit) => (
-                  <Option key={unit.value} value={unit.value}>{unit.label}</Option>
-                ))}
-              </Select>
-            </Stack>
+                <Stack direction="row" spacing={1}>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={validezValue}
+                    onChange={(event) => {
+                      const next = event.target.value;
+                      setValidezValue(next);
+                      updateDias(next, validezUnit);
+                    }}
+                    sx={{ flex: 1 }}
+                  />
+                  <Select
+                    value={validezUnit}
+                    onChange={(_, value) => {
+                      const nextUnit = value || DEFAULT_VALIDEZ_UNIT;
+                      setValidezUnit(nextUnit);
+                      updateDias(validezValue, nextUnit);
+                    }}
+                    sx={{ minWidth: 110 }}
+                  >
+                    {VALIDEZ_UNITS.map((unit) => (
+                      <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+                    ))}
+                  </Select>
+                </Stack>
             {errors.dias && (
               <Typography level="body-sm" color="danger">{errors.dias}</Typography>
             )}

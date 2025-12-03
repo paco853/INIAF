@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 
 class CultivosController extends Controller
 {
+    private const VALIDEZ_UNITS = ['DIAS', 'MESES', 'ANIOS'];
+
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
@@ -36,6 +38,8 @@ class CultivosController extends Controller
             'categoria_inicial' => ['nullable','string','max:255'],
             'categoria_final' => ['nullable','string','max:255'],
             'dias' => ['required','integer','min:0','max:65535'],
+            'validez_amount' => ['required','integer','min:0'],
+            'validez_unit' => ['required', Rule::in(self::VALIDEZ_UNITS)],
         ]);
 
         $data['especie'] = trim($data['especie']);
@@ -47,7 +51,11 @@ class CultivosController extends Controller
         ]);
         Validez::updateOrCreate(
             ['cultivo_id' => $cultivo->id],
-            ['dias' => (int) $data['dias']]
+            [
+                'dias' => (int) $data['dias'],
+                'unidad' => $data['validez_unit'],
+                'cantidad' => (int) $data['validez_amount'],
+            ]
         );
 
         $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
@@ -66,6 +74,8 @@ class CultivosController extends Controller
             'categoria_inicial' => ['nullable','string','max:255'],
             'categoria_final' => ['nullable','string','max:255'],
             'dias' => ['required','integer','min:0','max:65535'],
+            'validez_amount' => ['required','integer','min:0'],
+            'validez_unit' => ['required', Rule::in(self::VALIDEZ_UNITS)],
         ]);
 
         $data['especie'] = trim($data['especie']);
@@ -77,7 +87,11 @@ class CultivosController extends Controller
         ]);
         Validez::updateOrCreate(
             ['cultivo_id' => $cultivo->id],
-            ['dias' => (int) $data['dias']]
+            [
+                'dias' => (int) $data['dias'],
+                'unidad' => $data['validez_unit'],
+                'cantidad' => (int) $data['validez_amount'],
+            ]
         );
         
         $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');

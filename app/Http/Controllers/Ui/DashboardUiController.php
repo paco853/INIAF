@@ -89,7 +89,7 @@ class DashboardUiController extends Controller
         $cultivos = Cultivo::query()
             ->with([
                 'variedades:id,cultivo_id,nombre',
-                'validez:id,cultivo_id,dias',
+                'validez:id,cultivo_id,dias,unidad,cantidad',
             ])
             ->orderBy('especie')
             ->get()
@@ -98,7 +98,11 @@ class DashboardUiController extends Controller
                     'id' => $c->id,
                     'especie' => $c->especie,
                     'variedades' => $c->variedades?->pluck('nombre')->filter()->values()->all() ?? [],
-                    'validez' => $c->validez?->dias,
+                'validez' => $c->validez ? [
+                    'dias' => $c->validez->dias,
+                    'cantidad' => $c->validez->cantidad,
+                    'unidad' => $c->validez->unidad,
+                ] : null,
                     'certificado_inicial' => $c->categoria_inicial,
                     'certificado_final' => $c->categoria_final,
                 ];

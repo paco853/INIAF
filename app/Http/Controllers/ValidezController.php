@@ -40,7 +40,12 @@ class ValidezController extends Controller
             'cultivo_id.exists' => 'El cultivo seleccionado no existe.',
         ]);
 
-        Validez::create($data);
+        Validez::create([
+            'cultivo_id' => $data['cultivo_id'],
+            'dias' => $data['dias'],
+            'unidad' => 'DIAS',
+            'cantidad' => $data['dias'],
+        ]);
         $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
         return redirect($to)->with('status', 'Validez registrada');
     }
@@ -65,7 +70,12 @@ class ValidezController extends Controller
             'cultivo_id.unique' => 'Este cultivo ya tiene validez registrada.',
             'cultivo_id.exists' => 'El cultivo seleccionado no existe.',
         ]);
-        $validez->update($data);
+        $validez->update([
+            'cultivo_id' => $data['cultivo_id'],
+            'dias' => $data['dias'],
+            'unidad' => 'DIAS',
+            'cantidad' => $data['dias'],
+        ]);
         $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
         return redirect($to)->with('status', 'Validez actualizada');
     }
