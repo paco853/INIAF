@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Sheet, Stack, Typography, Divider, Button, Chip, Table } from '@mui/joy';
+import { Box, Sheet, Stack, Typography, Divider, Button, Chip } from '@mui/joy';
 import { RotateCw, Download, Trash2 } from 'lucide-react';
 
 const formatDateTime = (value) => {
@@ -10,12 +10,6 @@ const formatDateTime = (value) => {
   return new Intl.DateTimeFormat('es-BO', opts).format(date);
 };
 
-const statusColor = (estado) => {
-  if (estado === 'completado') return 'success';
-  if (estado === 'error') return 'danger';
-  return 'neutral';
-};
-
 export default function HistoryPanel({ backups, onDownload, onDelete }) {
   return (
     <Sheet variant="outlined" className="backup-history">
@@ -24,53 +18,62 @@ export default function HistoryPanel({ backups, onDownload, onDelete }) {
         <Typography level="title-md">Historial de Backups</Typography>
       </Stack>
       <Divider />
-      <Box className="history-table-wrapper">
-        <Table className="history-table">
-          <thead>
-            <tr>
-              <th>NOMBRE DE ARCHIVO</th>
-              <th>FECHA DE CREACIÓN</th>
-              <th>TAMAÑO</th>
-              <th>USUARIO</th>
-              <th>ESTADO</th>
-              <th>ACCIONES</th>
-            </tr>
-          </thead>
-          <tbody>
-            {backups.map((backup) => (
-              <tr key={backup.nombre} className="history-row">
-                <td className="history-col history-col--name">{backup.nombre ?? '—'}</td>
-                <td className="history-col history-col--date">{formatDateTime(backup.creado)}</td>
-                <td className="history-col history-col--size">{backup.size || '—'}</td>
-                <td className="history-col history-col--user">{backup.usuario || '—'}</td>
-                <td className="history-col history-col--status">
-                  <Chip color={statusColor(backup.estado)} size="sm" variant="soft">
-                    {backup.estado || 'pendiente'}
-                  </Chip>
-                </td>
-                <td className="history-col history-col--actions">
-                  <Button
-                    variant="plain"
-                    size="sm"
-                    startDecorator={<Download size={16} />}
-                    onClick={() => onDownload(backup.nombre)}
-                  >
-                    Descargar
-                  </Button>
-                  <Button
-                    variant="plain"
-                    size="sm"
-                    startDecorator={<Trash2 size={16} />}
-                    color="danger"
-                    onClick={() => onDelete(backup.nombre)}
-                  >
-                    Eliminar
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+      <Box className="history-list-wrapper">
+        {backups.map((backup) => (
+          <Box key={backup.nombre} className="history-item">
+            <Box className="history-item-info">
+              <Typography level="body-md" className="history-item-name">
+                {backup.nombre ?? '—'}
+              </Typography>
+              <Stack direction="row" spacing={2} className="history-item-details">
+                <Typography level="body-xs" className="history-item-detail">
+                  {formatDateTime(backup.creado)}
+                </Typography>
+                <Typography level="body-xs" className="history-item-detail">
+                  Tamaño: {backup.size || '—'}
+                </Typography>
+                <Typography level="body-xs" className="history-item-detail">
+                  Usuario: {backup.usuario || '—'}
+                </Typography>
+              </Stack>
+            </Box>
+            <Stack direction="row" spacing={1} alignItems="center" className="history-item-actions">
+              <Button
+                variant="soft"
+                size="sm"
+                color="primary"
+                startDecorator={<Download size={16} />}
+                component={backup.nombre ? 'a' : 'button'}
+                href={backup.nombre ? `/backups/download?file=${encodeURIComponent(backup.nombre)}` : undefined}
+                download={backup.nombre || undefined}
+                aria-label={`Descargar ${backup.nombre || 'backup'}`}
+                onClick={() => onDownload?.(backup.nombre)}
+                disabled={!backup.nombre}
+                className="history-action-btn history-action-btn--download"
+              >
+                Descargar
+              </Button>
+              <Button
+                variant="plain"
+                size="sm"
+                startDecorator={<Trash2 size={16} />}
+                color="danger"
+                onClick={() => onDelete(backup.nombre)}
+                className="history-action-btn history-action-btn--delete"
+              >
+                Eliminar
+              </Button>
+              <Chip
+                size="sm"
+                variant="soft"
+                color={backup.estado === 'completado' ? 'success' : 'warning'}
+                className="history-item-status"
+              >
+                {backup.estado || 'pendiente'}
+              </Chip>
+            </Stack>
+          </Box>
+        ))}
       </Box>
     </Sheet>
   );

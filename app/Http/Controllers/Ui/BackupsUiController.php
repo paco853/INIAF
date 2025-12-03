@@ -13,15 +13,16 @@ class BackupsUiController extends Controller
     {
         $files = Storage::files('backups');
         rsort($files);
+        $currentUserName = optional(auth()->user())->name ?? 'Sistema';
 
-        $backups = collect($files)->map(function ($file) {
+        $backups = collect($files)->map(function ($file) use ($currentUserName) {
             $size = Storage::size($file);
             $timestamp = Storage::lastModified($file);
             return [
                 'nombre' => basename($file),
                 'creado' => $timestamp ? date('c', $timestamp) : null,
                 'size' => $this->humanSize($size),
-                'usuario' => 'Sistema',
+                'usuario' => $currentUserName,
                 'estado' => 'completado',
             ];
         })->values();
