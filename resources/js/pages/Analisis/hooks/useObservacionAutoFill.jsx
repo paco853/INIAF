@@ -19,9 +19,6 @@ const convertCategoryForPhrase = (value) => {
   if (Object.prototype.hasOwnProperty.call(overrides, upper)) {
     return overrides[upper];
   }
-  if (upper.endsWith('ADO')) {
-    return `${upper.slice(0, -3)}ACIÓN`;
-  }
   return upper;
 };
 

@@ -4,6 +4,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  IconButton,
   Input,
   Stack,
   Textarea,
@@ -18,6 +19,7 @@ import {
   ClipboardCheck,
   Gauge,
   Shield,
+  RefreshCcw,
 } from 'lucide-react';
 import {
   HUMEDAD_STORAGE_KEY,
@@ -260,6 +262,7 @@ const DictamenSection = ({
   setData,
   onEstadoChange,
   handleObservacionChange,
+  onValidezReset,
 }) => (
   <Box className="humedad-section">
     <SectionHeader
@@ -317,12 +320,25 @@ const DictamenSection = ({
         <Box className="state-footer">
           <FormControl>
             <FormLabel className="muted-label">Validez del análisis</FormLabel>
-            <Input
-              placeholder={validezDefault || 'Ej. 6 meses'}
-              value={data.validez}
-              onChange={handleValidezChange}
-              {...numberInputProps}
-            />
+            <Stack direction="row" spacing={0.75} alignItems="center">
+              <Input
+                placeholder={validezDefault || 'Ej. 6 meses'}
+                value={data.validez}
+                onChange={handleValidezChange}
+                {...numberInputProps}
+                sx={{ flex: 1 }}
+              />
+              <IconButton
+                size="sm"
+                variant="outlined"
+                color="neutral"
+                onClick={onValidezReset}
+                disabled={!validezDefault}
+                title="Restablecer validez sugerida"
+              >
+                <RefreshCcw size={16} />
+              </IconButton>
+            </Stack>
           </FormControl>
           <FormControl>
             <FormLabel className="muted-label">Fecha de evaluación</FormLabel>
@@ -351,6 +367,7 @@ export default function AnalisisHumedad() {
     errorList,
     numberInputProps,
     validezDefault,
+    resetValidezToDefault,
   } = useHumedadForm(props);
 
   const recepcion = props?.recepcion ?? {};
@@ -438,15 +455,16 @@ export default function AnalisisHumedad() {
             handleNumberChange={handleNumberChange}
             handleTextChange={handleTextChange}
           />
-          <DictamenSection
-            data={data}
-            handleValidezChange={handleValidezChange}
-            numberInputProps={numberInputProps}
-            validezDefault={validezDefault}
-            setData={setData}
-            onEstadoChange={onEstadoChange}
-            handleObservacionChange={handleObservacionChange}
-          />
+        <DictamenSection
+          data={data}
+          handleValidezChange={handleValidezChange}
+          numberInputProps={numberInputProps}
+          validezDefault={validezDefault}
+          setData={setData}
+          onEstadoChange={onEstadoChange}
+          handleObservacionChange={handleObservacionChange}
+          onValidezReset={resetValidezToDefault}
+        />
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1}

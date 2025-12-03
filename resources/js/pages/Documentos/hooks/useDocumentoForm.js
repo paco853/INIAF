@@ -56,7 +56,6 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     [cultivosMeta, especieKey],
   );
   const validezAutoLabel = currentCultivoMeta?.validezLabel || '';
-  const validezReadOnly = Boolean(validezAutoLabel);
   const variedadOptions = React.useMemo(
     () => getVariedadOptions(cultivosMeta, data.especie, data.variedad, variedadGlobalOptions),
     [cultivosMeta, data.especie, data.variedad, variedadGlobalOptions],
@@ -66,10 +65,8 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     if (!validezAutoLabel) {
       return;
     }
-    if (data.validez !== validezAutoLabel) {
-      setData('validez', validezAutoLabel);
-    }
-  }, [validezAutoLabel, data.validez, setData]);
+    setData('validez', validezAutoLabel);
+  }, [validezAutoLabel, setData]);
 
   const missingRequired = React.useMemo(() => (
     REQUIRED_FIELDS.filter((f) => {
@@ -380,7 +377,6 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     categoriaInicialOptions,
     categoriaFinalOptions,
     variedadOptions,
-    validezReadOnly,
     totalKg,
     estadoValue,
     handleUpperChange,

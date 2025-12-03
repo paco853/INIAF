@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Models\Cultivo;
+use App\Support\ValidezFormatter;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -62,7 +63,7 @@ class AnalisisSemillasController extends Controller
                 if ($cultivo && $cultivo->validez) {
                     $dias = (int) ($cultivo->validez->dias ?? 0);
                     if ($dias > 0) {
-                        $validezDefault = $dias.' días';
+                        $validezDefault = ValidezFormatter::fromDias($dias);
                     }
                 }
             }

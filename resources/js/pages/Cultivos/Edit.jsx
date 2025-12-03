@@ -8,7 +8,15 @@ import {
   FormControl,
   FormLabel,
   Alert,
+  Select,
+  Option,
 } from '@mui/joy';
+import {
+  DEFAULT_VALIDEZ_UNIT,
+  VALIDEZ_UNITS,
+  convertAmountToDias,
+  splitDiasIntoAmountUnit,
+} from './validezUtils';
 
 export default function CultivoEdit() {
   const { props } = usePage();
@@ -19,6 +27,25 @@ export default function CultivoEdit() {
     categoria_final: cultivo.categoria_final ?? '',
     dias: cultivo.dias ?? '',
   });
+  const initialValidez = React.useMemo(
+    () => splitDiasIntoAmountUnit(cultivo.dias),
+    [cultivo.dias],
+  );
+  const [validezUnit, setValidezUnit] = React.useState(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
+  const [validezValue, setValidezValue] = React.useState(initialValidez.amount || '');
+
+  React.useEffect(() => {
+    setValidezUnit(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
+    setValidezValue(initialValidez.amount || '');
+  }, [initialValidez.amount, initialValidez.unit]);
+
+  const updateDias = React.useCallback(
+    (amount, unit) => {
+      const next = convertAmountToDias(amount, unit);
+      setData('dias', next);
+    },
+    [setData],
+  );
 
   const handleTextChange = React.useCallback(
     (field) => (event) => {
@@ -72,13 +99,38 @@ export default function CultivoEdit() {
             )}
           </FormControl>
           <FormControl>
-            <FormLabel>Validez de análisis (días)</FormLabel>
-            <Input
-              type="number"
-              value={data.dias ?? ''}
-              onChange={(e) => setData('dias', e.target.value)}
-              min={0}
-            />
+            <FormLabel>
+              Validez de análisis{' '}
+              <Typography component="span" level="body-xs" sx={{ color: 'text.tertiary' }}>
+                (Selecciona cantidad y unidad)
+              </Typography>
+            </FormLabel>
+            <Stack direction="row" spacing={1}>
+              <Input
+                type="number"
+                min={0}
+                value={validezValue}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setValidezValue(next);
+                  updateDias(next, validezUnit);
+                }}
+                sx={{ flex: 1 }}
+              />
+              <Select
+                value={validezUnit}
+                onChange={(_, value) => {
+                  const nextUnit = value || DEFAULT_VALIDEZ_UNIT;
+                  setValidezUnit(nextUnit);
+                  updateDias(validezValue, nextUnit);
+                }}
+                sx={{ minWidth: 110 }}
+              >
+                {VALIDEZ_UNITS.map((unit) => (
+                  <Option key={unit.value} value={unit.value}>{unit.label}</Option>
+                ))}
+              </Select>
+            </Stack>
             {errors.dias && (
               <Typography level="body-sm" color="danger">{errors.dias}</Typography>
             )}

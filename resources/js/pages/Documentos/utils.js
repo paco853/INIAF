@@ -1,3 +1,5 @@
+import { formatValidezLabel } from '../Cultivos/validezUtils';
+
 export const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({
   input: {
     inputMode: 'decimal',
@@ -36,12 +38,6 @@ export const convertCategoryForObservation = (value) => {
   }
   if (Object.prototype.hasOwnProperty.call(CATEGORY_OVERRIDES, upper)) {
     return CATEGORY_OVERRIDES[upper];
-  }
-  if (upper.endsWith('ADO')) {
-    return `${upper.slice(0, -3)}ACIÓN`;
-  }
-  if (upper.endsWith('ADA')) {
-    return `${upper.slice(0, -3)}CIÓN`;
   }
   return upper;
 };
@@ -145,14 +141,6 @@ const uniqueNormalizedList = (values) => {
       .forEach((line) => set.add(line));
   });
   return Array.from(set);
-};
-
-const formatValidezLabel = (value) => {
-  const num = Number(value);
-  if (!Number.isFinite(num) || num <= 0) {
-    return '';
-  }
-  return num === 1 ? '1 DÍA' : `${num} DÍAS`;
 };
 
 export const buildCultivosMetadata = (cultivos = []) => {

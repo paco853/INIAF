@@ -51,7 +51,6 @@ export default function DocumentoEdit() {
     categoriaInicialOptions,
     categoriaFinalOptions,
     variedadOptions,
-    validezReadOnly,
     totalKg,
     estadoValue,
     handleUpperChange,
@@ -149,7 +148,6 @@ export default function DocumentoEdit() {
             estadoValue={estadoValue}
             onEstadoChange={handleEstadoChange}
             onUpperChange={handleUpperChange}
-            validezReadOnly={validezReadOnly}
           />
 
           <MalezasSection

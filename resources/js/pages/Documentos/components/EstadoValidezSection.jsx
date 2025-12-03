@@ -9,7 +9,6 @@ export default function EstadoValidezSection({
   estadoValue,
   onEstadoChange,
   onUpperChange,
-  validezReadOnly,
 }) {
   // DOCUMENTO_EDIT_COMPONENT
 
@@ -45,16 +44,6 @@ export default function EstadoValidezSection({
           onChange={onUpperChange('validez')}
           error={errors.validez}
           startDecorator={<Clock size={16} />}
-          readOnly={validezReadOnly}
-          slotProps={
-            validezReadOnly
-              ? {
-                  input: {
-                    sx: { bgcolor: 'background.level1' },
-                  },
-                }
-              : undefined
-          }
         />
       </Stack>
     </div>

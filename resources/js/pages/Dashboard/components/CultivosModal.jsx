@@ -8,6 +8,7 @@ import {
   Table,
   Stack,
 } from '@mui/joy';
+import { formatValidezLabel } from '../../Cultivos/validezUtils';
 
 const CultivosModal = ({ open, onClose, cultivos = [] }) => {
   if (!open) return null;
@@ -37,7 +38,7 @@ const CultivosModal = ({ open, onClose, cultivos = [] }) => {
                   <tr>
                     <th>Especie</th>
                     <th>Variedades</th>
-                    <th>Validez (días)</th>
+                    <th>Validez</th>
                     <th>Cert. inicial</th>
                     <th>Cert. final</th>
                   </tr>
@@ -47,7 +48,7 @@ const CultivosModal = ({ open, onClose, cultivos = [] }) => {
                     <tr key={item.cultivo}>
                       <td>{item.especie ?? item.cultivo}</td>
                       <td>{Array.isArray(item.variedades) && item.variedades.length > 0 ? item.variedades.join(', ') : '—'}</td>
-                      <td>{item.validez ?? '—'}</td>
+                      <td>{formatValidezLabel(item.validez) || (item.validez != null ? `${item.validez} días` : '—')}</td>
                       <td>{item.certificado_inicial ?? '—'}</td>
                       <td>{item.certificado_final ?? '—'}</td>
                     </tr>

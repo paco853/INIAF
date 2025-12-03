@@ -30,27 +30,46 @@ export function useHumedadForm(props) {
     [],
   );
 
-  const initialHumedadData = React.useMemo(() => {
-    if (typeof window === 'undefined') {
-      return humidity;
-    }
-    try {
-      const raw = window.sessionStorage.getItem(HUMEDAD_STORAGE_KEY);
-      if (!raw) {
-        return humidity;
-      }
-      const parsed = JSON.parse(raw);
-      return mergeStoredHumedadData(humidity, parsed);
-    } catch (error) {
-      console.warn('Humedad storage parse error', error);
-      return humidity;
-    }
-  }, [humidity, mergeStoredHumedadData]);
-
   const normalizeValidez = React.useCallback(
     (value) => (value ?? '').toString().trim().toUpperCase(),
     [],
   );
+
+  const initialHumedadData = React.useMemo(() => {
+    if (typeof window === 'undefined') {
+      return humidity;
+    }
+    let storedPayload = null;
+    let storedSnapshot = null;
+    try {
+      const raw = window.sessionStorage.getItem(HUMEDAD_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && parsed.payload) {
+          storedPayload = parsed.payload;
+          storedSnapshot = parsed.validezDefault ?? null;
+        } else {
+          storedPayload = parsed;
+        }
+      }
+    } catch (error) {
+      console.warn('Humedad storage parse error', error);
+    }
+    const merged = mergeStoredHumedadData(humidity, storedPayload);
+    const normalizedStored = normalizeValidez(storedSnapshot);
+    const normalizedDefault = normalizeValidez(validezDefault);
+    const shouldApplyDefault =
+      normalizedDefault !== ''
+      && (
+        !storedPayload
+        || normalizedStored === ''
+        || normalizedStored !== normalizedDefault
+      );
+    if (shouldApplyDefault) {
+      merged.validez = normalizedDefault;
+    }
+    return merged;
+  }, [humidity, mergeStoredHumedadData, normalizeValidez, validezDefault]);
 
   const [validezEdited, setValidezEdited] = React.useState(() => {
     const initialValidez = normalizeValidez(initialHumedadData.validez);
@@ -69,24 +88,33 @@ export function useHumedadForm(props) {
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      window.sessionStorage.setItem(HUMEDAD_STORAGE_KEY, JSON.stringify(data));
+      window.sessionStorage.setItem(
+        HUMEDAD_STORAGE_KEY,
+        JSON.stringify({
+          payload: data,
+          validezDefault: validezDefault ?? '',
+        }),
+      );
     } catch (error) {
       console.warn('Humedad storage write error', error);
     }
-  }, [data]);
+  }, [data, validezDefault]);
 
   React.useEffect(() => {
     const defaultVal = normalizeValidez(validezDefault);
     const lastDefault = lastValidezDefaultRef.current;
     const currentValidez = normalizeValidez(data.validez);
     const defaultChanged = defaultVal !== lastDefault;
-    const matchesLastDefault =
-      currentValidez === lastDefault || currentValidez === '';
-    if (defaultChanged && (!validezEdited || matchesLastDefault)) {
-      if (currentValidez !== defaultVal) {
+
+    if (defaultChanged) {
+      if (defaultVal && defaultVal !== currentValidez) {
         setData('validez', defaultVal);
+      } else if (!defaultVal) {
+        setData('validez', '');
       }
       setValidezEdited(false);
+    } else if (!validezEdited && currentValidez === '' && defaultVal) {
+      setData('validez', defaultVal);
     }
     lastValidezDefaultRef.current = defaultVal;
   }, [
@@ -110,11 +138,17 @@ export function useHumedadForm(props) {
   const handleValidezChange = React.useCallback(
     (event) => {
       setValidezEdited(true);
-      const value = event.target.value;
-      setData('validez', normalizeValidez(value));
+      const value = (event.target.value ?? '').toString().toUpperCase();
+      setData('validez', value);
     },
-    [normalizeValidez, setData],
+    [setData],
   );
+
+  const resetValidezToDefault = React.useCallback(() => {
+    const next = (validezDefault ?? '').toString().toUpperCase();
+    setData('validez', next);
+    setValidezEdited(false);
+  }, [setData, validezDefault]);
 
   const numberInputProps = {
     slotProps: {
@@ -141,5 +175,6 @@ export function useHumedadForm(props) {
     numberInputProps,
     validezDefault,
     errors,
+    resetValidezToDefault,
   };
 }
