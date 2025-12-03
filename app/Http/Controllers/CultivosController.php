@@ -15,7 +15,7 @@ class CultivosController extends Controller
 
         $cultivos = Cultivo::query()
             ->when($q !== '', function ($query) use ($q) {
-                // Postgres soporta ILIKE para busqueda insensible a mayusculas
+                
                 return $query->where('especie', 'ilike', '%'.$q.'%');
             })
             ->orderByDesc('id')

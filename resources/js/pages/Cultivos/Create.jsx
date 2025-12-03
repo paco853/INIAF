@@ -19,7 +19,14 @@ import {
 
 export default function CultivoCreate() {
   const { flash } = usePage().props;
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const {
+    data,
+    setData,
+    post,
+    processing,
+    errors,
+    reset,
+  } = useForm({
     especie: '',
     categoria_inicial: '',
     categoria_final: '',
@@ -43,7 +50,9 @@ export default function CultivoCreate() {
 
   const submit = React.useCallback((event) => {
     event.preventDefault();
-    post('/cultivos', { onSuccess: () => reset() });
+    post('/cultivos', {
+      onSuccess: () => reset(),
+    });
   }, [post, reset]);
 
   return (

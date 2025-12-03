@@ -47,3 +47,4 @@ export const formatValidezLabel = (dias) => {
   }
   return (num === 1 ? '1 día' : `${num} días`).toUpperCase();
 };
+

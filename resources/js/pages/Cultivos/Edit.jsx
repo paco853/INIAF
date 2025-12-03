@@ -21,7 +21,13 @@ import {
 export default function CultivoEdit() {
   const { props } = usePage();
   const { cultivo, flash } = props;
-  const { data, setData, put, processing, errors } = useForm({
+  const {
+    data,
+    setData,
+    put,
+    processing,
+    errors,
+  } = useForm({
     especie: cultivo.especie ?? '',
     categoria_inicial: cultivo.categoria_inicial ?? '',
     categoria_final: cultivo.categoria_final ?? '',
