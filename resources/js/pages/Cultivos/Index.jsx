@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Sheet, Table, Button, Input, Stack as JoyStack, Chip, IconButton } from '@mui/joy';
+import { Typography, Sheet, Table, Button, Input, Stack as JoyStack, Chip, IconButton, Select, Option } from '@mui/joy';
 import { Search } from 'lucide-react';
 import Stack from '@mui/joy/Stack';
 import Alert from '@mui/joy/Alert';
@@ -9,7 +9,7 @@ import { useDebouncedCallback } from '../../hooks/useDebounce.js';
 
 export default function Cultivos() {
   const { props } = usePage();
-  const { cultivos, q, flash } = props;
+  const { cultivos, q, flash, speciesOptions = [] } = props;
   const [query, setQuery] = React.useState(q || '');
   const debouncedSearch = useDebouncedCallback((value) => {
     router.get('/ui/cultivos', { q: value }, { preserveState: true, replace: true });
@@ -59,20 +59,27 @@ export default function Cultivos() {
           alignItems: { xs: 'stretch', md: 'center' },
         }}
       >
-        <Input
+        <Select
           size="sm"
           placeholder="Buscar especie..."
-          value={query}
-          startDecorator={<Search size={14} />}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            onSearch(e.target.value);
+          value={query || 'ALL'}
+          onChange={(_, value) => {
+            const next = value === 'ALL' ? '' : (value ?? '');
+            setQuery(next);
+            onSearch(next);
           }}
-          className="search-input"
+          startDecorator={<Search size={14} />}
           sx={{
             maxWidth: { xs: '100%', md: 320 },
           }}
-        />
+        >
+          <Option value="ALL">Todos</Option>
+          {speciesOptions.map((name) => (
+            <Option key={name} value={name}>
+              {name}
+            </Option>
+          ))}
+        </Select>
       </Stack>
 
       <Sheet variant="outlined" sx={{ p: 0 }}>

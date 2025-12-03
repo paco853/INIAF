@@ -31,9 +31,19 @@ class CultivosUiController extends Controller
             ];
         });
 
+        $speciesOptions = Cultivo::query()
+            ->select('especie')
+            ->whereNotNull('especie')
+            ->groupBy('especie')
+            ->orderBy('especie')
+            ->pluck('especie')
+            ->filter()
+            ->values();
+
         return Inertia::render('Cultivos/Index', [
             'cultivos' => $cultivos,
             'q' => $q,
+            'speciesOptions' => $speciesOptions,
         ]);
     }
 

@@ -80,9 +80,19 @@ class DocumentosUiController extends Controller
             ])
             ->withQueryString();
 
+        $species = AnalisisDocumento::query()
+            ->select('especie')
+            ->whereNotNull('especie')
+            ->groupBy('especie')
+            ->orderBy('especie')
+            ->pluck('especie')
+            ->filter()
+            ->values();
+
         return Inertia::render('Documentos/Index', [
             'docs' => $docs,
             'filters' => $filters,
+            'speciesOptions' => $species,
         ]);
     }
 
@@ -111,7 +121,10 @@ class DocumentosUiController extends Controller
             ->values();
 
         $cultivos = Cultivo::query()
-            ->with(['variedades:id,cultivo_id,nombre'])
+            ->with([
+                'variedades:id,cultivo_id,nombre',
+                'validez:id,cultivo_id,dias',
+            ])
             ->orderBy('especie')
             ->get(['id','especie','categoria_inicial','categoria_final']);
 
@@ -162,6 +175,7 @@ class DocumentosUiController extends Controller
                     'variedades' => $cultivo->variedades
                         ? $cultivo->variedades->pluck('nombre')->filter()->values()->toArray()
                         : [],
+                    'validez_dias' => optional($cultivo->validez)->dias,
                 ];
             }),
         ]);

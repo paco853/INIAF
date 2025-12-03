@@ -12,6 +12,7 @@ export default function FormField({
   slotProps,
   required = false,
   startDecorator,
+  readOnly = false,
 }) {
   const hasError = Boolean(error);
   return (
@@ -26,6 +27,7 @@ export default function FormField({
           startDecorator={startDecorator}
           error={hasError}
           slotProps={slotProps}
+          readOnly={readOnly}
         />
       ) : (
         <Input
@@ -36,6 +38,7 @@ export default function FormField({
           required={required}
           startDecorator={startDecorator}
           error={hasError}
+          readOnly={readOnly}
         />
       )}
       {error && (

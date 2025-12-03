@@ -13,15 +13,20 @@ export default function Variedades() {
   const { variedades, q, flash, allCovered } = props;
   const [query, setQuery] = React.useState(q || '');
 
-  const debouncedSearch = useDebouncedCallback((value) => {
-    router.get('/ui/variedades', { q: value }, { preserveState: true, replace: true });
-  }, 400);
-
   const handleSearchChange = (event) => {
-    const newQuery = event.target.value;
+    const newQuery = (event.target.value ?? '').toUpperCase();
     setQuery(newQuery);
-    debouncedSearch(newQuery);
   };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    router.get('/ui/variedades', { q: query }, { preserveState: true, replace: true });
+  };
+
+  const handleClearFilters = React.useCallback(() => {
+    setQuery('');
+    router.get('/ui/variedades', {}, { preserveState: true, replace: true });
+  }, [router]);
 
   return (
     <Stack spacing={1}>
@@ -46,6 +51,8 @@ export default function Variedades() {
       {flash?.error && <Alert color="danger" variant="soft">{flash.error}</Alert>}
 
       <Stack
+        component="form"
+        onSubmit={handleSearchSubmit}
         direction={{ xs: 'column', md: 'row' }}
         spacing={1}
         sx={{
@@ -59,12 +66,25 @@ export default function Variedades() {
           placeholder="Buscar variedad o especie..."
           value={query}
           onChange={handleSearchChange}
+          name="q"
           startDecorator={<Search size={14} />}
           className="search-input"
           sx={{
             maxWidth: { xs: '100%', md: 320 },
           }}
         />
+        <Button type="submit" size="sm" variant="solid">
+          Buscar
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="plain"
+          color="primary"
+          onClick={handleClearFilters}
+        >
+          Limpiar filtros
+        </Button>
       </Stack>
 
       <Sheet variant="outlined" sx={{ p: 0 }}>

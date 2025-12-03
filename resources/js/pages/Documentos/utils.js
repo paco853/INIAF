@@ -4,6 +4,12 @@ export const DECIMAL_INPUT_SLOT_PROPS = Object.freeze({
     style: { appearance: 'textfield' },
   },
 });
+// DOCUMENTO_EDIT
+
+
+
+
+
 
 export const NUMBER_INPUT_SLOT_PROPS = Object.freeze({
   input: {
@@ -18,12 +24,9 @@ export const normalizeUpper = (value) => {
 };
 
 const CATEGORY_OVERRIDES = Object.freeze({
-  CERTIFICADO: 'CERTIFICACIÓN',
   CERTIFICADA: 'CERTIFICACIÓN',
-  FISCALIZADO: 'FISCALIZACIÓN',
   FISCALIZADA: 'FISCALIZACIÓN',
-  REGISTRADO: 'REGISTRACIÓN',
-  REGISTRADA: 'REGISTRACIÓN',
+ 
 });
 
 export const convertCategoryForObservation = (value) => {
@@ -128,13 +131,29 @@ export const buildAutoLoteValue = ({
   return parts.filter((segment) => segment && segment.length > 0).join('-').toUpperCase();
 };
 
-const uniqueNormalizedList = (values) => Array.from(
-  new Set(
-    values
-      .map((value) => normalizeUpper(value))
-      .filter((value) => value && value !== ''),
-  ),
-);
+const uniqueNormalizedList = (values) => {
+  const set = new Set();
+  values.forEach((value) => {
+    const text = (value ?? '').toString();
+    if (text === '') {
+      return;
+    }
+    text
+      .split(/\r?\n/)
+      .map((line) => normalizeUpper(line))
+      .filter((line) => line && line !== '')
+      .forEach((line) => set.add(line));
+  });
+  return Array.from(set);
+};
+
+const formatValidezLabel = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) {
+    return '';
+  }
+  return num === 1 ? '1 DÍA' : `${num} DÍAS`;
+};
 
 export const buildCultivosMetadata = (cultivos = []) => {
   const metaMap = new Map();
@@ -157,6 +176,7 @@ export const buildCultivosMetadata = (cultivos = []) => {
         categoria_inicial: categoriaInicial,
         categoria_final: categoriaFinal,
         variedades,
+        validezLabel: formatValidezLabel(cultivo?.validez_dias),
       });
     }
     if (categoriaInicial) {

@@ -24,7 +24,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 
 export default function Documentos() {
   const { props } = usePage();
-  const { docs, flash, filters = {} } = props;
+  const { docs, flash, filters = {}, speciesOptions = [] } = props;
   const [deletingId, setDeletingId] = React.useState(null);
   const printFrameRef = React.useRef(null);
   const [downloadModalOpen, setDownloadModalOpen] = React.useState(false);
@@ -60,21 +60,31 @@ export default function Documentos() {
     setFilterState((prev) => ({ ...prev, anio: value }));
   }, []);
 
-  const handleEstadoChange = React.useCallback((_, value) => {
-    setFilterState((prev) => ({ ...prev, estado: value ?? '' }));
-  }, []);
-
-  const applyFilters = React.useCallback(() => {
+  const applyFilters = React.useCallback((nextState = filterState) => {
     const payload = Object.fromEntries(
-      Object.entries(filterState).filter(([, value]) => value != null && value !== ''),
+      Object.entries(nextState).filter(([, value]) => value != null && value !== ''),
     );
     router.get('/ui/documentos', payload, { preserveState: true, replace: true });
   }, [filterState, router]);
 
+  const handleEstadoChange = React.useCallback((_, value) => {
+    const next = value === 'ALL' ? '' : (value ?? '');
+    const nextState = { ...filterState, estado: next };
+    setFilterState(nextState);
+    applyFilters(nextState);
+  }, [filterState, applyFilters]);
+
+  const handleEspecieSelect = React.useCallback((_, value) => {
+    const next = value === 'ALL' ? '' : (value ?? '');
+    const nextState = { ...filterState, especie: next };
+    setFilterState(nextState);
+    applyFilters(nextState);
+  }, [filterState, applyFilters]);
+
   const handleFilterSubmit = React.useCallback((event) => {
     event.preventDefault();
-    applyFilters();
-  }, [applyFilters]);
+    applyFilters(filterState);
+  }, [applyFilters, filterState]);
 
   const clearFilters = React.useCallback(() => {
     const empty = {
@@ -210,21 +220,28 @@ export default function Documentos() {
             value={filterState.nlab}
             onChange={handleFilterChange('nlab')}
           />
-          <Input
-            size="sm"
-            className="filters-control search-input"
-            placeholder="Buscar especie..."
-            startDecorator={<Search size={14} />}
-            value={filterState.especie}
-            onChange={handleFilterChange('especie')}
-          />
           <Select
             size="sm"
             className="filters-control"
-            value={filterState.estado || null}
+            placeholder="Especie"
+            value={filterState.especie || 'ALL'}
+            onChange={handleEspecieSelect}
+          >
+            <Option value="ALL">Todos</Option>
+            {speciesOptions.map((name) => (
+              <Option key={name} value={name}>
+                {name}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            size="sm"
+            className="filters-control"
+            value={filterState.estado || 'ALL'}
             onChange={handleEstadoChange}
             placeholder="Estado"
           >
+            <Option value="ALL">Todos</Option>
             <Option value="APROBADO">Aprobado</Option>
             <Option value="RECHAZADO">Rechazado</Option>
           </Select>

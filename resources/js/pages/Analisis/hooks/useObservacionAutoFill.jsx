@@ -11,9 +11,10 @@ const convertCategoryForPhrase = (value) => {
     return '';
   }
   const overrides = {
-    CERTIFICADO: 'CERTIFICACIÓN',
-    FISCALIZADO: 'FISCALIZACIÓN',
-    REGISTRADO: 'REGISTRACIÓN',
+    CERTIFICADA: 'CERTIFICACIÓN',
+    FISCALIZADA: 'FISCALIZACIÓN',
+    
+    
   };
   if (Object.prototype.hasOwnProperty.call(overrides, upper)) {
     return overrides[upper];
