@@ -79,6 +79,7 @@ class CultivosController extends Controller
             ['cultivo_id' => $cultivo->id],
             ['dias' => (int) $data['dias']]
         );
+        
         $to = $request->header('X-Inertia') ? route('ui.cultivos') : route('cultivos.index');
         return redirect($to)->with('status', 'Especie actualizada');
     }
