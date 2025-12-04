@@ -40,43 +40,28 @@ const removeAccents = (text) => (
 const sanitizeAmountPart = (value) => value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
 
 export const parseValidezLabel = (label) => {
-  const raw = (label ?? '').toString();
-  const trimmed = raw.trim();
-  if (trimmed === '') {
+  const raw = (label ?? '').toString().trim();
+  if (raw === '') {
     return { amount: '', unit: DEFAULT_VALIDEZ_UNIT };
   }
-  const normalized = removeAccents(trimmed).toUpperCase();
-  if (normalized === '') {
-    return { amount: '', unit: DEFAULT_VALIDEZ_UNIT };
-  }
-
-  let matchedUnit = null;
-  let amountPart = normalized;
-  for (const entry of VALIDEZ_UNITS) {
-    const patterns = [
-      entry.value.toUpperCase(),
-      removeAccents(entry.label).toUpperCase(),
-    ].filter(Boolean);
-    for (const pattern of patterns) {
-      if (pattern && normalized.endsWith(pattern)) {
-        matchedUnit = entry;
-        amountPart = normalized.slice(0, normalized.length - pattern.length).trim();
-        break;
-      }
+  const normalized = removeAccents(raw).toLowerCase();
+const regex = /(\d+(?:[.,]\d+)?)\s*(dias?|meses?|a[nñ]os?)/i;
+  const match = normalized.match(regex);
+  if (match) {
+    const amount = sanitizeAmountPart(match[1]);
+    const unitText = match[2].toLowerCase();
+    let unit = DEFAULT_VALIDEZ_UNIT;
+    if (unitText.startsWith('mes')) {
+      unit = 'MESES';
+    } else if (unitText.startsWith('an')) {
+      unit = 'ANIOS';
+    } else {
+      unit = 'DIAS';
     }
-    if (matchedUnit) {
-      break;
-    }
+    return { amount, unit };
   }
-
-  if (!matchedUnit) {
-    return { amount: sanitizeAmountPart(normalized), unit: DEFAULT_VALIDEZ_UNIT };
-  }
-
-  return {
-    amount: sanitizeAmountPart(amountPart),
-    unit: matchedUnit.value,
-  };
+  const fallbackAmount = sanitizeAmountPart(normalized);
+  return { amount: fallbackAmount, unit: DEFAULT_VALIDEZ_UNIT };
 };
 
 export const formatValidezLabel = (validez) => {

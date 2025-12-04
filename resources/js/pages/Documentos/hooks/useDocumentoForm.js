@@ -25,6 +25,7 @@ import {
 } from '../config';
 import {
   DEFAULT_VALIDEZ_UNIT,
+  convertAmountToDias,
   formatValidezLabel,
   parseValidezLabel,
 } from '../../Cultivos/validezUtils';
@@ -60,7 +61,6 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     () => (especieKey ? cultivosMeta.get(especieKey) : null),
     [cultivosMeta, especieKey],
   );
-  const validezAutoLabel = currentCultivoMeta?.validezLabel || '';
   const variedadOptions = React.useMemo(
     () => getVariedadOptions(cultivosMeta, data.especie, data.variedad, variedadGlobalOptions),
     [cultivosMeta, data.especie, data.variedad, variedadGlobalOptions],
@@ -70,29 +70,28 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     [doc.validez],
   );
 
-  const [validezAmount, setValidezAmount] = React.useState(initialValidez.amount);
-  const [validezUnit, setValidezUnit] = React.useState(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
+  const [validezDays, setValidezDays] = React.useState(initialValidez.amount);
 
   React.useEffect(() => {
-    setValidezAmount(initialValidez.amount);
-    setValidezUnit(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
-  }, [initialValidez.amount, initialValidez.unit]);
+    setValidezDays(initialValidez.amount);
+    setValidezManual(false);
+  }, [initialValidez.amount]);
 
-  React.useEffect(() => {
-    if (!validezAutoLabel) {
-      return;
-    }
-    const parsed = parseValidezLabel(validezAutoLabel);
-    setValidezAmount(parsed.amount);
-    setValidezUnit(parsed.unit);
-  }, [validezAutoLabel]);
+  const [validezManual, setValidezManual] = React.useState(false);
+  const handleValidezDaysChange = React.useCallback((value) => {
+    setValidezManual(true);
+    setValidezDays(value ?? '');
+  }, []);
 
   React.useEffect(() => {
     setData('validez', formatValidezLabel({
-      cantidad: validezAmount,
-      unidad: validezUnit,
+      cantidad: validezDays,
+      unidad: 'DIAS',
     }));
-  }, [setData, validezAmount, validezUnit]);
+    setData('dias', validezDays);
+    setData('validez_amount', validezDays);
+    setData('validez_unit', 'DIAS');
+  }, [setData, validezDays]);
 
   const missingRequired = React.useMemo(() => (
     REQUIRED_FIELDS.filter((f) => {
@@ -186,10 +185,22 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
         if (meta.categoria_final) {
           setData('categoria_final', meta.categoria_final);
         }
-        if (meta.validezLabel) {
-          setData('validez', meta.validezLabel);
-        } else {
-          setData('validez', '');
+        if (!validezManual) {
+          const metaValidez = meta.validezLabel ? parseValidezLabel(meta.validezLabel) : null;
+          if (metaValidez) {
+            const days = convertAmountToDias(
+              metaValidez.amount ?? '',
+              metaValidez.unit ?? DEFAULT_VALIDEZ_UNIT,
+            );
+            setValidezDays(days);
+            setData('dias', days);
+            setData('validez_amount', days);
+            setData('validez_unit', DEFAULT_VALIDEZ_UNIT);
+            setData('validez', formatValidezLabel({ cantidad: days, unidad: 'DIAS' }));
+          } else {
+            setValidezDays('');
+            setData('validez', '');
+          }
         }
         const currentVariedad = normalizeUpper(data.variedad);
         if (meta.variedades.length > 0) {
@@ -203,7 +214,7 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
       }
       setLoteDirty(false);
     },
-    [cultivosMeta, data.variedad, setData],
+    [cultivosMeta, data.variedad, setData, validezManual, validezDays],
   );
 
   const handleObservacionesChange = React.useCallback(
@@ -418,10 +429,8 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     handlePlainChange,
     handleVariedadSelect,
     handleEspecieSelect,
-    validezAmount,
-    validezUnit,
-    handleValidezAmountChange,
-    handleValidezUnitChange,
+    validezDays,
+    handleValidezDaysChange,
     handleObservacionesChange,
     handleAnioChange,
     handleTextareaInput,

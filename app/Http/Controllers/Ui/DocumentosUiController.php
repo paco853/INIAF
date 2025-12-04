@@ -135,7 +135,7 @@ class DocumentosUiController extends Controller
                 'especie' => $doc->especie,
                 'fecha_evaluacion' => optional($doc->fecha_evaluacion)->format('Y-m-d') ?? ($datos['fecha'] ?? null),
                 'estado' => $doc->estado ?? ($datos['estado'] ?? null),
-                'validez' => $doc->validez ?? ($datos['validez'] ?? null),
+                'validez' => $doc->validez ?? ($humedad['validez'] ?? ($datos['validez'] ?? null)),
                 'observaciones' => $doc->observaciones ?? ($datos['observaciones'] ?? null),
                 'malezas_nocivas' => $doc->malezas_nocivas ?? ($datos['malezas_nocivas'] ?? null),
                 'malezas_comunes' => $doc->malezas_comunes ?? ($datos['malezas_comunes'] ?? null),

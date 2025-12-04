@@ -22,7 +22,7 @@ html, body {
 .wrap {
   width: 100%;
   padding: 0;
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 
 .report-body{
   display:block;
@@ -134,7 +134,7 @@ h1,h2{ margin:0; text-align:center }
 .meta-col strong{ font-weight:700; font-size:11px }
 .meta-right{ text-align:right; padding-right:0; transform: translateX(-18mm); } /* mueve N° análisis/ a la izquierda */
 .meta-nlab{ margin-top: -1; display:block; } /* N° de análisis alineado más arriba */
-.meta-year{ display:block; transform: translateX(-10mm); margin-top: 5mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
+.meta-year{ display:block; transform: translateX(-10mm); margin-top: 4mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
 .meta-date{ display:block; text-align:right; transform: translateX(48mm); } /* empuja la fecha hacia la derecha */
 
 /* Tabla principal */

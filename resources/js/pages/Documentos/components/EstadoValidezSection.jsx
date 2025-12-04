@@ -4,23 +4,18 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Select,
-  Option,
   Typography,
   RadioGroup,
   Radio,
 } from '@mui/joy';
 import { ShieldCheck, Clock } from 'lucide-react';
-import { DEFAULT_VALIDEZ_UNIT, VALIDEZ_UNITS } from '../../Cultivos/validezUtils';
 
 export default function EstadoValidezSection({
   errors,
   estadoValue,
   onEstadoChange,
-  validezAmount,
-  validezUnit,
-  onValidezAmountChange,
-  onValidezUnitChange,
+  diasValue,
+  onDiasChange,
 }) {
   return (
     <div className="doc-section">
@@ -49,27 +44,18 @@ export default function EstadoValidezSection({
           <FormLabel>
             Validez
             <Typography component="span" level="body-xs" sx={{ color: 'text.tertiary', ml: 0.5 }}>
-              (Selecciona cantidad y unidad)
+              (Ingresa días)
             </Typography>
           </FormLabel>
           <Stack direction="row" spacing={1}>
             <Input
               type="number"
               min={0}
-              value={validezAmount}
-              onChange={(event) => onValidezAmountChange(event.target.value)}
+              value={diasValue}
+              onChange={(event) => onDiasChange(event.target.value)}
               startDecorator={<Clock size={16} />}
               sx={{ flex: 1 }}
             />
-            <Select
-              value={validezUnit || DEFAULT_VALIDEZ_UNIT}
-              onChange={(_, value) => onValidezUnitChange(value)}
-              sx={{ minWidth: 110 }}
-            >
-              {VALIDEZ_UNITS.map((unit) => (
-                <Option key={unit.value} value={unit.value}>{unit.label}</Option>
-              ))}
-            </Select>
           </Stack>
           {errors.validez && (
             <Typography level="body-sm" color="danger">{errors.validez}</Typography>

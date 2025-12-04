@@ -8,25 +8,22 @@ import {
   FormControl,
   FormLabel,
   Alert,
-  Select,
-  Option,
 } from '@mui/joy';
 import {
-  convertAmountToDias,
   DEFAULT_VALIDEZ_UNIT,
-  VALIDEZ_UNITS,
 } from './validezUtils';
 
 export default function CultivoEdit() {
   const { props } = usePage();
   const { cultivo, flash } = props;
-  const initialValidez = React.useMemo(
-    () => ({
-      unit: cultivo.validez?.unidad ?? DEFAULT_VALIDEZ_UNIT,
-      amount: cultivo.validez?.cantidad ?? cultivo.dias ?? '',
-    }),
-    [cultivo.validez?.unidad, cultivo.validez?.cantidad, cultivo.dias],
-  );
+  const initialValidez = React.useMemo(() => {
+    if (cultivo.validez) {
+      return {
+        amount: cultivo.validez.cantidad ?? cultivo.validez.dias ?? '',
+      };
+    }
+    return { amount: cultivo.dias ?? '' };
+  }, [cultivo.validez, cultivo.dias]);
   const {
     data,
     setData,
@@ -37,30 +34,19 @@ export default function CultivoEdit() {
     especie: cultivo.especie ?? '',
     categoria_inicial: cultivo.categoria_inicial ?? '',
     categoria_final: cultivo.categoria_final ?? '',
-    dias: cultivo.validez?.dias ?? cultivo.dias ?? '',
-    validez_amount: initialValidez.amount ?? '',
-    validez_unit: initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT,
+    dias: initialValidez.amount ?? cultivo.dias ?? '',
+    validez_amount: initialValidez.amount ?? cultivo.dias ?? '',
+    validez_unit: DEFAULT_VALIDEZ_UNIT,
   });
-  const [validezUnit, setValidezUnit] = React.useState(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
-  const [validezValue, setValidezValue] = React.useState(initialValidez.amount || '');
+  const [validezDays, setValidezDays] = React.useState(initialValidez.amount ?? cultivo.dias ?? '');
 
   React.useEffect(() => {
-    setValidezUnit(initialValidez.unit || DEFAULT_VALIDEZ_UNIT);
-    setValidezValue(initialValidez.amount || '');
-    setData('validez_amount', initialValidez.amount ?? '');
-    setData('validez_unit', initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT);
-    setData('dias', convertAmountToDias(initialValidez.amount ?? '', initialValidez.unit ?? DEFAULT_VALIDEZ_UNIT));
-  }, [initialValidez.unit, initialValidez.amount, setData]);
-
-  const updateDias = React.useCallback(
-    (amount, unit) => {
-      const next = convertAmountToDias(amount, unit);
-      setData('dias', next);
-      setData('validez_amount', amount);
-      setData('validez_unit', unit);
-    },
-    [setData],
-  );
+    const value = initialValidez.amount ?? cultivo.dias ?? '';
+    setValidezDays(value);
+    setData('dias', value);
+    setData('validez_amount', value);
+    setData('validez_unit', DEFAULT_VALIDEZ_UNIT);
+  }, [initialValidez.amount, cultivo.dias, setData]);
 
   const handleTextChange = React.useCallback(
     (field) => (event) => {
@@ -124,27 +110,15 @@ export default function CultivoEdit() {
               <Input
                 type="number"
                 min={0}
-                value={validezValue}
+                value={validezDays}
                 onChange={(event) => {
                   const next = event.target.value;
-                  setValidezValue(next);
-                  updateDias(next, validezUnit);
+                  setValidezDays(next);
+                  setData('dias', next);
+                  setData('validez_amount', next);
                 }}
                 sx={{ flex: 1 }}
               />
-              <Select
-                value={validezUnit}
-                onChange={(_, value) => {
-                  const nextUnit = value || DEFAULT_VALIDEZ_UNIT;
-                  setValidezUnit(nextUnit);
-                  updateDias(validezValue, nextUnit);
-                }}
-                sx={{ minWidth: 110 }}
-              >
-                {VALIDEZ_UNITS.map((unit) => (
-                  <Option key={unit.value} value={unit.value}>{unit.label}</Option>
-                ))}
-              </Select>
             </Stack>
             {errors.dias && (
               <Typography level="body-sm" color="danger">{errors.dias}</Typography>
