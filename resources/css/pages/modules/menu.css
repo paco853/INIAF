@@ -3,6 +3,24 @@
     flex-direction: column;
     gap: 14px;
     margin-top: 4px;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.main-menu::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.sidebar-scrollable {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.sidebar-scrollable::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .main-menu__primary-list,
@@ -45,6 +63,64 @@
     color: #6b7280;
     letter-spacing: 0.05em;
 }
+.main-menu--collapsed {
+    width: 29px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    background: #fff;
+    border-right: none;
+    position: relative;
+}
+.main-menu-main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.menu-link--collapsed {
+    border-radius: 14px;
+    padding: 0;
+    min-height: 48px;
+    width: 90px;
+    border: none;
+    background: rgba(0, 0, 0, 0.05);
+    color: #111;
+    box-shadow: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.menu-link--collapsed:hover {
+    background: rgba(17, 17, 17, 0.06);
+}
+.menu-link--collapsed .menu-link__icon {
+    color: #111;
+}
+.menu-link--collapsed.menu-link--active .menu-link__icon {
+    color: #000;
+}
+.menu-link--collapsed.menu-link--active {
+    background: rgba(17, 17, 17, 0.1);
+}
+.main-menu--collapsed .menu-collapsed-separator {
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 8px 0;
+}
+.main-menu--collapsed-footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 12px;
+}
 
 .main-menu .MuiListItem-root {
     --ListItem-paddingY: 0;
@@ -59,12 +135,13 @@
     border: 1px solid rgba(214, 214, 204, 0.9);
     background: transparent;
     box-shadow: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .menu-link:hover {
     background: rgba(95, 106, 48, 0.08);
     border-color: rgba(95, 106, 48, 0.3);
+    transform: translateX(6px);
 }
 
 .menu-link--active {
@@ -104,6 +181,7 @@
     background-color: #4caf50;
 }
 
+
 .menu-sublink {
     border-radius: 12px;
     padding: 12px 16px 12px 32px;
@@ -113,12 +191,13 @@
     border: 1px solid rgba(214, 214, 204, 0.9);
     background: transparent;
     box-shadow: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .menu-sublink:hover {
     background: rgba(95, 106, 48, 0.08);
     border-color: rgba(95, 106, 48, 0.3);
+    transform: translateX(6px);
 }
 
 .menu-sublink--active {

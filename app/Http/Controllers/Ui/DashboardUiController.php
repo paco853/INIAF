@@ -38,35 +38,31 @@ class DashboardUiController extends Controller
                 ];
             });
 
-        $recientes = AnalisisDocumento::query()
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get(['id', 'nlab', 'especie', 'fecha_evaluacion', 'recepcion', 'humedad', 'datos', 'estado', 'created_at'])
-            ->map(function (AnalisisDocumento $doc) {
-                $recepcion = $doc->recepcion ?? [];
-                $humedad = $doc->humedad ?? [];
-                $datos = $doc->datos ?? [];
-                $especie = $doc->especie ?? ($recepcion['especie'] ?? 'Sin especie');
-                $nlab = $doc->nlab ?? ($recepcion['nlab'] ?? 'N/A');
-                $cooperador = $recepcion['cooperador'] ?? '-';
-                $estado = $doc->estado ?? '-';
-                $fecha = $doc->fecha_evaluacion ? $doc->fecha_evaluacion->format('d/m/Y') : ($doc->created_at?->format('d/m/Y'));
-                $municipio = $recepcion['municipio'] ?? ($datos['municipio'] ?? '-');
-                $comunidad = $recepcion['comunidad'] ?? ($datos['comunidad'] ?? '-');
-                $bolsas = $recepcion['bolsas'] ?? ($datos['bolsas'] ?? null);
-                $kgbol = $recepcion['kgbol'] ?? ($datos['kgbol'] ?? null);
-                $total = $recepcion['total'] ?? ($datos['total'] ?? ($bolsas && $kgbol ? $bolsas * $kgbol : null));
-                $germinacion = $humedad['germinacion_pct'] ?? ($datos['germinacion_pct'] ?? null);
-                $humedadPct = $humedad['resultado'] ?? ($datos['resultado'] ?? null);
-                $semillaPuraPct = $humedad['semilla_pura_pct']
-                    ?? ($humedad['otros_sp_pct'] ?? ($datos['semilla_pura_pct'] ?? ($datos['otros_sp_pct'] ?? null)));
-                $semillaPuraKg = $humedad['semilla_pura_kg']
-                    ?? ($humedad['otros_sp_kg'] ?? ($datos['semilla_pura_kg'] ?? ($datos['otros_sp_kg'] ?? null)));
-                $semillera = $recepcion['semillera'] ?? null;
-                $validez = $doc->validez ?? ($datos['validez'] ?? ($humedad['validez'] ?? null));
+        $formatDoc = function (AnalisisDocumento $doc) {
+            $recepcion = $doc->recepcion ?? [];
+            $humedad = $doc->humedad ?? [];
+            $datos = $doc->datos ?? [];
+            $especie = $doc->especie ?? ($recepcion['especie'] ?? 'Sin especie');
+            $nlab = $doc->nlab ?? ($recepcion['nlab'] ?? 'N/A');
+            $cooperador = $recepcion['cooperador'] ?? '-';
+            $estado = $doc->estado ?? '-';
+            $fecha = $doc->fecha_evaluacion ? $doc->fecha_evaluacion->format('d/m/Y') : ($doc->created_at?->format('d/m/Y'));
+            $municipio = $recepcion['municipio'] ?? ($datos['municipio'] ?? '-');
+            $comunidad = $recepcion['comunidad'] ?? ($datos['comunidad'] ?? '-');
+            $bolsas = $recepcion['bolsas'] ?? ($datos['bolsas'] ?? null);
+            $kgbol = $recepcion['kgbol'] ?? ($datos['kgbol'] ?? null);
+            $total = $recepcion['total'] ?? ($datos['total'] ?? ($bolsas && $kgbol ? $bolsas * $kgbol : null));
+            $germinacion = $humedad['germinacion_pct'] ?? ($datos['germinacion_pct'] ?? null);
+            $humedadPct = $humedad['resultado'] ?? ($datos['resultado'] ?? null);
+            $semillaPuraPct = $humedad['semilla_pura_pct']
+                ?? ($humedad['otros_sp_pct'] ?? ($datos['semilla_pura_pct'] ?? ($datos['otros_sp_pct'] ?? null)));
+            $semillaPuraKg = $humedad['semilla_pura_kg']
+                ?? ($humedad['otros_sp_kg'] ?? ($datos['semilla_pura_kg'] ?? ($datos['otros_sp_kg'] ?? null)));
+            $semillera = $recepcion['semillera'] ?? null;
+            $validez = $doc->validez ?? ($datos['validez'] ?? ($humedad['validez'] ?? null));
 
-                return [
-                    'id' => $doc->id,
+            return [
+                'id' => $doc->id,
                     'especie' => $especie,
                     'nlab' => $nlab,
                     'cooperador' => $cooperador,
@@ -84,7 +80,27 @@ class DashboardUiController extends Controller
                     'semillera' => $semillera,
                     'validez' => $validez,
                 ];
-            });
+        };
+
+        $recientes = AnalisisDocumento::query()
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get(['id', 'nlab', 'especie', 'fecha_evaluacion', 'recepcion', 'humedad', 'datos', 'estado', 'created_at'])
+            ->map($formatDoc);
+
+        $rechazadosList = AnalisisDocumento::query()
+            ->where('estado', 'RECHAZADO')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get(['id', 'nlab', 'especie', 'fecha_evaluacion', 'recepcion', 'humedad', 'datos', 'estado', 'created_at'])
+            ->map($formatDoc);
+
+        $certificadosList = AnalisisDocumento::query()
+            ->where('estado', 'APROBADO')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get(['id', 'nlab', 'especie', 'fecha_evaluacion', 'recepcion', 'humedad', 'datos', 'estado', 'created_at'])
+            ->map($formatDoc);
 
         $cultivos = Cultivo::query()
             ->with([
@@ -166,6 +182,8 @@ class DashboardUiController extends Controller
             'recientes' => $recientes,
             'cultivos' => $cultivos,
             'comunidades' => $comunidades,
+            'rechazadosList' => $rechazadosList,
+            'certificadosList' => $certificadosList,
             'userHistory' => $userHistory,
         ]);
     }

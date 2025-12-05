@@ -1,8 +1,20 @@
 import React from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Box, Sheet, IconButton, Button, Divider, Snackbar, CircularProgress, Avatar, Typography } from '@mui/joy';
+import {
+  Box,
+  Sheet,
+  IconButton,
+  Button,
+  Snackbar,
+  CircularProgress,
+  Avatar,
+  Typography,
+  Stack,
+} from '@mui/joy';
 import { UserRound, LogOut } from 'lucide-react';
 import MainMenu from '../components/MainMenu.jsx';
+import ChangePasswordModal from './components/ChangePasswordModal.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 
 export default function Layout({ children }) {
   const { component, props } = usePage();
@@ -12,6 +24,10 @@ export default function Layout({ children }) {
   const [navLoading, setNavLoading] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [userModalOpen, setUserModalOpen] = React.useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false);
+  const [splashOpen, setSplashOpen] = React.useState(true);
+  const [splashStatus, setSplashStatus] = React.useState('Cargando el entorno...');
   const user = auth?.user;
   const avatarLabel = React.useMemo(() => {
     if (!user) return '?';
@@ -36,8 +52,15 @@ export default function Layout({ children }) {
   }, [queue, toast]);
 
   React.useEffect(() => {
-    const start = () => setNavLoading(true);
-    const finish = () => setNavLoading(false);
+    const start = () => {
+      setNavLoading(true);
+      setSplashStatus('Cargando módulos...');
+      setSplashOpen(true);
+    };
+    const finish = () => {
+      setNavLoading(false);
+      setSplashOpen(false);
+    };
     const unStart = router.on('start', start);
     const unFinish = router.on('finish', finish);
     return () => {
@@ -59,6 +82,11 @@ export default function Layout({ children }) {
   React.useEffect(() => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setSplashOpen(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleMenuNavigate = React.useCallback(() => {
     if (isMobile) {
@@ -128,18 +156,18 @@ export default function Layout({ children }) {
         }}
       >
         {!isMobile && (
-          <IconButton
-            variant="outlined"
-            color="neutral"
-            size="sm"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            sx={{
-              alignSelf: 'flex-end',
-              mb: sidebarOpen ? 1.5 : 1,
-            }}
-          >
-            =
-          </IconButton>
+        <IconButton
+          variant="outlined"
+          color="neutral"
+          size="sm"
+          onClick={() => setSidebarOpen((prev) => !prev)}
+          sx={{
+            alignSelf: sidebarOpen ? 'flex-end' : 'center',
+            mb: sidebarOpen ? 1.5 : 1,
+          }}
+        >
+          =
+        </IconButton>
         )}
         {sidebarOpen && (
           <Box
@@ -156,9 +184,30 @@ export default function Layout({ children }) {
           </Box>
         )}
         {sidebarOpen && <Box className="sidebar-separator" />}
-        <Box sx={{ flex: 1, overflowY: 'auto', width: '100%' }}>
+        <Box className="sidebar-scrollable" sx={{ flex: 1, overflowY: 'auto', width: '100%' }}>
           <MainMenu collapsed={!sidebarOpen} onNavigate={handleMenuNavigate} user={user} />
         </Box>
+        {!sidebarOpen && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <IconButton
+              variant="soft"
+              color="neutral"
+              onClick={() => setUserModalOpen(true)}
+              size="md"
+            >
+              <Avatar>{avatarLabel}</Avatar>
+            </IconButton>
+          </Box>
+        )}
         {sidebarOpen && (
           <Box className="sidebar-user">
             <Box className="sidebar-user__info">
@@ -182,8 +231,7 @@ export default function Layout({ children }) {
               color="primary"
               fullWidth
               sx={{ mb: 1 }}
-              component={Link}
-              href="/ui/password"
+              onClick={() => setChangePasswordOpen(true)}
             >
               Cambiar contraseña
             </Button>
@@ -206,6 +254,70 @@ export default function Layout({ children }) {
           className="layout-overlay"
         />
       )}
+      <SplashScreen open={splashOpen} status={splashStatus} />
+      {userModalOpen && (
+        <Box
+          sx={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15,23,42,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1400,
+          }}
+          onClick={() => setUserModalOpen(false)}
+        >
+          <Sheet
+            variant="soft"
+            sx={{
+              width: 320,
+              p: 3,
+              borderRadius: 2,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Stack spacing={1}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Avatar variant="soft" sx={{ width: 40, height: 40 }}>
+                  {avatarLabel}
+                </Avatar>
+                <Box>
+                  <Typography level="body-lg" fontWeight="600">
+                    {user?.name || 'Usuario'}
+                  </Typography>
+                  {user?.email && (
+                    <Typography level="body-sm" color="neutral.500">
+                      {user.email}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              <Button
+                variant="outlined"
+                color="primary"
+                fullWidth
+                onClick={() => {
+                  setChangePasswordOpen(true);
+                  setUserModalOpen(false);
+                }}
+              >
+                Cambiar contraseña
+              </Button>
+              <Button
+                variant="plain"
+                color="danger"
+                fullWidth
+                startDecorator={<LogOut size={16} />}
+                onClick={() => router.post('/logout')}
+              >
+                Cerrar sesión
+              </Button>
+            </Stack>
+          </Sheet>
+        </Box>
+      )}
+      <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
       <Box
         component="main"
         sx={{

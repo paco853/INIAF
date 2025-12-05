@@ -17,6 +17,62 @@
     color: #0f172a;
 }
 
+.dashboard-card {
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+    transform-origin: center;
+}
+
+.dashboard-card:hover {
+    transform: translate3d(0, -10px, 0) scale(1.02);
+    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.25);
+}
+
+.dashboard-chart circle {
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.dashboard-chart circle:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 8px 12px rgba(15, 23, 42, 0.25));
+}
+
+.dashboard-species {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-species:hover {
+    transform: translate3d(2px, -6px, 0);
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.15);
+}
+
+.kpi-list-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.kpi-list-table thead th {
+    background: linear-gradient(120deg, #dbeafe, #bfdbfe);
+    color: #1d4ed8;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+}
+
+.kpi-list-table tbody tr {
+    background: #f8fafc;
+    transition: background 0.2s ease;
+}
+
+.kpi-list-table tbody tr:nth-of-type(odd) {
+    background: #eef2ff;
+}
+
+.kpi-list-table tbody tr:hover {
+    background: #dbeafe;
+}
+
 .layout-panel h1,
 .layout-panel h2,
 .layout-panel h3,

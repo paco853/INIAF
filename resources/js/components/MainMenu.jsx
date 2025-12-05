@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
   Box,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -18,6 +19,8 @@ import {
   Database,
   ShieldCheck,
   Users,
+  LogOut,
+  UserRound,
 } from 'lucide-react';
 import '../../css/pages/modules/menu.css';
 
@@ -94,9 +97,73 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
 
   const toggleConfig = () => setConfigOpen((prev) => !prev);
   const showLabels = true;
+  const collapsedLinks = [
+    { href: '/ui', icon: <Home size={22} />, active: isActive('/ui') },
+    { href: '/ui/analisis/semillas', icon: <ClipboardList size={22} />, active: isActive('/ui/analisis') },
+    { href: '/ui/documentos', icon: <FileText size={22} />, active: isActive('/ui/documentos') },
+    { href: '/ui/cultivos', icon: <Sprout size={22} />, active: isActive('/ui/cultivos') },
+    { href: '/ui/variedades', icon: <Leaf size={22} />, active: isActive('/ui/variedades') },
+    { href: '/ui/backups', icon: <Database size={22} />, active: isActive('/ui/backups') },
+  ];
 
   if (collapsed) {
-    return null;
+    return (
+      <Box className="main-menu main-menu--collapsed">
+        <Box className="main-menu-main">
+          {collapsedLinks.slice(0, 3).map((link) => (
+            <IconButton
+              variant="plain"
+              key={link.href}
+              component={Link}
+              href={link.href}
+              aria-label={link.href}
+              className={cx('menu-link', 'menu-link--collapsed', link.active && 'menu-link--active')}
+              size="sm"
+              onClick={onNavigate}
+            >
+              {link.icon}
+            </IconButton>
+          ))}
+        </Box>
+        <Box className="menu-collapsed-separator" />
+        <Box className="main-menu-main">
+          {collapsedLinks.slice(3).map((link) => (
+            <IconButton
+              key={link.href}
+              component={Link}
+              href={link.href}
+              aria-label={link.href}
+              className={cx('menu-link', 'menu-link--collapsed', link.active && 'menu-link--active')}
+              size="sm"
+              onClick={onNavigate}
+            >
+              {link.icon}
+            </IconButton>
+          ))}
+        </Box>
+        <Box className="main-menu--collapsed-footer">
+          <IconButton
+            variant="plain"
+            component={Link}
+            href="/ui/password"
+            aria-label="Usuario"
+            className="menu-link menu-link--collapsed"
+            size="sm"
+          >
+            <UserRound size={22} />
+          </IconButton>
+          <IconButton
+            variant="plain"
+            aria-label="Cerrar sesión"
+            className="menu-link menu-link--collapsed"
+            size="sm"
+            onClick={() => router.post('/logout')}
+          >
+            <LogOut size={22} />
+          </IconButton>
+        </Box>
+      </Box>
+    );
   }
 
   return (

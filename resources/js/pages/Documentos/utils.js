@@ -190,7 +190,7 @@ export const getVariedadOptions = (metaMap, especie, currentVariedad, variedadGl
   const meta = especieKey ? metaMap.get(especieKey) : null;
   const base = (meta && Array.isArray(meta.variedades) && meta.variedades.length > 0)
     ? meta.variedades
-    : variedadGlobalOptions;
+    : (meta ? [] : variedadGlobalOptions);
   const current = normalizeUpper(currentVariedad);
   if (current && !base.includes(current)) {
     return [current, ...base];

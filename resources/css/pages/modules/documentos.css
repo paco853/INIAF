@@ -563,10 +563,22 @@
 }
 
 /* Document edit layout overrides so only this page receives the glass treatment */
+.page--documentos-edit .layout-root {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.0);
+    z-index: 2000;
+    overflow-y: auto;
+}
+
 .page--documentos-edit .doc-edit-shell {
     width: min(1400px, calc(100vw - 64px));
     max-width: none;
-    margin: 0.5rem auto 2rem;
+    margin-top: 2rem;
     background: rgba(255, 0, 0, 0.95);
     box-shadow: 0 40px 80px rgba(7, 69, 214, 0.25);
     border-radius: 32px;
@@ -582,8 +594,4 @@
     inset: 0;
     background: none;
     pointer-events: none;
-}
-
-.page--documentos-edit .layout-root {
-    overflow-y: auto;
 }

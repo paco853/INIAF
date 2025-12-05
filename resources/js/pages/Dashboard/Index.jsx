@@ -12,6 +12,7 @@ import CustomizeKpisModal from './components/CustomizeKpisModal.jsx';
 import CultivosModal from './components/CultivosModal.jsx';
 import CommunitiesModal from './components/CommunitiesModal.jsx';
 import UserHistoryModal from './components/UserHistoryModal.jsx';
+import KpiListModal from './components/KpiListModal.jsx';
 
 const KPI_STORAGE_KEY = 'dashboard-selected-kpis';
 const BASE_KPI_KEYS = ['totalHoy', 'certificados', 'rechazados', 'cultivos', 'comunidades'];
@@ -75,6 +76,8 @@ export default function Dashboard() {
     recientes = [],
     cultivos = [],
     comunidades = [],
+    rechazadosList = [],
+    certificadosList = [],
     userHistory = [],
     auth = {},
   } = usePage().props;
@@ -193,6 +196,38 @@ export default function Dashboard() {
     }
   }, [selectedKpiKeys]);
 
+  const [selectedCultivo, setSelectedCultivo] = React.useState('Todos');
+  const [selectedMunicipio, setSelectedMunicipio] = React.useState('Todo Potosí');
+
+  const filteredRecientes = React.useMemo(() => {
+    return (recientes || []).filter((r) => {
+      const matchCultivo = selectedCultivo === 'Todos' || r.especie === selectedCultivo;
+      const matchMuni = selectedMunicipio === 'Todo Potosí' || r.municipio === selectedMunicipio;
+      return matchCultivo && matchMuni;
+    });
+  }, [recientes, selectedCultivo, selectedMunicipio]);
+
+  const [kpiList, setKpiList] = React.useState({ open: false, title: '', rows: [] });
+
+  const handleOpenKpiList = React.useCallback((key) => {
+    if (!key) return;
+    if (key === 'rechazados') {
+      setKpiList({
+        open: true,
+        title: 'Rechazados',
+        rows: rechazadosList,
+      });
+      return;
+    }
+    if (key === 'certificados') {
+      setKpiList({
+        open: true,
+        title: 'Certificados emitidos',
+        rows: certificadosList,
+      });
+    }
+  }, [rechazadosList, certificadosList]);
+
   const kpis = React.useMemo(() => {
     const valuesMap = {
       usuariosHistorial: stats.userHistoryCount ?? userHistoryEntries.length,
@@ -215,7 +250,11 @@ export default function Dashboard() {
           ? () => setCultivosModalOpen(true)
           : key === 'comunidades'
             ? () => setComunidadesModalOpen(true)
-            : undefined;
+            : key === 'rechazados'
+              ? () => handleOpenKpiList('rechazados')
+              : key === 'certificados'
+                ? () => handleOpenKpiList('certificados')
+                : undefined;
       return {
         ...def,
         value: valuesMap[key] ?? 0,
@@ -225,7 +264,7 @@ export default function Dashboard() {
     }).filter(Boolean);
 
     return cards;
-  }, [selectedKpiKeys, stats, totalCultivos, availableKpiKeys, isAdmin]);
+  }, [selectedKpiKeys, stats, totalCultivos, availableKpiKeys, isAdmin, handleOpenKpiList]);
 
   const handleAddKpi = (key) => {
     if (!key) return;
@@ -246,9 +285,6 @@ export default function Dashboard() {
     return ['Todo Potosí', ...Array.from(set)];
   }, [recientes]);
 
-  const [selectedCultivo, setSelectedCultivo] = React.useState('Todos');
-  const [selectedMunicipio, setSelectedMunicipio] = React.useState('Todo Potosí');
-
   const filteredChart = React.useMemo(() => {
     if (selectedCultivo === 'Todos') return analisisPorCultivo;
     return analisisPorCultivo.filter((c) => c.cultivo === selectedCultivo);
@@ -268,14 +304,6 @@ export default function Dashboard() {
     }
     return colors;
   }, [filteredChart.length]);
-
-  const filteredRecientes = React.useMemo(() => {
-    return (recientes || []).filter((r) => {
-      const matchCultivo = selectedCultivo === 'Todos' || r.especie === selectedCultivo;
-      const matchMuni = selectedMunicipio === 'Todo Potosí' || r.municipio === selectedMunicipio;
-      return matchCultivo && matchMuni;
-    });
-  }, [recientes, selectedCultivo, selectedMunicipio]);
 
   return (
     <Stack spacing={2.5}>
@@ -337,6 +365,12 @@ export default function Dashboard() {
         onClose={() => setComunidadesModalOpen(false)}
         comunidades={comunidadesList}
         municipiosCount={totalMunicipios}
+      />
+      <KpiListModal
+        open={kpiList.open}
+        title={kpiList.title}
+        rows={kpiList.rows}
+        onClose={() => setKpiList({ open: false, title: '', rows: [] })}
       />
     </Stack>
   );

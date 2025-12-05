@@ -43,7 +43,7 @@ const WeeklySummary = ({ data = [], colors, activeSlice, setActiveSlice }) => {
           alignItems="center"
           sx={{ flex: 1, flexWrap: 'wrap', justifyContent: 'center' }}
         >
-          <Box sx={{ position: 'relative', width: 180, height: 180 }}>
+          <Box className="dashboard-chart" sx={{ position: 'relative', width: 180, height: 180 }}>
             {(() => {
               const total = totalSamples || 0;
               let offset = 0;
@@ -112,13 +112,14 @@ const WeeklySummary = ({ data = [], colors, activeSlice, setActiveSlice }) => {
             </Sheet>
           </Box>
 
-          <Stack spacing={0.75} sx={{ flex: 1, minWidth: 180, maxWidth: 240 }}>
+            <Stack spacing={0.75} sx={{ flex: 1, minWidth: 180, maxWidth: 240 }}>
             {data.map((item, idx) => {
               const color = colors[idx % colors.length];
               const selected = activeSlice?.cultivo === item.cultivo;
               const percent = totalSamples > 0 ? Math.round(((item.total || 0) / totalSamples) * 100) : 0;
               return (
                 <Sheet
+                  className="dashboard-species"
                   key={item.cultivo}
                   variant={selected ? 'soft' : 'plain'}
                   color={selected ? 'primary' : 'neutral'}

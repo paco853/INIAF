@@ -115,7 +115,7 @@ h1,h2{ margin:0; text-align:center }
 }
 .heading-meta{
   position:absolute;
-  top:24mm;
+  top:33mm;/* nombres */
   left:0;
   right:0;
 }
@@ -133,8 +133,8 @@ h1,h2{ margin:0; text-align:center }
 .meta-col{ display:table-cell; width:50%; font-size:11px; line-height:1.5; vertical-align:top }
 .meta-col strong{ font-weight:700; font-size:11px }
 .meta-right{ text-align:right; padding-right:0; transform: translateX(-18mm); } /* mueve N° análisis/ a la izquierda */
-.meta-nlab{ margin-top: -1; display:block; } /* N° de análisis alineado más arriba */
-.meta-year{ display:block; transform: translateX(-10mm); margin-top: 4mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
+.meta-nlab{ margin-top: -2; display:block; } /* N° de análisis alineado más arriba */
+.meta-year{ display:block; transform: translateX(-10mm); margin-top: 3mm; } /* mueve solo la fila de AÑO más a la izquierda y hacia abajo */
 .meta-date{ display:block; text-align:right; transform: translateX(48mm); } /* empuja la fecha hacia la derecha */
 
 /* Tabla principal */
@@ -143,7 +143,7 @@ table{
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: fixed;
-  margin-top: 4mm;
+  margin-top: 10mm;/* tabla */
   page-break-inside: avoid; /* Evitar que la tabla se corte entre páginas si es posible */
   font-size: 7px;
   word-wrap: break-word;

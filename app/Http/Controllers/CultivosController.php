@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cultivo;
 use App\Models\Validez;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CultivosController extends Controller
@@ -43,6 +44,8 @@ class CultivosController extends Controller
         ]);
 
         $data['especie'] = trim($data['especie']);
+
+        DB::statement("SELECT setval('cultivos_id_seq', (SELECT COALESCE(MAX(id),0)+1 FROM cultivos))");
 
         $cultivo = Cultivo::create([
             'especie' => $data['especie'],
