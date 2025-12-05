@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -75,15 +76,31 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!$user || !Hash::check($data['current_password'], $user->password)) {
+        $admin = Admin::firstWhere('email', $user->email);
+        $userMatches = $user && Hash::check($data['current_password'], $user->password);
+        $adminMatches = $admin && Hash::check($data['current_password'], $admin->password);
+
+        if (!$user || (!$userMatches && !$adminMatches)) {
             return back()->withErrors([
                 'current_password' => 'La contraseña actual no es correcta.',
             ]);
         }
 
+        if ($adminMatches && !$userMatches) {
+            $user->forceFill([
+                'password' => $admin->password,
+            ])->save();
+        }
+
+        $newPassword = Hash::make($data['password']);
+
         $user->forceFill([
-            'password' => Hash::make($data['password']),
+            'password' => $newPassword,
         ])->save();
+
+        if ($admin) {
+            $admin->forceFill(['password' => $newPassword])->save();
+        }
 
         $request->session()->put('status', 'Contraseña actualizada correctamente.');
 
