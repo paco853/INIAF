@@ -14,8 +14,7 @@ class UsersIndexController extends AdminUiController
 
     public function index(Request $request): InertiaResponse
     {
-        $users = User::with('admin')
-            ->orderBy('name')
+        $users = User::orderBy('name')
             ->get()
             ->sortByDesc(fn (User $user) => (bool) $user->is_admin)
             ->values()

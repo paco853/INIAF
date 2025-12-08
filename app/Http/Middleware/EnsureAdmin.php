@@ -11,7 +11,7 @@ class EnsureAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (!$user || !$user->is_admin || !$user->admin?->active) {
+        if (!$user || !$user->is_admin || !$user->active) {
             abort(403, 'Solo administradores.');
         }
 

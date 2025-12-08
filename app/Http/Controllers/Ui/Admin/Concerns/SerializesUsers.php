@@ -15,16 +15,13 @@ trait SerializesUsers
             ->orderByDesc('last_activity')
             ->value('last_activity');
 
-        $adminRecord = $user->admin;
-        $isAdmin = (bool) $adminRecord;
-
         return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'is_admin' => $isAdmin,
-            'active' => $isAdmin ? (bool) $adminRecord->active : (bool) $user->active,
-            'role' => $isAdmin ? 'Administrador' : 'Usuario',
+            'is_admin' => (bool) $user->is_admin,
+            'active' => (bool) $user->active,
+            'role' => (bool) $user->is_admin ? 'Administrador' : 'Usuario',
             'last_seen' => $lastSession
                 ? Carbon::createFromTimestamp($lastSession)->toDateTimeString()
                 : null,

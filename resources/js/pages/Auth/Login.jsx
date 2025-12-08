@@ -1,7 +1,6 @@
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { User, Lock } from 'lucide-react';
-import AdminLoginModal from '../../components/AdminLoginModal.jsx';
 
 export default function Login() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -12,7 +11,6 @@ export default function Login() {
 
   const loginErrorMessage = errors.login || errors.username;
 
-  const [adminModalOpen, setAdminModalOpen] = React.useState(false);
   React.useEffect(() => {
     return () => {
       reset('password');
@@ -91,21 +89,8 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="hint">
-            ¿Eres administrador?{' '}
-            <span
-              className="hint-link"
-              onClick={() => setAdminModalOpen(true)}
-              role="button"
-              tabIndex={0}
-            >
-              Iniciar modo admin
-            </span>
-          </p>
         </main>
       </div>
-
-      <AdminLoginModal open={adminModalOpen} onClose={() => setAdminModalOpen(false)} />
     </>
   );
 }

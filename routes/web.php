@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminLoginController;
 use App\Http\Controllers\AnalisisSemillasController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComunidadesController;
@@ -17,7 +16,6 @@ use App\Http\Controllers\Ui\Admin\UsersManagementController;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [UserLoginController::class, 'showLogin'])->name('login');
     Route::post('/login', [UserLoginController::class, 'login'])->name('login.attempt');
-    Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.attempt');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
 });
@@ -90,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/documentos', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'index'])->name('ui.documentos');
     Route::get('/ui/documentos/create', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'create'])->name('ui.documentos.create');
     Route::get('/ui/documentos/descarga-general', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'bulk'])->name('ui.documentos.bulk');
+    Route::get('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'apariencia'])->name('ui.documentos.apariencia');
     Route::get('/ui/documentos/{doc}/edit', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'edit'])->whereNumber('doc')->name('ui.documentos.edit');
     Route::get('/ui/analisis/semillas', function () {
         $cultivos = \App\Models\Cultivo::orderBy('especie')

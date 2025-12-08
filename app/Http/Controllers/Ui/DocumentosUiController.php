@@ -79,6 +79,19 @@ class DocumentosUiController extends Controller
                 'humedad' => $doc->humedad ?? [],
             ])
             ->withQueryString();
+        $docsAll = AnalisisDocumento::query()
+            ->select(['id','nlab','especie','estado'])
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($doc) {
+                return [
+                    'id' => $doc->id,
+                    'nlab' => $doc->nlab,
+                    'especie' => $doc->especie,
+                    'estado' => $doc->estado,
+                ];
+            })
+            ->toArray();
 
         $species = AnalisisDocumento::query()
             ->select('especie')
@@ -91,6 +104,7 @@ class DocumentosUiController extends Controller
 
         return Inertia::render('Documentos/Index', [
             'docs' => $docs,
+            'docsAll' => $docsAll,
             'filters' => $filters,
             'speciesOptions' => $species,
         ]);
@@ -182,7 +196,12 @@ class DocumentosUiController extends Controller
                     ] : null,
                 ];
             }),
-        ]);
+            ]);
+    }
+
+    public function apariencia(): InertiaResponse
+    {
+        return Inertia::render('Documentos/AparienciaDocumento');
     }
 
     public function autoprint(AnalisisDocumento $doc): InertiaResponse

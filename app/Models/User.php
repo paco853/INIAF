@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Admin;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -49,17 +48,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function admin()
-    {
-        return $this->hasOne(Admin::class, 'email', 'email');
-    }
-
     public function getIsAdminAttribute(): bool
     {
-        if ($this->relationLoaded('admin')) {
-            return (bool) $this->admin;
-        }
-
-        return $this->admin()->exists();
+        return $this->id === 1;
     }
 }

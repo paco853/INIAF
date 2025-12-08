@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
   Box,
   IconButton,
@@ -76,11 +76,7 @@ const SubLink = ({ href, label, active, icon, onNavigate, className }) => (
 export default function MainMenu({ collapsed = false, onNavigate, user }) {
   const isActive = useActiveMatcher();
   const [configOpen, setConfigOpen] = React.useState(false);
-  const isAdmin = React.useMemo(() => {
-    const rawRole = (user?.role || user?.perfil || '').toString().toLowerCase();
-    const flag = user?.is_admin === true || user?.admin === true || rawRole === 'admin';
-    return Boolean(flag);
-  }, [user]);
+  const isAdmin = React.useMemo(() => Boolean(user?.is_admin), [user]);
   const configActive = [
     '/ui/cultivos',
     '/ui/variedades',
@@ -97,13 +93,16 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
 
   const toggleConfig = () => setConfigOpen((prev) => !prev);
   const showLabels = true;
+
+  /* Collapsed menu links */
+  const COLLAPSED_ICON_SIZE = 24;
   const collapsedLinks = [
-    { href: '/ui', icon: <Home size={22} />, active: isActive('/ui') },
-    { href: '/ui/analisis/semillas', icon: <ClipboardList size={22} />, active: isActive('/ui/analisis') },
-    { href: '/ui/documentos', icon: <FileText size={22} />, active: isActive('/ui/documentos') },
-    { href: '/ui/cultivos', icon: <Sprout size={22} />, active: isActive('/ui/cultivos') },
-    { href: '/ui/variedades', icon: <Leaf size={22} />, active: isActive('/ui/variedades') },
-    { href: '/ui/backups', icon: <Database size={22} />, active: isActive('/ui/backups') },
+    { href: '/ui', icon: <Home size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui') },
+    { href: '/ui/analisis/semillas', icon: <ClipboardList size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui/analisis') },
+    { href: '/ui/documentos', icon: <FileText size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui/documentos') },
+    { href: '/ui/cultivos', icon: <Sprout size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui/cultivos') },
+    { href: '/ui/variedades', icon: <Leaf size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui/variedades') },
+    { href: '/ui/backups', icon: <Database size={COLLAPSED_ICON_SIZE} />, active: isActive('/ui/backups') },
   ];
 
   if (collapsed) {
@@ -118,7 +117,7 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
               href={link.href}
               aria-label={link.href}
               className={cx('menu-link', 'menu-link--collapsed', link.active && 'menu-link--active')}
-              size="sm"
+              size="md"
               onClick={onNavigate}
             >
               {link.icon}
@@ -134,33 +133,12 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
               href={link.href}
               aria-label={link.href}
               className={cx('menu-link', 'menu-link--collapsed', link.active && 'menu-link--active')}
-              size="sm"
+              size="md"
               onClick={onNavigate}
             >
               {link.icon}
             </IconButton>
           ))}
-        </Box>
-        <Box className="main-menu--collapsed-footer">
-          <IconButton
-            variant="plain"
-            component={Link}
-            href="/ui/password"
-            aria-label="Usuario"
-            className="menu-link menu-link--collapsed"
-            size="sm"
-          >
-            <UserRound size={22} />
-          </IconButton>
-          <IconButton
-            variant="plain"
-            aria-label="Cerrar sesión"
-            className="menu-link menu-link--collapsed"
-            size="sm"
-            onClick={() => router.post('/logout')}
-          >
-            <LogOut size={22} />
-          </IconButton>
         </Box>
       </Box>
     );
@@ -246,6 +224,14 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
               active={isActive('/ui/backups')}
               onNavigate={onNavigate}
               icon={<Database size={18} />}
+              className="menu-sublink--system"
+            />
+            <SubLink
+              href="/ui/documentos/apariencia"
+              label="Apariencia de Documento"
+              active={isActive('/ui/documentos/apariencia')}
+              onNavigate={onNavigate}
+              icon={<Leaf size={18} />}
               className="menu-sublink--system"
             />
             {isAdmin && (

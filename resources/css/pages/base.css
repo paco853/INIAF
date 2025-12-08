@@ -50,11 +50,7 @@ label {
     display: flex;
     min-height: 100dvh;
     position: relative;
-    background-color: #f5f5f5;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)), url('/images/iniaf.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-attachment: fixed;
+    background-color: transparent;
     isolation: isolate;
 }
 
@@ -62,11 +58,13 @@ label {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: inherit;
-    background-size: inherit;
-    background-position: inherit;
-    background-attachment: inherit;
-    filter: blur(8px) brightness(0.6); /* Desenfoca y oscurece */
+    width: 280px;
+    max-width: 280px;
+    background-image: url('/images/iniaf.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    filter: none;
     z-index: 0;
 }
 

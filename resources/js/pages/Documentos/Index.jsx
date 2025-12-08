@@ -1,39 +1,50 @@
-import React from 'react';
-import {
-  Typography,
-  Sheet,
-  Table,
-  Button,
-  Chip,
-  Input,
-  Select,
-  Option,
-  Box,
-  Modal,
-  ModalDialog,
-  DialogTitle,
-  DialogContent,
-  FormControl,
-  FormLabel,
-} from '@mui/joy';
-import { Search } from 'lucide-react';
-import Alert from '@mui/joy/Alert';
-import Stack from '@mui/joy/Stack';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Box, Alert, Stack } from '@mui/joy';
 import Paginator from '../../components/Paginator.jsx';
-import { Link, router, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip as ChartTooltip,
+  Legend,
+} from 'chart.js';
+
+import DocumentosHeader from './DocumentosHeader';
+import DocumentosCharts from './DocumentosCharts';
+import DocumentosFilters from './DocumentosFilters';
+import DocumentosTable from './DocumentosTable';
+import DownloadModal from './DownloadModal';
+
+ChartJS.register(ArcElement, ChartTooltip, Legend);
 
 export default function Documentos() {
   const { props } = usePage();
-  const { docs, flash, filters = {}, speciesOptions = [] } = props;
+  const {
+    docs,
+    docsAll = [],
+    flash,
+    filters = {},
+    speciesOptions = [],
+  } = props;
+
   const [deletingId, setDeletingId] = React.useState(null);
   const printFrameRef = React.useRef(null);
+
+  const [animateCharts, setAnimateCharts] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimateCharts(true), 120);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [downloadModalOpen, setDownloadModalOpen] = React.useState(false);
   const [downloadForm, setDownloadForm] = React.useState({
     modo: 'nlab',
     desde: '',
     hasta: '',
   });
+  const [showCharts, setShowCharts] = useState(true);
   const [downloadError, setDownloadError] = React.useState('');
+
   const [filterState, setFilterState] = React.useState({
     anio: filters?.anio ?? '',
     nlab: filters?.nlab ?? '',
@@ -97,6 +108,123 @@ export default function Documentos() {
     router.get('/ui/documentos', {}, { preserveState: true, replace: true });
   }, [router]);
 
+  // --------- RESUMEN ESTADO ----------
+  const statusSummary = useMemo(() => {
+    const items = Array.isArray(docsAll) ? docsAll : [];
+    const summary = items.reduce(
+      (acc, doc) => {
+        const status = (doc.estado || 'Pendiente').toLowerCase();
+        if (status.includes('apro')) {
+          acc.aprobado += 1;
+        } else if (status.includes('rech')) {
+          acc.rechazado += 1;
+        } else {
+          acc.otro += 1;
+        }
+        return acc;
+      },
+      { aprobado: 0, rechazado: 0, otro: 0 },
+    );
+    const total = summary.aprobado + summary.rechazado + summary.otro;
+    return {
+      ...summary,
+      total,
+      aprobadoPercent: total ? Math.round((summary.aprobado / total) * 100) : 0,
+      rechazadoPercent: total ? Math.round((summary.rechazado / total) * 100) : 0,
+    };
+  }, [docsAll]);
+
+  const chartData = useMemo(() => ({
+    labels: ['Aprobados', 'Rechazados'],
+    datasets: [
+      {
+        data: [statusSummary.aprobado, statusSummary.rechazado],
+        backgroundColor: ['#34c759', '#f24d4d'],
+        hoverBackgroundColor: ['#2ecc71', '#ff5f5f'],
+        hoverOffset: 10,
+        borderColor: '#ffffff',
+        borderWidth: 2,
+      },
+    ],
+  }), [statusSummary]);
+
+  const chartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: (context) => `${context.label}: ${context.raw}`,
+        },
+      },
+      legend: { display: false },
+    },
+  }), []);
+
+  // --------- ESPECIES (DONUT) ----------
+  const speciesPalette = ['#1d4ed8', '#0ea5e9', '#22d3ee', '#a855f7', '#f472b6', '#f97316'];
+
+  const speciesData = useMemo(() => {
+    const counts = (Array.isArray(docsAll) ? docsAll : []).reduce((acc, doc) => {
+      const name = doc.especie || 'Sin info';
+      acc[name] = (acc[name] || 0) + 1;
+      return acc;
+    }, {});
+
+    const sorted = Object.entries(counts || {})
+      .sort((a, b) => b[1] - a[1]); // 🔥 sin slice: muestra TODAS las especies
+
+    return sorted.map(([name, value], index) => ({
+      name,
+      value,
+      color: speciesPalette[index % speciesPalette.length],
+    }));
+  }, [docsAll]);
+
+  const [hoveredSpecies, setHoveredSpecies] = useState(null);
+  const selectedSpecies = hoveredSpecies ?? speciesData[0] ?? null;
+
+  const handleSpeciesHover = React.useCallback((_, elements) => {
+    if (elements && elements.length > 0) {
+      const index = elements[0].index;
+      setHoveredSpecies(speciesData[index] ?? null);
+      return;
+    }
+    setHoveredSpecies(null);
+  }, [speciesData]);
+
+  const speciesDonutData = useMemo(() => ({
+    labels: speciesData.map((item) => item.name),
+    datasets: [
+      {
+        data: speciesData.map((item) => item.value),
+        backgroundColor: speciesData.map((item) => item.color),
+        hoverOffset: 10,
+        borderColor: '#ffffff',
+        borderWidth: 3,
+      },
+    ],
+  }), [speciesData]);
+
+  const speciesDonutOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          title: (items) => (items[0]?.label ? `ESPECIE: ${items[0].label}` : ''),
+          label: (item) => `CANTIDAD: ${item.raw ?? 0}`,
+        },
+      },
+      legend: { display: false },
+    },
+  }), []);
+
+  const totalDocuments = Array.isArray(docsAll) ? docsAll.length : 0;
+
+  // --------- ACCIONES TABLA ----------
   const onDelete = async (id) => {
     if (!confirm('¿Desea eliminar este documento?')) return;
     setDeletingId(id);
@@ -177,323 +305,71 @@ export default function Documentos() {
     [downloadForm],
   );
 
+  // --------- RENDER ----------
   return (
-    <Stack spacing={1.5}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5 }}
-        >
-          <Typography level="h4" sx={{ fontWeight: 600 }}>Documentos</Typography>
-          <Button
-            size="sm"
-            variant="soft"
-            onClick={() => setDownloadModalOpen(true)}
-          >
-            Descargar
-          </Button>
-        </Stack>
+    <Stack spacing={3} sx={{ pb: 3 }}>
+      <DocumentosHeader
+        showCharts={showCharts}
+        onToggleCharts={() => setShowCharts((prev) => !prev)}
+        onOpenDownload={() => setDownloadModalOpen(true)}
+      />
+
+      {showCharts && (
+        <DocumentosCharts
+          totalDocuments={totalDocuments}
+          chartData={chartData}
+          chartOptions={chartOptions}
+          speciesData={speciesData}
+          speciesDonutData={speciesDonutData}
+          speciesDonutOptions={speciesDonutOptions}
+          onSpeciesHover={handleSpeciesHover}
+        />
+      )}
+
       {flash?.status && <Alert color="success" variant="soft">{flash.status}</Alert>}
       {flash?.error && <Alert color="danger" variant="soft">{flash.error}</Alert>}
 
-      <Sheet
-        variant="outlined"
-        sx={{
-          p: 2.5,
-          borderRadius: 18,
-        }}
-      >
-        <form className="filters-grid" onSubmit={handleFilterSubmit}>
-          <Input
-            size="sm"
-            className="filters-control"
-            type="number"
-            placeholder="Año campaña"
-            min={1900}
-            max={2100}
-            value={filterState.anio}
-            onChange={handleYearChange}
-          />
-          <Input
-            size="sm"
-            className="filters-control"
-            placeholder="N° Laboratorio"
-            value={filterState.nlab}
-            onChange={handleFilterChange('nlab')}
-          />
-          <Select
-            size="sm"
-            className="filters-control"
-            placeholder="Especie"
-            value={filterState.especie || 'ALL'}
-            onChange={handleEspecieSelect}
-          >
-            <Option value="ALL">Todos</Option>
-            {speciesOptions.map((name) => (
-              <Option key={name} value={name}>
-                {name}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            size="sm"
-            className="filters-control"
-            value={filterState.estado || 'ALL'}
-            onChange={handleEstadoChange}
-            placeholder="Estado"
-          >
-            <Option value="ALL">Todos</Option>
-            <Option value="APROBADO">Aprobado</Option>
-            <Option value="RECHAZADO">Rechazado</Option>
-          </Select>
-          <Stack direction="row" spacing={1} className="filters-actions">
-            <Button type="submit" size="sm" variant="solid">
-              Buscar
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="plain"
-              color="primary"
-              onClick={clearFilters}
-              className="filters__clear"
-            >
-              Limpiar filtros
-            </Button>
-          </Stack>
-        </form>
-      </Sheet>
+      <DocumentosFilters
+        filterState={filterState}
+        speciesOptions={speciesOptions}
+        onYearChange={handleYearChange}
+        onFilterChange={handleFilterChange}
+        onEspecieChange={handleEspecieSelect}
+        onEstadoChange={handleEstadoChange}
+        onSubmit={handleFilterSubmit}
+        onClear={clearFilters}
+      />
 
-      <Modal open={downloadModalOpen} onClose={() => setDownloadModalOpen(false)}>
-        <ModalDialog sx={{ minWidth: 360 }}>
-          <DialogTitle>Descarga general</DialogTitle>
-          <DialogContent>
-            Selecciona el rango para generar el PDF combinado.
-          </DialogContent>
-          <Stack spacing={1.5} component="form" onSubmit={handleBulkDownload}>
-            <FormControl>
-              <FormLabel>Modo</FormLabel>
-              <Select
-                value={downloadForm.modo}
-                onChange={handleDownloadChange('modo')}
-              >
-                <Option value="nlab">Por N° de Laboratorio</Option>
-                <Option value="gestion">Por Año (gestión)</Option>
-              </Select>
-            </FormControl>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>Desde</FormLabel>
-            <Input
-                type={downloadForm.modo === 'gestion' ? 'number' : 'text'}
-                inputMode={downloadForm.modo === 'gestion' ? 'numeric' : 'text'}
-                value={downloadForm.desde}
-                onChange={handleDownloadChange('desde')}
-              />
-            </FormControl>
-              <FormControl sx={{ flex: 1 }}>
-                <FormLabel>Hasta</FormLabel>
-                <Input
-                  type={downloadForm.modo === 'gestion' ? 'number' : 'text'}
-                  inputMode={downloadForm.modo === 'gestion' ? 'numeric' : 'text'}
-                  value={downloadForm.hasta}
-                  onChange={handleDownloadChange('hasta')}
-                />
-              </FormControl>
-            </Stack>
-            {downloadError && (
-              <Typography level="body-sm" color="danger">
-                {downloadError}
-              </Typography>
-            )}
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-              <Button variant="outlined" color="neutral" onClick={() => setDownloadModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" variant="solid" color="primary">
-                Descargar
-              </Button>
-            </Stack>
-          </Stack>
-        </ModalDialog>
-      </Modal>
-      <Box component="iframe" ref={printFrameRef} title="print-frame" sx={{ width: 0, height: 0, border: 0, position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
+      <DownloadModal
+        open={downloadModalOpen}
+        onClose={() => setDownloadModalOpen(false)}
+        downloadForm={downloadForm}
+        onChangeField={handleDownloadChange}
+        onSubmit={handleBulkDownload}
+        error={downloadError}
+      />
 
-      <Sheet
-        variant="soft"
+      <Box
+        component="iframe"
+        ref={printFrameRef}
+        title="print-frame"
         sx={{
-          p: 0,
-          borderRadius: 18,
-          overflow: 'hidden',
-          boxShadow: 'lg',
+          width: 0,
+          height: 0,
+          border: 0,
+          position: 'absolute',
+          opacity: 0,
+          pointerEvents: 'none',
         }}
-      >
-        <Table
-          stripe="odd"
-          hoverRow
-          stickyHeader
-          sx={{
-            '--Table-headerUnderlineThickness': '1px',
-            display: { xs: 'none', lg: 'table' },
-          }}
-        >
-          <thead>
-            <tr>
-              <th className="table-col--sm">N° Lab</th>
-              <th>Especie</th>
-              <th className="table-col--sm">Año campaña</th>
-              <th className="table-col--md">Fecha de Evaluacion</th>
-              <th className="table-col--sm">Estado</th>
-              <th className="table-col--xl">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {docs?.data?.map((d) => (
-              <tr key={d.id}>
-                <td>{d.nlab ?? '-'}</td>
-                <td>{d.especie ?? '-'}</td>
-                <td>{d.recepcion?.anio ?? '-'}</td>
-                <td>{d.fecha_evaluacion ?? '-'}</td>
-                <td>{renderEstadoBadge(d.estado)}</td>
-                <td>
-                  <Stack spacing={0.75}>
-                    <Stack direction="row" spacing={0.5}>
-                      <Button
-                        size="sm"
-                        variant="solid"
-                        color="primary"
-                        component={Link}
-                        href={`/ui/documentos/${d.id}/edit`}
-                        className="action-btn action-btn--primary"
-                        sx={{ flex: 1 }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="neutral"
-                        component="a"
-                        href={`/documentos/${d.id}/imprimir?inline=1`}
-                        target="_blank"
-                        className="action-btn action-btn--neutral"
-                        sx={{ flex: 1 }}
-                      >
-                        Ver PDF
-                      </Button>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5}>
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        color="neutral"
-                        onClick={() => handlePrint(d.id)}
-                        className="action-btn action-btn--neutral"
-                        sx={{ flex: 1 }}
-                      >
-                        Imprimir
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outlined"
-                        color="danger"
-                        loading={deletingId === d.id}
-                        disabled={deletingId === d.id}
-                        onClick={() => onDelete(d.id)}
-                        className="action-btn action-btn--danger"
-                        sx={{ flex: 1 }}
-                      >
-                        Eliminar
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        <Stack
-          spacing={1}
-          sx={{
-            display: { xs: 'flex', lg: 'none' },
-            flexDirection: 'column',
-            p: 1.5,
-            gap: 1,
-          }}
-        >
-          {docs?.data?.map((d) => {
-            return (
-              <Sheet
-                key={d.id}
-                variant="outlined"
-                sx={{ p: 1.5, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 0.75 }}
-              >
-                <Typography level="title-sm">ID {d.id}</Typography>
-              <Typography level="body-sm" sx={{ color: 'text.tertiary' }}>N° Laboratorio</Typography>
-              <Typography level="title-sm">{d.nlab ?? '-'}</Typography>
-              <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Especie</Typography>
-              <Typography level="title-sm">{d.especie ?? '-'}</Typography>
-              <Typography level="body-sm" sx={{ color: 'text.tertiary', mt: 0.5 }}>Año campaña</Typography>
-              <Typography level="title-sm">{d.recepcion?.anio ?? '-'}</Typography>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
-                <Chip size="sm" variant="soft" color="neutral">Fecha: {d.fecha_evaluacion ?? '-'}</Chip>
-                {renderEstadoBadge(d.estado)}
-              </Stack>
-              <Stack spacing={0.75} sx={{ mt: 1 }}>
-                <Stack direction="row" spacing={0.5}>
-                  <Button
-                    size="sm"
-                    variant="solid"
-                    color="primary"
-                    component={Link}
-                    href={`/ui/documentos/${d.id}/edit`}
-                    className="action-btn action-btn--primary"
-                    sx={{ flex: 1 }}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="soft"
-                    color="neutral"
-                    component="a"
-                    href={`/documentos/${d.id}/imprimir?inline=1`}
-                    target="_blank"
-                    className="action-btn action-btn--neutral"
-                    sx={{ flex: 1 }}
-                  >
-                    Ver PDF
-                  </Button>
-                </Stack>
-                <Stack direction="row" spacing={0.5}>
-                  <Button
-                    size="sm"
-                    variant="soft"
-                    color="neutral"
-                    onClick={() => handlePrint(d.id)}
-                    className="action-btn action-btn--neutral"
-                    sx={{ flex: 1 }}
-                  >
-                    Imprimir
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outlined"
-                    color="danger"
-                    loading={deletingId === d.id}
-                    disabled={deletingId === d.id}
-                    onClick={() => onDelete(d.id)}
-                    className="action-btn action-btn--danger"
-                    sx={{ flex: 1 }}
-                  >
-                    Eliminar
-                  </Button>
-                </Stack>
-              </Stack>
-            </Sheet>
-          );
-          })}
-        </Stack>
-      </Sheet>
+      />
+
+      <DocumentosTable
+        docs={docs}
+        onDelete={onDelete}
+        onPrint={handlePrint}
+        renderEstadoBadge={renderEstadoBadge}
+        deletingId={deletingId}
+      />
 
       <Paginator pagination={docs} />
     </Stack>

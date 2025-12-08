@@ -34,6 +34,16 @@ export default function Layout({ children }) {
     const source = user.name || user.email || '';
     return source.trim().charAt(0).toUpperCase() || '?';
   }, [user]);
+  const avatarImage = React.useMemo(() => {
+    if (user?.avatar) {
+      return user.avatar;
+    }
+    if (user?.avatar_url) {
+      return user.avatar_url;
+    }
+    const source = user?.name || user?.email || 'Usuario';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(source)}&background=0f172a&color=ffffff&size=256&bold=true`;
+  }, [user]);
 
   React.useEffect(() => {
     const msgs = [];
@@ -115,6 +125,10 @@ export default function Layout({ children }) {
   }, [component]);
 
   const pageClassName = React.useMemo(() => `page page--${pageSlug}`, [pageSlug]);
+  const isDocumentEditPage = pageSlug === 'documentos-edit';
+  const layoutRootStyle = isDocumentEditPage
+    ? { backgroundImage: 'none', backgroundColor: '#eef2ff' }
+    : undefined;
 
   React.useEffect(() => {
     if (!component) {
@@ -128,33 +142,34 @@ export default function Layout({ children }) {
   }, [component]);
 
   return (
-    <Box className="layout-root">
-      <Sheet
-        variant="soft"
-        color="neutral"
-        sx={{
-          width: isMobile ? 240 : sidebarOpen ? 260 : 40,
-          minWidth: isMobile ? 240 : sidebarOpen ? 260 : 40,
-          height: '100dvh',
-          px: isMobile ? 2 : sidebarOpen ? 2 : 0,
-          py: 2,
-          borderRight: isMobile ? 'none' : '1px solid',
-          borderColor: 'divider',
-          position: isMobile ? 'fixed' : 'sticky',
-          left: 0,
-          top: 0,
-          backgroundColor: '#f8f8f4',
-          backdropFilter: 'blur(2px)',
-          overflow: 'hidden',
-          transition: 'transform 0.25s ease, width 0.25s ease, min-width 0.25s ease, padding 0.25s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: sidebarOpen ? 'flex-start' : 'center',
-          zIndex: isMobile ? 1300 : 'auto',
-          transform: isMobile && !sidebarOpen ? 'translateX(-105%)' : 'translateX(0)',
-          boxShadow: isMobile ? 'lg' : 'none',
-        }}
-      >
+    <Box className="layout-root" sx={layoutRootStyle}>
+        <Sheet
+          variant="soft"
+          color="neutral"
+          sx={{
+            width: isMobile ? 240 : sidebarOpen ? 260 : 50,
+            minWidth: isMobile ? 240 : sidebarOpen ? 260 : 50,
+            height: '100dvh',
+            px: isMobile ? 2 : sidebarOpen ? 2 : 0,
+            py: 2,
+            borderRight: isMobile ? 'none' : '1px solid rgba(0,0,0,0.10)',
+            borderColor: isMobile ? 'transparent' : 'rgba(0,0,0,0.10)',
+            position: isMobile ? 'fixed' : 'sticky',
+            left: 0,
+            top: 0,
+            backgroundColor: '#eef5ee',
+            backdropFilter: 'blur(2px)',
+            overflow: 'hidden',
+            transition: 'transform 0.25s ease, width 0.25s ease, min-width 0.25s ease, padding 0.25s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: sidebarOpen ? 'flex-start' : 'center',
+            justifyContent: sidebarOpen ? 'flex-start' : 'center',
+            zIndex: isMobile ? 1300 : 'auto',
+            transform: isMobile && !sidebarOpen ? 'translateX(-105%)' : 'translateX(0)',
+            boxShadow: '0 0 25px rgba(0,0,0,0.07)',
+          }}
+        >
         {!isMobile && (
         <IconButton
           variant="outlined"
@@ -204,14 +219,31 @@ export default function Layout({ children }) {
               onClick={() => setUserModalOpen(true)}
               size="md"
             >
-              <Avatar>{avatarLabel}</Avatar>
+              <Avatar
+                size="md"
+                src={avatarImage}
+                alt={user?.name || 'Usuario'}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.9)',
+                }}
+              >
+                {avatarLabel}
+              </Avatar>
             </IconButton>
           </Box>
         )}
         {sidebarOpen && (
           <Box className="sidebar-user">
             <Box className="sidebar-user__info">
-              <Avatar variant="soft" color="primary" size="md">
+              <Avatar
+                variant="soft"
+                color="primary"
+                size="md"
+                src={avatarImage}
+                alt={user?.name || 'Usuario'}
+              >
                 <UserRound size={20} />
               </Avatar>
               <Box className="sidebar-user__text">
@@ -279,9 +311,14 @@ export default function Layout({ children }) {
           >
             <Stack spacing={1}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Avatar variant="soft" sx={{ width: 40, height: 40 }}>
-                  {avatarLabel}
-                </Avatar>
+              <Avatar
+                variant="soft"
+                sx={{ width: 40, height: 40 }}
+                src={avatarImage}
+                alt={user?.name || 'Usuario'}
+              >
+                {avatarLabel}
+              </Avatar>
                 <Box>
                   <Typography level="body-lg" fontWeight="600">
                     {user?.name || 'Usuario'}
@@ -318,18 +355,24 @@ export default function Layout({ children }) {
         </Box>
       )}
       <ChangePasswordModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
-      <Box
-        component="main"
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minWidth: 0,
-          position: 'relative',
-          transition: 'padding 0.25s ease',
-          px: { xs: 1, md: 2 },
-        }}
-      >
+        <Box
+          component="main"
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minWidth: 0,
+            position: 'relative',
+            transition: 'padding 0.25s ease',
+            px: { xs: 1, md: 2 },
+            pt: isDocumentEditPage ? 0 : undefined,
+            backgroundColor: 'inherit',
+            backgroundImage: 'url(/images/iniaf.jpg)',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+          }}
+          className="w-full flex flex-col"
+        >
         {isMobile && (
           <IconButton
             variant="soft"
@@ -349,29 +392,40 @@ export default function Layout({ children }) {
         )}
         <Box
           sx={{
-            p: 2,
-            pt: { xs: 8, md: 7 },
+            p: isDocumentEditPage ? 0 : 2,
+            pt: isDocumentEditPage ? 0 : { xs: 8, md: 7 },
             position: 'relative',
             minHeight: 200,
           }}
         >
-          {navLoading ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
-              <CircularProgress size="lg" variant="soft" />
+        {navLoading ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
+            <CircularProgress size="lg" variant="soft" />
+          </Box>
+        ) : (
+          isDocumentEditPage ? (
+            <Box
+              data-page={component ?? 'page'}
+              className={`${pageClassName} w-full flex flex-col`}
+              sx={{ width: '100%', padding: 0 }}
+            >
+              {children}
             </Box>
           ) : (
-            <Sheet
-              variant="plain"
+            <Box
               className="layout-panel"
               sx={{
-                p: { xs: 3, sm: 3.5, md: 4.5 },
+                p: 0,
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
               }}
             >
               <Box data-page={component ?? 'page'} className={pageClassName}>
                 {children}
               </Box>
-            </Sheet>
-          )}
+            </Box>
+          )
+        )}
         </Box>
         <Snackbar
           open={!!toast}

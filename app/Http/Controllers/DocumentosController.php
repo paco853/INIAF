@@ -66,7 +66,7 @@ class DocumentosController extends Controller
             'variavilidad_pct' => ['nullable','numeric'],
         ];
         $messages = [
-            'nlab.unique' => 'Este número de laboratorio ya existe.',
+            'nlab.unique' => 'Este número de laboratorio ya existe para el año seleccionado.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -279,7 +279,7 @@ class DocumentosController extends Controller
             'variavilidad_pct' => ['nullable','numeric'],
         ];
         $messages = [
-            'nlab.unique' => 'Este número de laboratorio ya existe.',
+            'nlab.unique' => 'Este número de laboratorio ya existe para el año seleccionado.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

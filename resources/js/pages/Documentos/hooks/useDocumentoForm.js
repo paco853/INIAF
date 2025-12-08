@@ -138,6 +138,17 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     [setData],
   );
 
+  const handleUpperWithSpacesChange = React.useCallback(
+    (name) => (event) => {
+      const value = event.target.value ?? '';
+      setData(name, toUpperValue(value, { trim: false }));
+      if (AUTO_LOTE_UPPER_FIELDS.has(name)) {
+        setLoteDirty(false);
+      }
+    },
+    [setData],
+  );
+
   const handleUpperNoTrimChange = React.useCallback(
     (name) => (event) => {
       const value = event.target.value ?? '';
@@ -221,7 +232,7 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     (event) => {
       autoObservationRef.current = null;
       const value = event.target.value ?? '';
-      setData('observaciones', toUpperValue(value));
+      setData('observaciones', toUpperValue(value, { trim: false }));
     },
     [setData],
   );
@@ -389,7 +400,7 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     const existsDuplicate = await checkNlabDuplicate();
     setCheckingNlab(false);
     if (existsDuplicate) {
-      setNlabClientError('Este número de laboratorio ya existe para la campaña seleccionada.');
+      setNlabClientError('Este número de laboratorio ya existe para el año seleccionado.');
       setShowMissingModal(false);
       return;
     }
@@ -425,6 +436,7 @@ export default function useDocumentoForm({ doc = {}, loteSuggestions = [], culti
     totalKg,
     estadoValue,
     handleUpperChange,
+    handleUpperWithSpacesChange,
     handleUpperNoTrimChange,
     handlePlainChange,
     handleVariedadSelect,
