@@ -6,14 +6,16 @@ export default function DocumentosTable({ docs, onDelete, onPrint, renderEstadoB
   return (
     <Sheet
       variant="soft"
+      className="glass-table-panel"
       sx={{
         p: 0,
         borderRadius: 18,
         overflow: 'hidden',
-        boxShadow: 'lg',
-        backgroundColor: 'rgba(219, 221, 226, 0.95)',
-        borderColor: 'rgba(162, 166, 172, 0.8)',
-        backdropFilter: 'blur(16px)',
+        boxShadow: '0 10px 35px rgba(15, 23, 42, 0.12)',
+        backgroundColor: 'rgba(236, 236, 240, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
+        backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(225,225,230,0.2))',
+        backdropFilter: 'blur(10px)',
       }}
     >
       <Box
@@ -26,26 +28,29 @@ export default function DocumentosTable({ docs, onDelete, onPrint, renderEstadoB
             stripe="odd"
             hoverRow
             stickyHeader
-            className="text-[#34495E]/80"
+            className="text-[#363D46]"
             sx={{
               '--Table-headerUnderlineThickness': '1px',
               display: { xs: 'none', lg: 'table' },
               minWidth: 760,
               '& th': {
-                backgroundColor: '#f1f2f7',
+                background: 'rgba(255,255,255,0.4)',
                 fontWeight: 600,
+                color: '#363D46',
+                borderBottom: '1px solid rgba(255,255,255,0.4)',
               },
               '& td': {
-                backgroundColor: '#f7f8fb',
+                background: 'rgba(255,255,255,0.2)',
+                borderBottom: '1px solid rgba(255,255,255,0.4)',
               },
               '& tbody tr:nth-of-type(odd) td': {
-                backgroundColor: '#EFEFF5',
+                background: 'rgba(255,255,255,0.4)',
               },
               '& tbody tr:nth-of-type(even) td': {
-                backgroundColor: '#f7f8fb',
+                background: 'rgba(233,233,235,0.4)',
               },
               '& tbody tr:hover td': {
-                backgroundColor: '#e6e6eb',
+                background: 'rgba(255,255,255,0.55)',
               },
             }}
           >

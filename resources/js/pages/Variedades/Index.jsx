@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Sheet, Table, Button, Input, Chip } from '@mui/joy';
+import { Typography, Sheet, Table, Button, Input, Chip, Box } from '@mui/joy';
 import Stack from '@mui/joy/Stack';
 import JoyStack from '@mui/joy/Stack';
 import Alert from '@mui/joy/Alert';
@@ -88,11 +88,12 @@ export default function Variedades() {
       </Stack>
 
       <Sheet variant="outlined" sx={{ p: 0 }}>
-        <Table
-          stripe="odd"
-          hoverRow
-          sx={{ display: { xs: 'none', md: 'table' } }}
-        >
+        <Box sx={{ maxHeight: 520, overflowY: 'auto' }}>
+          <Table
+            stripe="odd"
+            hoverRow
+            sx={{ display: { xs: 'none', md: 'table' } }}
+          >
           <thead>
             <tr>
               <th className="table-col--xs">#</th>
@@ -134,6 +135,7 @@ export default function Variedades() {
             )}
           </tbody>
         </Table>
+        </Box>
         <JoyStack
           spacing={1}
           sx={{

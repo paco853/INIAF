@@ -14,6 +14,16 @@ const WeeklySummary = ({ data = [], colors, activeSlice, setActiveSlice }) => {
     [data],
   );
 
+  const palette = React.useMemo(() => (
+    data.map((_, idx) => {
+      if (Array.isArray(colors) && colors[idx]) {
+        return colors[idx];
+      }
+      const hue = (idx * 137.508) % 360;
+      return `hsl(${hue} 70% 55%)`;
+    })
+  ), [data.length, colors]);
+
   if (!data.length) {
     return (
       <Card variant="outlined" sx={{ height: '100%', width: '100%' }}>
@@ -62,7 +72,7 @@ const WeeklySummary = ({ data = [], colors, activeSlice, setActiveSlice }) => {
                         cy="18"
                         r="15.915"
                         fill="transparent"
-                        stroke={colors[idx % colors.length]}
+                        stroke={palette[idx]}
                         strokeWidth="4"
                         strokeDasharray={`${dash} ${100 - dash}`}
                         strokeDashoffset={offset}
@@ -112,53 +122,64 @@ const WeeklySummary = ({ data = [], colors, activeSlice, setActiveSlice }) => {
             </Sheet>
           </Box>
 
-            <Stack spacing={0.75} sx={{ flex: 1, minWidth: 180, maxWidth: 240 }}>
-            {data.map((item, idx) => {
-              const color = colors[idx % colors.length];
-              const selected = activeSlice?.cultivo === item.cultivo;
-              const percent = totalSamples > 0 ? Math.round(((item.total || 0) / totalSamples) * 100) : 0;
-              return (
-                <Sheet
-                  className="dashboard-species"
-                  key={item.cultivo}
-                  variant={selected ? 'soft' : 'plain'}
-                  color={selected ? 'primary' : 'neutral'}
-                  sx={{
-                    p: 0.75,
-                    borderRadius: 10,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    border: '1px solid',
-                    borderColor: selected ? 'primary.softHoverBg' : 'neutral.outlinedBorder',
-                  }}
-                  onClick={() => setActiveSlice((prev) => (prev?.cultivo === item.cultivo ? null : item))}
-                  onMouseEnter={() => setActiveSlice(item)}
-                  onMouseLeave={() => setActiveSlice((prev) => (prev?.cultivo === item.cultivo ? prev : null))}
-                >
-                  <Box
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: '50%',
-                      backgroundColor: color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <Typography level="body-sm" sx={{ flex: 1, fontWeight: 600 }}>
-                    {item.cultivo}
-                  </Typography>
-                  <Typography level="body-sm" color="neutral">{percent}%</Typography>
-                  <Typography level="title-sm" sx={{ fontWeight: 800 }}>
-                    {item.total}
-                  </Typography>
-                </Sheet>
-              );
-            })}
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 180,
+                maxWidth: 240,
+                maxHeight: 260,
+                overflowY: data.length > 5 ? 'auto' : 'visible',
+                pr: data.length > 5 ? 1 : 0,
+              }}
+            >
+              <Stack spacing={0.75}>
+                {data.map((item, idx) => {
+                  const color = palette[idx];
+                  const selected = activeSlice?.cultivo === item.cultivo;
+                  const percent = totalSamples > 0 ? Math.round(((item.total || 0) / totalSamples) * 100) : 0;
+                  return (
+                    <Sheet
+                      className="dashboard-species"
+                      key={item.cultivo}
+                      variant={selected ? 'soft' : 'plain'}
+                      color={selected ? 'primary' : 'neutral'}
+                      sx={{
+                        p: 0.75,
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        border: '1px solid',
+                        borderColor: selected ? 'primary.softHoverBg' : 'neutral.outlinedBorder',
+                      }}
+                      onClick={() => setActiveSlice((prev) => (prev?.cultivo === item.cultivo ? null : item))}
+                      onMouseEnter={() => setActiveSlice(item)}
+                      onMouseLeave={() => setActiveSlice((prev) => (prev?.cultivo === item.cultivo ? prev : null))}
+                    >
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          backgroundColor: color,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Typography level="body-sm" sx={{ flex: 1, fontWeight: 600 }}>
+                        {item.cultivo}
+                      </Typography>
+                      <Typography level="body-sm" color="neutral">{percent}%</Typography>
+                      <Typography level="title-sm" sx={{ fontWeight: 800 }}>
+                        {item.total}
+                      </Typography>
+                    </Sheet>
+                  );
+                })}
+              </Stack>
+            </Box>
           </Stack>
-        </Stack>
-      </CardContent>
+        </CardContent>
     </Card>
   );
 };

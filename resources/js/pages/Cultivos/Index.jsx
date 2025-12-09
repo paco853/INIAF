@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Sheet, Table, Button, Input, Stack as JoyStack, Chip, IconButton, Select, Option } from '@mui/joy';
+import { Typography, Sheet, Table, Button, Input, Stack as JoyStack, Chip, IconButton, Select, Option, Box } from '@mui/joy';
 import { Search } from 'lucide-react';
 import Stack from '@mui/joy/Stack';
 import Alert from '@mui/joy/Alert';
@@ -83,15 +83,24 @@ export default function Cultivos() {
         </Select>
       </Stack>
 
-      <Sheet variant="outlined" sx={{ p: 0 }}>
-        <Table
-          stripe="odd"
-          hoverRow
-          sx={{
-            display: { xs: 'none', md: 'table' },
-          }}
-        >
-          <thead>
+      <Sheet
+        variant="outlined"
+        sx={{
+          p: 0,
+          backgroundColor: '#EDEDEE',
+          backgroundImage: 'none',
+          borderColor: '#D6D6D6',
+        }}
+      >
+        <Box sx={{ maxHeight: 520, overflowY: 'auto' }}>
+          <Table
+            stripe="odd"
+            hoverRow
+            sx={{
+              display: { xs: 'none', md: 'table' },
+            }}
+          >
+            <thead>
             <tr>
               <th className="table-col--xs">#</th>
               <th>Especie</th>
@@ -129,8 +138,9 @@ export default function Cultivos() {
               </tr>
               );
             })}
-          </tbody>
-        </Table>
+            </tbody>
+          </Table>
+        </Box>
         <JoyStack
           spacing={1}
           sx={{

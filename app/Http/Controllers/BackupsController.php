@@ -267,9 +267,29 @@ class BackupsController extends Controller
                     'updated_at' => $doc['updated_at'] ?? $now,
                 ], fn ($v) => $v !== null));
             }
+
+            $this->resetSerialSequence('analisis_documentos', 'id');
         });
 
         return redirect()->route('ui.backups')->with('status', 'Backup restaurado correctamente.');
+    }
+
+    private function resetSerialSequence(string $table, string $column): void
+    {
+        $connection = DB::connection();
+        if ($connection->getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        $sequenceRow = $connection->selectOne('SELECT pg_get_serial_sequence(?, ?) AS seq', [$table, $column]);
+        $sequence = $sequenceRow?->seq ?? null;
+        if (!is_string($sequence) || $sequence === '') {
+            return;
+        }
+
+        $maxValue = $connection->table($table)->max($column);
+        $nextValue = $maxValue !== null ? (int) $maxValue : 0;
+        $connection->statement("SELECT setval('{$sequence}', ?, true)", [$nextValue]);
     }
 
     public function download(Request $request)
