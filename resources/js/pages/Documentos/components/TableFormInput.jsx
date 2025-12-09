@@ -7,10 +7,11 @@ const inputStyles = {
   border: 0,
   padding: '0.25rem 0.75rem',
   fontWeight: 500,
-  backgroundImage: 'linear-gradient(180deg, rgba(226, 230, 234, 0.9), rgba(210, 214, 220, 0.9))',
+  backgroundColor: '#f7f7f7',
+  backgroundImage: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(243, 244, 246, 0.95))',
   backgroundRepeat: 'no-repeat',
   backgroundSize: '100% 100%',
-  backdropFilter: 'blur(4px)',
+  backdropFilter: 'blur(2px)',
 };
 
 export function TableFormSelect({
@@ -31,17 +32,18 @@ export function TableFormSelect({
         placeholder={placeholder}
         startDecorator={startDecorator}
         slotProps={{
-          button: {
-            sx: {
-              border: 'none',
-              minHeight: 40,
-              px: 0,
-              borderRadius: 0,
-              backgroundImage: 'linear-gradient(180deg, rgba(222, 248, 234, 0.95), rgba(196, 238, 213, 0.95))',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '100% 100%',
-            },
-          },
+              button: {
+                sx: {
+                  border: 'none',
+                  minHeight: 40,
+                  px: 0,
+                  borderRadius: 0,
+                  backgroundColor: '#f7f7f7',
+                  backgroundImage: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(243, 244, 246, 0.95))',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '100% 100%',
+                },
+              },
         }}
         variant="plain"
       >
