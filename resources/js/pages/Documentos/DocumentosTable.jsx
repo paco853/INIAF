@@ -11,6 +11,9 @@ export default function DocumentosTable({ docs, onDelete, onPrint, renderEstadoB
         borderRadius: 18,
         overflow: 'hidden',
         boxShadow: 'lg',
+        backgroundColor: 'rgba(219, 221, 226, 0.95)',
+        borderColor: 'rgba(162, 166, 172, 0.8)',
+        backdropFilter: 'blur(16px)',
       }}
     >
       <Box
@@ -19,34 +22,52 @@ export default function DocumentosTable({ docs, onDelete, onPrint, renderEstadoB
           overflowY: 'auto',
         }}
       >
-        <Table
-          stripe="odd"
-          hoverRow
-          stickyHeader
-          sx={{
-            '--Table-headerUnderlineThickness': '1px',
-            display: { xs: 'none', lg: 'table' },
-          }}
-        >
+          <Table
+            stripe="odd"
+            hoverRow
+            stickyHeader
+            className="text-[#34495E]/80"
+            sx={{
+              '--Table-headerUnderlineThickness': '1px',
+              display: { xs: 'none', lg: 'table' },
+              minWidth: 760,
+              '& th': {
+                backgroundColor: '#f1f2f7',
+                fontWeight: 600,
+              },
+              '& td': {
+                backgroundColor: '#f7f8fb',
+              },
+              '& tbody tr:nth-of-type(odd) td': {
+                backgroundColor: '#EFEFF5',
+              },
+              '& tbody tr:nth-of-type(even) td': {
+                backgroundColor: '#f7f8fb',
+              },
+              '& tbody tr:hover td': {
+                backgroundColor: '#e6e6eb',
+              },
+            }}
+          >
           <thead>
             <tr>
-              <th className="table-col--sm">N° Lab</th>
-              <th>Especie</th>
-              <th className="table-col--sm">Año campaña</th>
-              <th className="table-col--md">Fecha de Evaluacion</th>
-              <th className="table-col--sm">Estado</th>
-              <th className="table-col--xl">Acciones</th>
+              <th className="table-col--sm text-[#34495E]/80">N° Lab</th>
+              <th className="table-col--lg text-[#34495E]/80">Especie</th>
+              <th className="table-col--sm text-[#34495E]/80">Año campaña</th>
+              <th className="table-col--md text-[#34495E]/80">Fecha de Evaluacion</th>
+              <th className="table-col--sm text-[#34495E]/80">Estado</th>
+              <th className="table-col--xl text-[#34495E]/80">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {docs?.data?.map((d) => (
               <tr key={d.id}>
-                <td>{d.nlab ?? '-'}</td>
-                <td>{d.especie ?? '-'}</td>
-                <td>{d.recepcion?.anio ?? '-'}</td>
-                <td>{d.fecha_evaluacion ?? '-'}</td>
-                <td>{renderEstadoBadge(d.estado)}</td>
-                <td>
+                <td className="text-[#34495E]/80">{d.nlab ?? '-'}</td>
+                <td className="table-col--lg text-[#34495E]/80">{d.especie ?? '-'}</td>
+                <td className="text-[#34495E]/80">{d.recepcion?.anio ?? '-'}</td>
+                <td className="text-[#34495E]/80">{d.fecha_evaluacion ?? '-'}</td>
+                <td className="text-[#34495E]/80">{renderEstadoBadge(d.estado)}</td>
+                <td className="text-[#34495E]/80">
                   <Stack spacing={0.75}>
                     <Stack direction="row" spacing={0.5}>
                       <Button
@@ -125,6 +146,7 @@ export default function DocumentosTable({ docs, onDelete, onPrint, renderEstadoB
               display: 'flex',
               flexDirection: 'column',
               gap: 0.75,
+              backgroundColor: 'rgba(236, 238, 241, 0.95)',
             }}
           >
             <Typography level="title-sm">ID {d.id}</Typography>

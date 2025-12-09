@@ -3,7 +3,7 @@ import React from 'react';
 export default function AparienciaDocumento() {
   return (
     <div>
-      <div className="w-full max-w-5xl bg-white/90 backdrop-blur shadow-xl rounded-3xl p-8 border border-white/60">
+      <div className="w-full max-w-5xl bg-white/90 backdrop-blur shadow-xl rounded-3xl px-10 py-8 border border-white/60 pb-16">
         <header className="flex flex-col gap-1 mb-6">
           <div className="flex items-center justify-between">
             <div>

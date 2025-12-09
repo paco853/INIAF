@@ -415,7 +415,7 @@ export default function Layout({ children }) {
             <Box
               className="layout-panel"
               sx={{
-                p: 0,
+                p: { xs: 2.5, md: 3.5 },
                 backgroundColor: 'transparent',
                 boxShadow: 'none',
               }}
