@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use App\Models\Cultivo;
+use App\Models\AnalisisDocumento;
 use App\Support\ValidezFormatter;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -249,8 +250,12 @@ class AnalisisSemillasController extends Controller
         $especie = $recepcion['especie'] ?? null;
         $recepcion['origen'] = $this->formatOrigen($recepcion['comunidad'] ?? '', $recepcion['municipio'] ?? '');
 
-        // Persistir
-        $doc = \App\Models\AnalisisDocumento::create([
+        $nlabNormalized = trim((string) ($nlab ?? ''));
+        $nlabNormalized = $nlabNormalized === '' ? null : Str::upper($nlabNormalized);
+        $anioForMatch = $this->normalizeYear((string) ($recepcion['anio'] ?? ''));
+        $recepcion['anio'] = $anioForMatch;
+
+        $docPayload = [
             'nlab' => $nlab,
             'especie' => $especie,
             'fecha_evaluacion' => $datos['fecha'] ?? null,
@@ -262,12 +267,34 @@ class AnalisisSemillasController extends Controller
             'recepcion' => $recepcion ?: null,
             'humedad' => $humedad ?: null,
             'datos' => $datos ?: null,
-        ]);
+        ];
+
+        $existingDoc = null;
+        if ($nlabNormalized !== null) {
+            $query = AnalisisDocumento::query()
+                ->whereRaw('UPPER(nlab) = ?', [$nlabNormalized]);
+            if ($anioForMatch === null) {
+                $query->whereNull('recepcion->anio');
+            } else {
+                $query->where('recepcion->anio', $anioForMatch);
+            }
+            $existingDoc = $query->orderByDesc('id')->first();
+        }
+
+        if ($existingDoc) {
+            $existingDoc->fill($docPayload);
+            $existingDoc->save();
+            $doc = $existingDoc;
+            $statusMessage = 'Documento #'.$doc->id.' actualizado';
+        } else {
+            $doc = AnalisisDocumento::create($docPayload);
+            $statusMessage = 'Documento #'.$doc->id.' creado';
+        }
 
         // limpiar sesión del flujo
         $request->session()->forget(['analisis.recepcion', 'analisis.humedad']);
 
-        return redirect()->route('documentos.index')->with('status', 'Documento #'.$doc->id.' creado');
+        return redirect()->route('documentos.index')->with('status', $statusMessage);
     }
 
     private function latinFromEspecie(?string $especie): string
