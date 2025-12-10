@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use App\Models\Cultivo;
 use App\Models\AnalisisDocumento;
 use App\Support\ValidezFormatter;
@@ -287,7 +289,16 @@ class AnalisisSemillasController extends Controller
             $doc = $existingDoc;
             $statusMessage = 'Documento #'.$doc->id.' actualizado';
         } else {
-            $doc = AnalisisDocumento::create($docPayload);
+            try {
+                $doc = AnalisisDocumento::create($docPayload);
+            } catch (QueryException $e) {
+                if ($this->shouldRetryAfterSequenceSync($e)) {
+                    AnalisisDocumento::syncIdSequence();
+                    $doc = AnalisisDocumento::create($docPayload);
+                } else {
+                    throw $e;
+                }
+            }
             $statusMessage = 'Documento #'.$doc->id.' creado';
         }
 
@@ -295,6 +306,20 @@ class AnalisisSemillasController extends Controller
         $request->session()->forget(['analisis.recepcion', 'analisis.humedad']);
 
         return redirect()->route('documentos.index')->with('status', $statusMessage);
+    }
+
+    private function shouldRetryAfterSequenceSync(QueryException $exception): bool
+    {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return false;
+        }
+
+        if ($exception->getCode() !== '23505') {
+            return false;
+        }
+
+        $detail = $exception->errorInfo[2] ?? '';
+        return str_contains((string) $detail, 'analisis_documentos_pkey');
     }
 
     private function latinFromEspecie(?string $especie): string
