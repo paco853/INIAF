@@ -10,16 +10,26 @@
 </head>
 <body class="{{ $isPreview ? 'is-preview' : '' }}">
 <div class="wrap">
-  <div class="header">
+  @php
+    $useAppearanceLogos = data_get($appearance, 'force_header_logos', false)
+        || data_get($appearance, 'has_laboratorios', false);
+    $logoLeftUrl = $useAppearanceLogos && data_get($appearance, 'logo_left')
+        ? data_get($appearance, 'logo_left')
+        : $img('images/logo2.png');
+    $logoRightUrl = $useAppearanceLogos && data_get($appearance, 'logo_right')
+        ? data_get($appearance, 'logo_right')
+        : $img('images/titulo.png');
+  @endphp
+  <div class="header-row">
     <div class="logo-left">
-      <img src="{{ $img('images/logo2.png') }}" alt="Logo Estado Plurinacional de Bolivia">
+      <img class="logo-img" src="{{ $logoLeftUrl }}" alt="Logo izquierdo">
     </div>
     <div class="logo-right">
-      <img src="{{ $img('images/titulo.png') }}" alt="INIAF">
+      <img class="logo-img" src="{{ $logoRightUrl }}" alt="Logo derecho">
     </div>
   </div>
 
-  <div class="hr-top"></div>
+  <div class="header-line"></div>
 
   <div class="heading-block">
     <div class="heading-grid">

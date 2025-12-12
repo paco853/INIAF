@@ -44,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/documentos', [DocumentosController::class, 'store'])->name('documentos.store');
     Route::get('/documentos/check-nlab', [DocumentosController::class, 'checkNlab'])->name('documentos.check_nlab');
     Route::get('/documentos/{doc}/imprimir', [DocumentosController::class, 'imprimir'])->whereNumber('doc')->name('documentos.print');
+    Route::get('/documentos/apariencia/{appearance}/blank-template', [DocumentosController::class, 'blankTemplate'])
+        ->whereNumber('appearance')
+        ->name('documentos.apariencia.blank');
     Route::get('/documentos/{doc}', [DocumentosController::class, 'show'])->whereNumber('doc')->name('documentos.show');
     Route::get('/documentos/{doc}/edit', [DocumentosController::class, 'edit'])->whereNumber('doc')->name('documentos.edit');
     Route::put('/documentos/{doc}', [DocumentosController::class, 'update'])->whereNumber('doc')->name('documentos.update');
@@ -89,6 +92,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/documentos/create', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'create'])->name('ui.documentos.create');
     Route::get('/ui/documentos/descarga-general', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'bulk'])->name('ui.documentos.bulk');
     Route::get('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'apariencia'])->name('ui.documentos.apariencia');
+    Route::post('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateApariencia'])->name('ui.documentos.apariencia.update');
+    Route::post(
+        '/ui/documentos/apariencia/{appearance}/laboratorios',
+        [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaLaboratorios']
+    )->name('ui.documentos.apariencia.laboratorios');
+    Route::post(
+        '/ui/documentos/apariencia/{appearance}/fechas',
+        [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaFechas']
+    )->name('ui.documentos.apariencia.fechas');
+    Route::put('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaVersion'])
+        ->name('ui.documentos.apariencia.version.update');
+    Route::delete('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'destroyAparienciaVersion'])
+        ->name('ui.documentos.apariencia.version.destroy');
     Route::get('/ui/documentos/{doc}/edit', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'edit'])->whereNumber('doc')->name('ui.documentos.edit');
     Route::get('/ui/analisis/semillas', function () {
         $cultivos = \App\Models\Cultivo::orderBy('especie')

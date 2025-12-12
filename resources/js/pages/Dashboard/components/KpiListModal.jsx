@@ -7,11 +7,21 @@ import {
   Sheet,
   Table,
   Box,
+  FormControl,
+  FormLabel,
+  Input,
 } from '@mui/joy';
 import EstadoBadge from './EstadoBadge.jsx';
 
 const KpiListModal = ({ open, title, rows = [], onClose }) => {
   if (!open) return null;
+  const [search, setSearch] = React.useState('');
+
+  const filteredRows = React.useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((row) => (row.especie || '').toLowerCase().includes(term));
+  }, [rows, search]);
   return (
     <Modal open onClose={onClose}>
       <ModalDialog layout="center" sx={{ width: '90%', maxWidth: 720, p: 0, overflow: 'hidden' }}>
@@ -21,6 +31,18 @@ const KpiListModal = ({ open, title, rows = [], onClose }) => {
             <Typography level="title-lg" sx={{ fontWeight: 700 }}>{title}</Typography>
           </Box>
           <Sheet variant="soft" sx={{ p: 0 }}>
+            <Box sx={{ px: 3, py: 1 }}>
+              <FormControl>
+                <FormLabel>Buscar especie</FormLabel>
+                <Input
+                  placeholder="e.g. Maíz"
+                  size="sm"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  autoComplete="off"
+                />
+              </FormControl>
+            </Box>
             <Box sx={{ height: '60vh', overflowY: 'auto' }}>
               <Table size="sm" borderAxis="both" className="kpi-list-table">
               <thead>
@@ -34,7 +56,7 @@ const KpiListModal = ({ open, title, rows = [], onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {rows.length > 0 ? rows.map((row) => (
+                {filteredRows.length > 0 ? filteredRows.map((row) => (
                   <tr key={row.id}>
                     <td>{row.nlab}</td>
                     <td>{row.especie}</td>

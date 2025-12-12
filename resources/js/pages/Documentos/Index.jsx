@@ -50,15 +50,17 @@ export default function Documentos() {
     nlab: filters?.nlab ?? '',
     especie: filters?.especie ?? '',
     estado: filters?.estado ?? '',
+    cooperador: filters?.cooperador ?? '',
   });
 
   React.useEffect(() => {
-    setFilterState({
-      anio: filters?.anio ?? '',
-      nlab: filters?.nlab ?? '',
-      especie: filters?.especie ?? '',
-      estado: filters?.estado ?? '',
-    });
+      setFilterState({
+        anio: filters?.anio ?? '',
+        nlab: filters?.nlab ?? '',
+        especie: filters?.especie ?? '',
+        estado: filters?.estado ?? '',
+        cooperador: filters?.cooperador ?? '',
+      });
   }, [filters]);
 
   const handleFilterChange = React.useCallback((key) => (event) => {
@@ -103,6 +105,7 @@ export default function Documentos() {
       nlab: '',
       especie: '',
       estado: '',
+      cooperador: '',
     };
     setFilterState(empty);
     router.get('/ui/documentos', {}, { preserveState: true, replace: true });

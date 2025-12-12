@@ -33,55 +33,37 @@ html, body {
 }
 
 /* Encabezado con logos - compatible con mPDF */
-.header{
-  display: table;
-  width: 100%;
-  margin-top: 1mm;
-  margin-bottom: 4mm;
-  table-layout: fixed;
+.header-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  width: calc(100% - 34mm);
+  margin: 1mm 17mm 0;
+  padding:0;
 }
 
-/* Logo izquierdo (Bolivia) */
-.logo-left{
-  display: table-cell;
-  width: 40%;
-  height: 22mm;
-  max-height: 22mm;
-  vertical-align: top;
-}
-.logo-left img{
-  height: 18mm;       
-  width: auto;
-  display: block;
+.logo-left,
+.logo-right{
+  width:45%;
+  height:20mm;
+  display:flex;
+  align-items:flex-start;
 }
 
+.logo-left{ justify-content:flex-start; }
+.logo-right{ justify-content:flex-end; }
 
-
-/* Logo derecho (INIAF) */
-
-.logo-right {
-  display: table-cell;
-     
-  vertical-align: top; /* Lo sube sin cortar */
-  text-align: right;
+.logo-img{
+  max-height:20mm;
+  width:auto;
+  object-fit:contain;
+  display:block;
 }
 
-.logo-right img {
-  width: 39mm;
-  height: 39mm; /* mantiene proporción sin recortar */
-  object-fit: contain;
-  margin: 0;
-  margin-top: -10mm;  /* cerca del borde sin corte */
-}
-
-
-
-.hr-top{
-  background:#000;
-  width:240mm;
-  margin: -4mm auto 2mm;
-  height: 1px;
-  margin-top: -50;
+.header-line{
+  width: calc(100% - 20mm);
+  margin: 2mm 10mm 0;
+  border-top: 1px solid #000;
 }
 .hr{ height:1px; background:#cbd5e1; margin:5mm 0 }
 h1,h2{ margin:0; text-align:center }

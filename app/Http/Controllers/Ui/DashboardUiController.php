@@ -21,15 +21,18 @@ class DashboardUiController extends Controller
 
         $totalHoy = AnalisisDocumento::whereDate('created_at', $today)->count();
         $pendientes = AnalisisDocumento::whereNull('estado')->count();
-        $certificados = AnalisisDocumento::where('estado', 'APROBADO')->count();
+        $certificados = AnalisisDocumento::count();
         $rechazados = AnalisisDocumento::where('estado', 'RECHAZADO')->count();
 
+        $weekStart = now()->startOfWeek();
+        $weekEnd = now();
+
         $chart = AnalisisDocumento::query()
+            ->whereBetween('created_at', [$weekStart, $weekEnd])
             ->selectRaw("COALESCE(especie, recepcion->>'especie') as especie")
             ->selectRaw('COUNT(*) as total')
             ->groupByRaw("COALESCE(especie, recepcion->>'especie')")
             ->orderByDesc('total')
-            ->limit(6)
             ->get()
             ->map(function ($row) {
                 return [
@@ -96,9 +99,7 @@ class DashboardUiController extends Controller
             ->map($formatDoc);
 
         $certificadosList = AnalisisDocumento::query()
-            ->where('estado', 'APROBADO')
             ->orderByDesc('id')
-            ->limit(20)
             ->get(['id', 'nlab', 'especie', 'fecha_evaluacion', 'recepcion', 'humedad', 'datos', 'estado', 'created_at'])
             ->map($formatDoc);
 

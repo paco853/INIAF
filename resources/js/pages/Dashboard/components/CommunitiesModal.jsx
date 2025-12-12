@@ -9,6 +9,7 @@ import {
   Stack,
   Button,
   Input,
+  Box,
 } from '@mui/joy';
 import { router } from '@inertiajs/react';
 
@@ -16,12 +17,14 @@ const CommunitiesModal = ({ open, onClose, comunidades = [], municipiosCount = 0
   const [editingId, setEditingId] = React.useState(null);
   const [form, setForm] = React.useState({ comunidad: '', municipio: '' });
   const [newForm, setNewForm] = React.useState({ comunidad: '', municipio: '' });
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   React.useEffect(() => {
     if (!open) {
       setEditingId(null);
       setForm({ comunidad: '', municipio: '' });
       setNewForm({ comunidad: '', municipio: '' });
+      setSearchTerm('');
     }
   }, [open]);
 
@@ -63,6 +66,12 @@ const CommunitiesModal = ({ open, onClose, comunidades = [], municipiosCount = 0
       onSuccess: () => setNewForm({ comunidad: '', municipio: '' }),
     });
   };
+
+  const filteredComunidades = React.useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return comunidades;
+    return comunidades.filter((item) => (item.comunidad || '').toLowerCase().includes(term));
+  }, [comunidades, searchTerm]);
 
   if (!open) return null;
   return (
@@ -145,84 +154,106 @@ const CommunitiesModal = ({ open, onClose, comunidades = [], municipiosCount = 0
               display: 'flex',
               flexDirection: 'column',
               background: 'rgba(255,255,255,0.85)',
+              gap: 1,
             }}
           >
-            <Table
-              size="sm"
-              borderAxis="both"
-              stickyHeader
-              sx={{
-                '--TableCell-headBackground': '#0ea5e9',
-                '--TableCell-headColor': '#fdfefe',
-                '--TableCell-borderColor': '#e2e8f0',
-                '& thead th': { bgcolor: 'var(--TableCell-headBackground)', color: 'var(--TableCell-headColor)' },
-                '& tbody tr:nth-of-type(odd)': { bgcolor: 'rgba(14,165,233,0.06)' },
-                '& tbody tr:nth-of-type(even)': { bgcolor: 'rgba(255,255,255,0.9)' },
-                '& tbody tr:hover': { bgcolor: 'rgba(14,165,233,0.12)' },
-                display: 'block',
-                overflow: 'auto',
-                maxHeight: '60vh',
-              }}
-            >
-              <thead style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
-                <tr>
-                  <th style={{ width: '60%' }}>Comunidad</th>
-                  <th style={{ width: '40%' }}>Municipio</th>
-                </tr>
-              </thead>
-              <tbody style={{ display: 'block', overflow: 'auto', maxHeight: '56vh' }}>
-                {Array.isArray(comunidades) && comunidades.length > 0 ? comunidades.map((item, idx) => {
-                  const isEditing = editingId === item.id;
-                  return (
-                    <tr key={`${item.municipio}-${item.comunidad}-${item.id || idx}`} style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}>
-                      <td style={{ width: '45%' }}>
-                        {isEditing ? (
-                          <Input
-                            size="sm"
-                            value={form.comunidad}
-                            onChange={handleChange('comunidad')}
-                          />
-                        ) : (
-                          item.comunidad || '—'
-                        )}
-                      </td>
-                      <td style={{ width: '35%' }}>
-                        {isEditing ? (
-                          <Input
-                            size="sm"
-                            value={form.municipio}
-                            onChange={handleChange('municipio')}
-                          />
-                        ) : (
-                          item.municipio || '—'
-                        )}
-                      </td>
-                      <td style={{ width: '20%', display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                        {isEditing ? (
-                          <>
-                            <Button size="sm" color="success" onClick={handleSave}>Guardar</Button>
-                            <Button size="sm" variant="outlined" color="neutral" onClick={cancelEdit}>Cancelar</Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button size="sm" variant="outlined" onClick={() => startEdit(item)}>Editar</Button>
-                            <Button size="sm" variant="plain" color="danger" onClick={() => handleDelete(item.id)}>Borrar</Button>
-                          </>
-                        )}
+            <Box sx={{ px: 2, pt: 1 }}>
+              <Input
+                size="sm"
+                placeholder="Buscar comunidad"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                aria-label="Buscar comunidad"
+              />
+            </Box>
+            <Box sx={{ flex: 1, overflowY: 'auto' }}>
+              <Table
+                size="sm"
+                borderAxis="both"
+                stickyHeader
+                sx={{
+                  tableLayout: 'fixed',
+                  width: '100%',
+                  '--TableCell-headBackground': '#0ea5e9',
+                  '--TableCell-headColor': '#fdfefe',
+                  '--TableCell-borderColor': '#e2e8f0',
+                  '& th, & td': { padding: '0.5rem 0.75rem' },
+                  '& thead th': { bgcolor: 'var(--TableCell-headBackground)', color: 'var(--TableCell-headColor)', textAlign: 'left' },
+                  '& tbody tr:nth-of-type(odd)': { bgcolor: 'rgba(14,165,233,0.06)' },
+                  '& tbody tr:nth-of-type(even)': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  '& tbody tr:hover': { bgcolor: 'rgba(14,165,233,0.12)' },
+                }}
+              >
+                <colgroup>
+                  <col style={{ width: '50%' }} />
+                  <col style={{ width: '30%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Comunidad</th>
+                    <th>Municipio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(filteredComunidades) && filteredComunidades.length > 0 ? filteredComunidades.map((item, idx) => {
+                    const isEditing = editingId === item.id;
+                    return (
+                      <tr key={`${item.municipio}-${item.comunidad}-${item.id || idx}`}>
+                        <td>
+                          {isEditing ? (
+                            <Input
+                              size="sm"
+                              value={form.comunidad}
+                              onChange={handleChange('comunidad')}
+                              fullWidth
+                            />
+                          ) : (
+                            item.comunidad || '—'
+                          )}
+                        </td>
+                        <td>
+                          {isEditing ? (
+                            <Input
+                              size="sm"
+                              value={form.municipio}
+                              onChange={handleChange('municipio')}
+                              fullWidth
+                            />
+                          ) : (
+                            item.municipio || '—'
+                          )}
+                        </td>
+                        <td>
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, flexWrap: 'nowrap' }}>
+                            {isEditing ? (
+                              <>
+                                <Button size="sm" color="success" onClick={handleSave}>Guardar</Button>
+                                <Button size="sm" variant="outlined" color="neutral" onClick={cancelEdit}>Cancelar</Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button size="sm" variant="outlined" onClick={() => startEdit(item)}>Editar</Button>
+                                <Button size="sm" variant="plain" color="danger" onClick={() => handleDelete(item.id)}>Borrar</Button>
+                              </>
+                            )}
+                          </Box>
+                        </td>
+                      </tr>
+                    );
+                  }) : (
+                    <tr>
+                      <td colSpan={3}>
+                        <Typography level="body-sm" textAlign="center" sx={{ py: 2 }}>
+                          Sin comunidades registradas.
+                        </Typography>
                       </td>
                     </tr>
-                  );
-                }) : (
-                  <tr style={{ display: 'table', width: '100%' }}>
-                    <td colSpan={3}>
-                      <Typography level="body-sm" textAlign="center" sx={{ py: 1 }}>
-                        Sin comunidades registradas.
-                      </Typography>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
+                  )}
+                </tbody>
+              </Table>
+            </Box>
           </Sheet>
         </Sheet>
       </ModalDialog>

@@ -13,8 +13,10 @@ use iio\libmergepdf\Merger;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use App\Models\DocumentoApariencia;
 use App\Support\DocumentosHelper;
 use App\Support\ReporteContextBuilder;
+use Illuminate\Support\Facades\Log;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -454,22 +456,62 @@ class DocumentosController extends Controller
         return $text;
     }
 
+    public function blankTemplate(DocumentoApariencia $appearance): Response
+    {
+        $blankDoc = new AnalisisDocumento();
+        $blankDoc->recepcion = [];
+        $blankDoc->humedad = [];
+        $blankDoc->datos = [];
+        $blankDoc->nlab = '';
+        $blankDoc->especie = '';
+        $blankDoc->estado = null;
+        $blankDoc->validez = '';
+        $blankDoc->observaciones = '';
+
+        Log::info('DocumentosController blank template appearance', [
+            'appearance_id' => $appearance->id,
+            'footer_text' => $appearance->footer_text ?? null,
+        ]);
+        $blankContext = ReporteContextBuilder::buildWithAppearance($blankDoc, $appearance, false);
+        $blankContext['appearance'] = array_merge(
+            $blankContext['appearance'] ?? [],
+            ['force_header_logos' => true]
+        );
+        try {
+            $pdfBytes = $this->renderPdfFromContext($blankContext);
+        } catch (\Throwable $e) {
+            return response('Error al generar la plantilla en blanco: '.$e->getMessage(), 500);
+        }
+
+        $filename = 'plantilla_'.$appearance->id.'.pdf';
+        return response($pdfBytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+        ]);
+    }
+
     /** Renderiza un solo documento a PDF (bytes) reutilizable para merge. */
     protected function renderSinglePdf(AnalisisDocumento $doc): string
     {
         $baseContext = $this->buildReporteContext($doc, false);
+        Log::info('DocumentosController render PDF appearance', [
+            'doc_id' => $doc->id,
+            'appearance_id' => data_get($baseContext, 'appearance.id'),
+            'footer_text' => data_get($baseContext, 'appearance.footer_text'),
+        ]);
+        return $this->renderPdfFromContext($baseContext);
+    }
 
-        // Inyectar CSS (inline) para PDF consistente
+    protected function renderPdfFromContext(array $baseContext): string
+    {
         $cssPath = public_path('assets/css/reporte_pdf.css');
         $css = '';
         if (is_file($cssPath) && is_readable($cssPath)) {
             $css = (string) @file_get_contents($cssPath);
         }
 
-        // HTML completo (Browsershot renderiza todo)
         $htmlFull = view('pdf.reporte', $baseContext)->render();
 
-        // Paths opcionales (Windows) para Chrome/Node/NPM
         $chromePath = env('BROWSERSHOT_CHROME_PATH');
         $nodePath   = env('BROWSERSHOT_NODE_PATH');
         $npmPath    = env('BROWSERSHOT_NPM_PATH');
@@ -479,7 +521,6 @@ class DocumentosController extends Controller
             'footerCss' => $footerCss,
         ])->render();
 
-        // Browsershot renderiza siempre el documento completo (incluye la tabla).
         $htmlForBs = $htmlFull;
         if ($css !== '') {
             $htmlForBs = '<style type="text/css">'.$css.'</style>'.$htmlForBs;
@@ -490,7 +531,7 @@ class DocumentosController extends Controller
             ->emulateMedia('screen')
             ->format('letter')
             ->landscape()
-            ->margins(0, 0, 0, 0) // deja que el @page del CSS controle los márgenes
+            ->margins(0, 0, 0, 0)
             ->showBrowserHeaderAndFooter()
             ->hideHeader()
             ->footerHtml($footerHtml)
@@ -502,7 +543,6 @@ class DocumentosController extends Controller
 
         $bsPdf = $bs->pdf();
 
-        // Generar solo la tabla con Dompdf y unirla como segunda página (si está disponible y produce contenido)
         $tablePdf = null;
         if (class_exists(Dompdf::class)) {
             try {
@@ -523,7 +563,6 @@ class DocumentosController extends Controller
                 $dompdf->loadHtml($htmlTableDoc);
                 $dompdf->render();
                 $tablePdf = $dompdf->output();
-
                 if (strlen($tablePdf) < 5000) {
                     $tablePdf = null;
                 }
@@ -536,7 +575,6 @@ class DocumentosController extends Controller
             return $bsPdf;
         }
 
-        // Une ambos PDFs: primero cuerpo completo (Browsershot), luego tabla (Dompdf)
         $merger = new Merger();
         $merger->addRaw($bsPdf);
         $merger->addRaw($tablePdf);

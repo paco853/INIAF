@@ -37,6 +37,13 @@ export default function DocumentosFilters({
           value={filterState.nlab}
           onChange={onFilterChange('nlab')}
         />
+        <Input
+          size="sm"
+          className="filters-control"
+          placeholder="Cooperador"
+          value={filterState.cooperador || ''}
+          onChange={onFilterChange('cooperador')}
+        />
         <Select
           size="sm"
           className="filters-control"
