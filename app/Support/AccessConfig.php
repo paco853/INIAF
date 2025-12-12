@@ -42,6 +42,7 @@ class AccessConfig
             'exportData' => false,
             'restoreData' => false,
             'deleteBackups' => false,
+            'viewAppearance' => false,
         ];
     }
 

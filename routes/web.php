@@ -91,20 +91,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/ui/documentos', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'index'])->name('ui.documentos');
     Route::get('/ui/documentos/create', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'create'])->name('ui.documentos.create');
     Route::get('/ui/documentos/descarga-general', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'bulk'])->name('ui.documentos.bulk');
-    Route::get('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'apariencia'])->name('ui.documentos.apariencia');
-    Route::post('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateApariencia'])->name('ui.documentos.apariencia.update');
-    Route::post(
-        '/ui/documentos/apariencia/{appearance}/laboratorios',
-        [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaLaboratorios']
-    )->name('ui.documentos.apariencia.laboratorios');
-    Route::post(
-        '/ui/documentos/apariencia/{appearance}/fechas',
-        [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaFechas']
-    )->name('ui.documentos.apariencia.fechas');
-    Route::put('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaVersion'])
-        ->name('ui.documentos.apariencia.version.update');
-    Route::delete('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'destroyAparienciaVersion'])
-        ->name('ui.documentos.apariencia.version.destroy');
+    Route::middleware('access:viewAppearance')->group(function () {
+        Route::get('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'apariencia'])->name('ui.documentos.apariencia');
+        Route::post('/ui/documentos/apariencia', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateApariencia'])->name('ui.documentos.apariencia.update');
+        Route::post(
+            '/ui/documentos/apariencia/{appearance}/laboratorios',
+            [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaLaboratorios']
+        )->name('ui.documentos.apariencia.laboratorios');
+        Route::post(
+            '/ui/documentos/apariencia/{appearance}/fechas',
+            [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaFechas']
+        )->name('ui.documentos.apariencia.fechas');
+        Route::put('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'updateAparienciaVersion'])
+            ->name('ui.documentos.apariencia.version.update');
+        Route::delete('/ui/documentos/apariencia/{appearance}', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'destroyAparienciaVersion'])
+            ->name('ui.documentos.apariencia.version.destroy');
+    });
     Route::get('/ui/documentos/{doc}/edit', [\App\Http\Controllers\Ui\DocumentosUiController::class, 'edit'])->whereNumber('doc')->name('ui.documentos.edit');
     Route::get('/ui/analisis/semillas', function () {
         $cultivos = \App\Models\Cultivo::orderBy('especie')

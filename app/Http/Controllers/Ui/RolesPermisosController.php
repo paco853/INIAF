@@ -56,6 +56,7 @@ class RolesPermisosController extends Controller
             'exportData' => false,
             'restoreData' => false,
             'deleteBackups' => false,
+            'viewAppearance' => false,
         ];
     }
 }

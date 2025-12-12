@@ -75,12 +75,15 @@ const SubLink = ({ href, label, active, icon, onNavigate, className }) => (
 
 export default function MainMenu({ collapsed = false, onNavigate, user }) {
   const isActive = useActiveMatcher();
+  const { access = {} } = usePage();
   const [configOpen, setConfigOpen] = React.useState(false);
   const isAdmin = React.useMemo(() => Boolean(user?.is_admin), [user]);
+  const canViewAppearance = Boolean(access.viewAppearance);
   const configActive = [
     '/ui/cultivos',
     '/ui/variedades',
     '/ui/backups',
+    ...(canViewAppearance ? ['/ui/documentos/apariencia'] : []),
     ...(isAdmin ? ['/ui/roles-permisos', '/ui/usuarios'] : []),
   ].some(isActive);
   const showConfig = configOpen || configActive;
@@ -226,14 +229,16 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
               icon={<Database size={18} />}
               className="menu-sublink--system"
             />
-            <SubLink
-              href="/ui/documentos/apariencia"
-              label="Apariencia de Documento"
-              active={isActive('/ui/documentos/apariencia')}
-              onNavigate={onNavigate}
-              icon={<Leaf size={18} />}
-              className="menu-sublink--system"
-            />
+            {canViewAppearance && (
+              <SubLink
+                href="/ui/documentos/apariencia"
+                label="Apariencia de Documento"
+                active={isActive('/ui/documentos/apariencia')}
+                onNavigate={onNavigate}
+                icon={<Leaf size={18} />}
+                className="menu-sublink--system"
+              />
+            )}
             {isAdmin && (
               <>
                 <SubLink

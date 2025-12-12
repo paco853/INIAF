@@ -24,21 +24,26 @@ import {
 import '../../../../css/pages/roles-permisos.css';
 
 const CARDS = [
-  {
-    id: 'docs',
-    title: 'Documentos & PDF',
-    controller: 'DocumentosController.php',
-    badge: 'Browsershot',
-    icon: <FileText size={24} />,
-    actions: [
       {
-        id: 'deleteDocs',
-        label: 'Eliminar Documentos',
-        description: 'Eliminar registros permanentemente (Solo Admin).',
-        danger: true,
+        id: 'docs',
+        title: 'Documentos & PDF',
+        controller: 'DocumentosController.php',
+        badge: 'Browsershot',
+        icon: <FileText size={24} />,
+        actions: [
+          {
+            id: 'deleteDocs',
+            label: 'Eliminar Documentos',
+            description: 'Eliminar registros permanentemente (Solo Admin).',
+            danger: true,
+          },
+          {
+            id: 'viewAppearance',
+            label: 'Ver Apariencia de Documentos',
+            description: 'Permite acceder al panel de configuración de logos/apariencias.',
+          },
+        ],
       },
-    ],
-  },
   {
     id: 'catalogos',
     title: 'Catálogos Base',
@@ -89,6 +94,7 @@ export default function RolesPermisos() {
       exportData: false,
       restoreData: false,
       deleteBackups: false,
+      viewAppearance: false,
       ...serverToggles,
     },
   });
