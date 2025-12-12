@@ -143,4 +143,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/ui/password', [AuthController::class, 'updatePassword'])->name('password.update');
 });
 
+Route::get('/health', fn () => response()->json(['ok' => true]));
+
 

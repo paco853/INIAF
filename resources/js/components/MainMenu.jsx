@@ -78,7 +78,7 @@ export default function MainMenu({ collapsed = false, onNavigate, user }) {
   const { access = {} } = usePage();
   const [configOpen, setConfigOpen] = React.useState(false);
   const isAdmin = React.useMemo(() => Boolean(user?.is_admin), [user]);
-  const canViewAppearance = Boolean(access.viewAppearance);
+  const canViewAppearance = Boolean(access.viewAppearance || isAdmin);
   const configActive = [
     '/ui/cultivos',
     '/ui/variedades',
